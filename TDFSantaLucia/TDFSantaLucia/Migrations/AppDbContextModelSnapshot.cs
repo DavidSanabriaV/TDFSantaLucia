@@ -207,21 +207,11 @@ namespace TDFSantaLucia.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Cedula")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Direccion_Exacta")
-                        .HasColumnType("longtext");
-
                     b.Property<DateTime?>("Fecha_Nacimiento")
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("Puntos_Acumulados")
                         .HasColumnType("int");
-
-                    b.Property<string>("Telefono")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Usuario_ID")
                         .IsRequired()

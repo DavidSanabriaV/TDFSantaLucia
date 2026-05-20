@@ -11,7 +11,11 @@ using TDFSantaLucia.Data;
 namespace TDFSantaLucia.Migrations
 {
     [DbContext(typeof(AppDbContext))]
+<<<<<<<< HEAD:TDFSantaLucia/TDFSantaLucia/Migrations/20260520053557_InitialCreate.Designer.cs
     [Migration("20260520053557_InitialCreate")]
+========
+    [Migration("20260520054517_InitialCreate")]
+>>>>>>>> Desarrollo:TDFSantaLucia/TDFSantaLucia/Migrations/20260520054517_InitialCreate.Designer.cs
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -210,21 +214,11 @@ namespace TDFSantaLucia.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<string>("Cedula")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Direccion_Exacta")
-                        .HasColumnType("longtext");
-
                     b.Property<DateTime?>("Fecha_Nacimiento")
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("Puntos_Acumulados")
                         .HasColumnType("int");
-
-                    b.Property<string>("Telefono")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("Usuario_ID")
                         .IsRequired()
