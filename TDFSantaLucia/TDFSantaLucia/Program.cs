@@ -7,6 +7,8 @@ using TDFSantaLucia.Constants;
 using TDFSantaLucia.Data;
 
 using TDFSantaLucia.Models;
+using TDFSantaLucia.Repositories;
+using TDFSantaLucia.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +61,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccesoDenegado";
 
 });
+
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
 
 // Add services to the container
 
