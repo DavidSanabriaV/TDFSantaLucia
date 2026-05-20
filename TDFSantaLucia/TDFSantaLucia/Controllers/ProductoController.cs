@@ -1,0 +1,174 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using TDFSantaLucia.Models;
+using TDFSantaLucia.Services;
+
+namespace TDFSantaLucia.Controllers
+{
+    [Route("producto")]
+    public class ProductoController : Controller
+    {
+        private readonly IProductoService _productoService;
+        private readonly ICategoriaService _categoriaService;
+
+        public ProductoController(
+            IProductoService productoService,
+            ICategoriaService categoriaService)
+        {
+            _productoService = productoService;
+            _categoriaService = categoriaService;
+        }
+
+        [HttpGet("")]
+        public IActionResult Index()
+        {
+            ViewData["Title"] = "Productos";
+            var productos = _productoService.ObtenerTodos()
+                .Where(p => p.Estado)
+                .ToList();
+            return View(productos);
+        }
+
+        [HttpGet("administrar")]
+        public IActionResult Administrar()
+            => RedirectToAction(nameof(Index));
+
+        [HttpGet("detalle/{id:int}")]
+        public IActionResult Detalle(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var producto = _productoService.ObtenerPorId(id.Value);
+            if (producto == null) return NotFound();
+
+            ViewData["Title"] = "Detalle de Producto";
+            return View(producto);
+        }
+
+        [HttpGet("crear")]
+        public IActionResult Crear()
+        {
+            CargarCategorias();
+            ViewData["Title"] = "Nuevo Producto";
+            return View(new Producto());
+        }
+
+        [HttpPost("crear")]
+        [ValidateAntiForgeryToken]
+        public IActionResult Crear([Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")] Producto producto)
+        {
+            if (ModelState.IsValid)
+            {
+                _productoService.Crear(producto);
+                TempData["Exito"] = "Producto creado exitosamente.";
+                return RedirectToAction(nameof(Administrar));
+            }
+
+            CargarCategorias(producto.Categoria_Id);
+            ViewData["Title"] = "Nuevo Producto";
+            return View(producto);
+        }
+
+        [HttpGet("editar/{id:int}")]
+        public IActionResult Editar(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var producto = _productoService.ObtenerPorId(id.Value);
+            if (producto == null) return NotFound();
+
+            CargarCategorias(producto.Categoria_Id);
+            ViewData["Title"] = "Editar Producto";
+            return View(producto);
+        }
+
+        [HttpPost("editar/{id:int}")]
+        [ValidateAntiForgeryToken]
+        public IActionResult Editar(int id, [Bind("Producto_Id,Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")] Producto producto)
+        {
+            if (id != producto.Producto_Id) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _productoService.Actualizar(producto);
+                        TempData["Exito"] = "Producto actualizado exitosamente.";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_productoService.ExisteAsync(producto.Producto_Id))
+                        return NotFound();
+                    throw;
+                }
+
+                return RedirectToAction(nameof(Administrar));
+            }
+
+            CargarCategorias(producto.Categoria_Id);
+            ViewData["Title"] = "Editar Producto";
+            return View(producto);
+        }
+
+        [HttpGet("eliminar/{id:int}")]
+        public IActionResult Eliminar(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var producto = _productoService.ObtenerPorId(id.Value);
+            if (producto == null) return NotFound();
+
+            ViewData["Title"] = "Eliminar Producto";
+            return View(producto);
+        }
+
+        [HttpPost("eliminar/{id:int}")]
+        [ActionName("Eliminar")]
+        [ValidateAntiForgeryToken]
+        public IActionResult EliminarConfirmado(int id)
+        {
+            var producto = _productoService.ObtenerPorId(id);
+            if (producto == null) return NotFound();
+
+            // Eliminado lógico
+            producto.Estado = false;
+            _productoService.Actualizar(producto);
+
+            TempData["Exito"] = "Producto ocultado correctamente.";
+            return RedirectToAction(nameof(Administrar));
+        }
+
+        [HttpPost("agregaralcarrito")]
+        public IActionResult AgregarAlCarrito(int productoId, int cantidad = 1)
+        {
+            var producto = _productoService.ObtenerPorId(productoId);
+            if (producto == null || !producto.Estado)
+            {
+                return Json(new { exito = false, mensaje = "Producto no disponible." });
+            }
+
+            return Json(new
+            {
+                exito = true,
+                mensaje = $"{producto.Nombre} agregado al carrito.",
+                productoId,
+                nombre = producto.Nombre,
+                precio = producto.Precio,
+                imagen = producto.Imagen_URL,
+                cantidad
+            });
+        }
+
+        private void CargarCategorias(int? selectedId = null)
+        {
+            var categorias = _categoriaService
+                .ObtenerTodos()
+                .Where(c => c.Estado)
+                .OrderBy(c => c.Nombre)
+                .ToList();
+
+            ViewBag.Categorias = new SelectList(categorias, "Categoria_Id", "Nombre", selectedId);
+        }
+    }
+}
