@@ -11,7 +11,7 @@ using TDFSantaLucia.Data;
 namespace TDFSantaLucia.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260520052418_InitialCreate")]
+    [Migration("20260520054517_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
