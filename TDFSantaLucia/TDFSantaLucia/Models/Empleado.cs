@@ -19,6 +19,11 @@ namespace TDFSantaLucia.Models
 
         public bool Estado { get; set; }
 
+        public decimal? SalarioNeto { get; set; }
+
+        public decimal? SalarioBruto { get; set; }
+
+
         [ForeignKey(nameof(Usuario))]
         public string Usuario_ID { get; set; }
         public Usuario? Usuario { get; set; }

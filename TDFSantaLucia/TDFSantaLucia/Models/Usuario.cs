@@ -22,6 +22,10 @@ namespace TDFSantaLucia.Models
 
         public string? Telefono { get; set; }
 
+        public string? Cedula { get; set; }
+
+        public string? Correo { get; set; }
+
         [NotMapped]
         public string? RolNombre { get; set; }
 
