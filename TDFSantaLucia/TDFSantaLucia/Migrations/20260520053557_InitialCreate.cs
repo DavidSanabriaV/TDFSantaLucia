@@ -235,12 +235,6 @@ namespace TDFSantaLucia.Migrations
                 {
                     Cliente_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Cedula = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Telefono = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Direccion_Exacta = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Fecha_Nacimiento = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Puntos_Acumulados = table.Column<int>(type: "int", nullable: false),
                     Usuario_ID = table.Column<string>(type: "varchar(255)", nullable: false)

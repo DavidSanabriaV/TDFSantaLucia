@@ -1,0 +1,38 @@
+﻿@model List<TDFSantaLucia.Models.Empleado>
+
+<h2>Empleados</h2>
+<a asp-action="Crear" class="btn btn-success mb-3">Nuevo</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Cédula</th>
+            <th>Puesto</th>
+            <th>Teléfono</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Model)
+        {
+            <tr>
+                <td>@e.Usuario?.Nombre @e.Usuario?.Primer_Apellido</td>
+                <td>@e.Cedula</td>
+                <td>@e.Puesto</td>
+                <td>@e.Telefono</td>
+                <td>@e.Usuario?.RolNombre</td>
+                <td>@(e.Estado ? "Activo" : "Inactivo")</td>
+                <td>
+                    <a asp-action="Detalle" asp-route-id="@e.Empleado_Id" class="btn btn-primary btn-sm">Ver</a>
+                    <a asp-action="Editar" asp-route-id="@e.Empleado_Id" class="btn btn-warning btn-sm">Editar</a>
+                    <form asp-action="Eliminar" asp-route-id="@e.Empleado_Id" method="post" style="display:inline;">
+                        <button class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

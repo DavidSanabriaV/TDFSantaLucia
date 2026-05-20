@@ -1,0 +1,51 @@
+﻿@model TDFSantaLucia.Models.EmpleadoViewModel
+
+@{
+    ViewData["Title"] = "Detalle Empleado";
+}
+
+<div class="container mt-4">
+
+    <h2 class="mb-4">👤 Detalle del Empleado</h2>
+
+    <div class="card shadow-sm p-4" style="max-width: 700px;">
+
+        <h5 class="card-title">
+            @Model.Nombre
+            @Model.Primer_Apellido
+            @Model.Segundo_Apellido
+        </h5>
+        <hr />
+        <div class="row">
+
+            <div class="col-md-6">
+                <p><strong>Cédula:</strong>@Model.Cedula</p>
+                <p><strong>Correo:</strong>@Model.Email</p>
+                <p><strong>Teléfono:</strong> @Model.Telefono</p>
+                <p> <strong>Dirección:</strong>@Model.Direccion_Exacta</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Username:</strong>@Model.UserName</p>
+                <p><strong>Rol:</strong>@Model.rol</p>
+                <p><strong>Puesto:</strong>@Model.Puesto</p>
+                <p><strong>Salario Bruto:</strong> ₡ @Model.SalarioBruto?.ToString("0.##")</p>
+                <p><strong>Salario Neto:</strong>₡ @Model.SalarioNeto?.ToString("0.##")</p>
+                <p><strong>Estado:</strong>
+                    @if (Model.Estado)
+                    {
+                        <span class="badge bg-success"> Activo</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Inactivo</span>
+                    }
+                </p>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between mt-3">
+            <a asp-action="Index"class="btn btn-secondary">⬅ Volver</a>
+            <a asp-action="Editar"asp-route-id="@Model.Empleado_Id"class="btn btn-warning">✏️ Editar</a>
+        </div>
+    </div>
+</div>
+
