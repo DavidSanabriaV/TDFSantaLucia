@@ -64,9 +64,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Registrar Repositories
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped < IClienteRepository, ClienteRepository>();
 
 // Registrar Repositories
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
 // Add services to the container
 
 builder.Services.AddControllersWithViews();
