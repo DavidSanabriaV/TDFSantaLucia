@@ -379,6 +379,12 @@ namespace TDFSantaLucia.Migrations
                     b.Property<string>("Puesto")
                         .HasColumnType("longtext");
 
+                    b.Property<decimal?>("SalarioBruto")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<decimal?>("SalarioNeto")
+                        .HasColumnType("decimal(65,30)");
+
                     b.Property<string>("Telefono")
                         .HasColumnType("longtext");
 
@@ -696,8 +702,14 @@ namespace TDFSantaLucia.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("Cedula")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Correo")
                         .HasColumnType("longtext");
 
                     b.Property<string>("Direccion_Exacta")

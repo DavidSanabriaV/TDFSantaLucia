@@ -1,0 +1,58 @@
+﻿@model TDFSantaLucia.Models.Categoria
+@{
+    ViewData["Title"] = "Nueva Categoria";
+}
+
+<h2 class="mb-4">🗂️ Nueva Categoría</h2>
+
+@if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
+{
+    <div class="alert alert-danger">
+        <h6 class="fw-bold">Por favor corrija los siguientes errores:</h6>
+        <ul class="mb-0">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<div class="card border-0 shadow-sm" style="max-width: 600px;">
+    <div class="card-body p-4">
+        @using (Html.BeginForm("Crear", "Categoria", FormMethod.Post, new { @class = "row g-3" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="col-12">
+                @Html.LabelFor(m => m.Nombre, new { @class = "form-label fw-semibold" })
+                @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control", placeholder = "Ej: Medicamentos, Suplementos..." })
+                @Html.ValidationMessageFor(m => m.Nombre, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-12">
+                @Html.LabelFor(m => m.Descripcion, new { @class = "form-label fw-semibold" })
+                @Html.TextAreaFor(m => m.Descripcion, 3, 0, new { @class = "form-control", placeholder = "Descripción opcional de la categoria..." })
+                @Html.ValidationMessageFor(m => m.Descripcion, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-12">
+                <div class="form-check form-switch">
+                    @Html.CheckBoxFor(m => m.Estado, new { @class = "form-check-input", role = "switch" })
+                    @Html.LabelFor(m => m.Estado, "Categoría Activa", new { @class = "form-check-label" })
+                </div>
+            </div>
+
+            <div class="col-12 d-flex gap-2 mt-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+                @Html.ActionLink("Cancelar", "Index", "Categoria", null, new { @class = "btn btn-secondary" })
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

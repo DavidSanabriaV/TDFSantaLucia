@@ -1,0 +1,106 @@
+﻿@model TDFSantaLucia.Models.Categoria
+@{
+    ViewData["Title"] = "Detalle de Categoria";
+}
+
+<h2 class="mb-4">🗂️ Detalle de Categoría</h2>
+
+<div class="card border-0 shadow-sm" style="max-width: 800px;">
+    <div class="card-body p-4">
+
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h4 class="card-title mb-1">@Model.Nombre</h4>
+                <small class="text-muted">ID: @Model.Categoria_Id</small>
+            </div>
+            @if (Model.Estado)
+            {
+                <span class="badge bg-success fs-6">Activo</span>
+            }
+            else
+            {
+                <span class="badge bg-danger fs-6">Inactivo</span>
+            }
+        </div>
+
+        <hr />
+
+        <div class="mb-3">
+            <p class="text-muted small fw-semibold mb-1">DESCRIPCIÓN</p>
+            <p>@(Model.Descripcion ?? "Sin descripcion registrada.")</p>
+        </div>
+
+        <div class="mb-4">
+            <p class="text-muted small fw-semibold mb-1">TOTAL DE PRODUCTOS</p>
+            <span class="badge bg-secondary fs-6">@Model.Productos.Count producto(s)</span>
+        </div>
+
+        <hr />
+
+        <h5 class="mb-3">📦 Productos asociados</h5>
+
+        @if (Model.Productos.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Marca</th>
+                            <th class="text-end">Precio</th>
+                            <th class="text-center">Requiere receta</th>
+                            <th class="text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.Productos.OrderBy(p => p.Nombre))
+                        {
+                            <tr>
+                                <td class="fw-semibold">@p.Nombre</td>
+                                <td class="text-muted">@(p.Marca ?? "—")</td>
+                                <td class="text-end">₡@p.Precio.ToString("N2")</td>
+                                <td class="text-center">
+                                    @if (p.Receta)
+                                    {
+                                        <span class="badge bg-warning text-dark">Sí</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border">No</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (p.Estado)
+                                    {
+                                        <span class="badge bg-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactivo</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <i class="bi bi-inbox display-6 text-muted"></i>
+                <p class="text-muted mt-2">Esta categoría no tiene productos asociados.</p>
+            </div>
+        }
+
+        <div class="d-flex gap-2 mt-4">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <a asp-action="Editar" asp-route-id="@Model.Categoria_Id" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+        </div>
+
+    </div>
+</div>

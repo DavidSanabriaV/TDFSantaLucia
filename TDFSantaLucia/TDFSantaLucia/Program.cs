@@ -7,6 +7,8 @@ using TDFSantaLucia.Constants;
 using TDFSantaLucia.Data;
 
 using TDFSantaLucia.Models;
+using TDFSantaLucia.Repositories;
+using TDFSantaLucia.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +62,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 });
 
+// Registrar Repositories
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+
+// Registrar Repositories
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 // Add services to the container
 
 builder.Services.AddControllersWithViews();

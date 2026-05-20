@@ -1,0 +1,369 @@
+﻿@model List<TDFSantaLucia.Models.Categoria>
+@{
+    ViewData["Title"] = "Categorías";
+
+    var todasParaJs = Model.Select(c => new
+    {
+        categoria_Id = c.Categoria_Id,
+        nombre = c.Nombre,
+        descripcion = c.Descripcion ?? "",
+        estado = c.Estado,
+        totalProductos = c.Productos.Count
+    });
+}
+
+<h2 class="mb-4">🗂️ Gestión de Categorías</h2>
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        ✅ @TempData["Exito"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        ❌ @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold text-muted small">BUSCAR</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text"
+                           id="buscador"
+                           class="form-control border-start-0 ps-0"
+                           placeholder="Nombre o descripción..." />
+                    <button class="btn btn-outline-secondary"
+                            id="btnLimpiarTexto"
+                            type="button"
+                            style="display:none;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted small">ESTADO</label>
+                <select id="filtroEstado" class="form-select">
+                    <option value="">Todos los estados</option>
+                    <option value="true">✅ Activo</option>
+                    <option value="false">❌ Inactivo</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button id="btnLimpiarFiltros"
+                        class="btn btn-outline-secondary w-100"
+                        style="display:none;">
+                    <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+                </button>
+            </div>
+            <div class="col-md-2 text-end">
+                <a asp-action="Crear" class="btn btn-success w-100">
+                    ➕ Nueva categoría
+                </a>
+            </div>
+        </div>
+
+        <div id="filtrosActivos" class="mt-2 d-none">
+            <small class="text-muted me-2">Filtros activos:</small>
+            <span id="chipTexto" class="badge bg-primary me-1 d-none">
+                <span id="chipTextoLabel"></span>
+                <button type="button" class="btn-close btn-close-white btn-sm ms-1"
+                        id="btnRemoveTexto" style="font-size:0.6rem;"></button>
+            </span>
+            <span id="chipEstado" class="badge bg-info text-dark me-1 d-none">
+                <span id="chipEstadoLabel"></span>
+                <button type="button" class="btn-close btn-sm ms-1"
+                        id="btnRemoveEstado" style="font-size:0.6rem;"></button>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <small id="contadorResultados" class="text-muted"></small>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th class="text-center">Productos</th>
+                <th class="text-center">Estado</th>
+                <th class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaCategorias">
+            @{
+                int fila = 1;
+            }
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td class="text-muted small">@fila</td>
+                    <td class="fw-semibold">@c.Nombre</td>
+                    <td class="text-muted">@(c.Descripcion ?? "—")</td>
+                    <td class="text-center">
+                        <span class="badge bg-secondary">@c.Productos.Count</span>
+                    </td>
+                    <td class="text-center">
+                        @if (c.Estado)
+                        {
+                            <span class="badge bg-success">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactivo</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <a asp-action="Detalle" asp-route-id="@c.Categoria_Id"
+                               class="btn btn-info btn-sm text-white">
+                            <i class="bi bi-eye"></i> Ver
+                        </a>
+                        <a asp-action="Editar" asp-route-id="@c.Categoria_Id"
+                               class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil"></i> Editar
+                        </a>
+                        <a href="/categoria/eliminar/@c.Categoria_Id"
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirmarEliminar(event, '@c.Nombre', @c.Productos.Count, @c.Categoria_Id)">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </a>
+                    </td>
+                </tr>
+                fila++;
+            }
+        </tbody>
+    </table>
+</div>
+
+<div id="estadoVacio" class="text-center py-5 d-none">
+    <i class="bi bi-inbox display-4 text-muted"></i>
+    <p class="text-muted mt-2">No se encontraron categorías con los filtros aplicados.</p>
+    <button class="btn btn-outline-secondary btn-sm" id="btnLimpiarDesdeVacio">
+        Limpiar filtros
+    </button>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        const todasLasCategorias = @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(todasParaJs)
+            );
+
+        const $buscador          = $('#buscador');
+        const $filtroEstado      = $('#filtroEstado');
+        const $tabla             = $('#tablaCategorias');
+        const $estadoVacio       = $('#estadoVacio');
+        const $contador          = $('#contadorResultados');
+        const $btnLimpiarTexto   = $('#btnLimpiarTexto');
+        const $btnLimpiarFiltros = $('#btnLimpiarFiltros');
+        const $filtrosActivos    = $('#filtrosActivos');
+        const $chipTexto         = $('#chipTexto');
+        const $chipEstado        = $('#chipEstado');
+
+        function filtrar() {
+            const texto  = $buscador.val().trim().toLowerCase();
+            const estado = $filtroEstado.val();
+            const hayFiltros = texto !== '' || estado !== '';
+
+            actualizarChips(texto, estado);
+            $btnLimpiarFiltros.toggle(hayFiltros);
+            $btnLimpiarTexto.toggle(texto !== '');
+
+            if (!hayFiltros) {
+                restaurarVista();
+                return;
+            }
+
+            const resultado = todasLasCategorias.filter(function (c) {
+                const coincideTexto = texto === '' ||
+                    c.nombre.toLowerCase().includes(texto) ||
+                    c.descripcion.toLowerCase().includes(texto);
+
+                const coincideEstado = estado === '' ||
+                    c.estado.toString() === estado;
+
+                return coincideTexto && coincideEstado;
+            });
+
+            renderTabla(resultado, texto);
+        }
+
+        function renderTabla(categorias, texto) {
+            if (categorias.length === 0) {
+                $tabla.html('');
+                $estadoVacio.removeClass('d-none');
+                $contador.text('');
+                return;
+            }
+
+            $estadoVacio.addClass('d-none');
+            $contador.html(
+                `<span class="fw-semibold">${categorias.length}</span> resultado${categorias.length !== 1 ? 's' : ''} encontrado${categorias.length !== 1 ? 's' : ''}`
+            );
+
+            let filas = '';
+            categorias.forEach(function (c, index) {
+                const estadoBadge = c.estado
+                    ? `<span class="badge bg-success">Activo</span>`
+                    : `<span class="badge bg-danger">Inactivo</span>`;
+
+                const nombreResaltado = resaltar(c.nombre, texto);
+                const descResaltada   = resaltar(c.descripcion || '—', texto);
+
+                filas += `
+                    <tr>
+                        <td class="text-muted small">${index + 1}</td>
+                        <td class="fw-semibold">${nombreResaltado}</td>
+                        <td class="text-muted">${descResaltada}</td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">${c.totalProductos}</span>
+                        </td>
+                        <td class="text-center">${estadoBadge}</td>
+                        <td class="text-center">
+                            <a href="/categoria/detalle/${c.categoria_Id}"
+                               class="btn btn-info btn-sm text-white">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a href="/categoria/editar/${c.categoria_Id}"
+                               class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a href="/categoria/eliminar/${c.categoria_Id}"
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirmarEliminar(event, '${escapeJs(c.nombre)}', ${c.totalProductos}, ${c.categoria_Id})">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </a>
+                        </td>
+                    </tr>`;
+            });
+
+            $tabla.html(filas);
+        }
+
+        function restaurarVista() {
+            $estadoVacio.addClass('d-none');
+            $filtrosActivos.addClass('d-none');
+            $btnLimpiarFiltros.hide();
+            $btnLimpiarTexto.hide();
+            $contador.text('');
+            renderTabla(todasLasCategorias, '');
+        }
+
+        function resaltar(valor, busqueda) {
+            if (!busqueda) return escapeHtml(valor);
+            const escaped = busqueda.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return escapeHtml(valor).replace(
+                new RegExp(`(${escaped})`, 'gi'),
+                '<mark class="px-0 bg-warning rounded-1">$1</mark>'
+            );
+        }
+
+        function escapeHtml(str) {
+            return (str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Escapar para usar dentro de atributos onclick en JS
+        function escapeJs(str) {
+            return (str ?? '')
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'");
+        }
+
+        function actualizarChips(texto, estado) {
+            const hayTexto  = texto !== '';
+            const hayEstado = estado !== '';
+
+            $filtrosActivos.toggleClass('d-none', !hayTexto && !hayEstado);
+
+            if (hayTexto) {
+                $('#chipTextoLabel').text(`"${texto}"`);
+                $chipTexto.removeClass('d-none');
+            } else {
+                $chipTexto.addClass('d-none');
+            }
+
+            if (hayEstado) {
+                $('#chipEstadoLabel').text(estado === 'true' ? 'Activo' : 'Inactivo');
+                $chipEstado.removeClass('d-none');
+            } else {
+                $chipEstado.addClass('d-none');
+            }
+        }
+
+        function confirmarEliminar(e, nombre, totalProductos, id) {
+            e.preventDefault();
+
+            if (totalProductos > 0) {
+                alert(`⚠️ No se puede eliminar "${nombre}" porque tiene ${totalProductos} producto(s) asociado(s).`);
+                return false;
+            }
+
+            if (!confirm(`¿Está seguro de eliminar la categoría "${nombre}"?`))
+                return false;
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/categoria/eliminar/${id}`;
+
+            const inputToken = document.createElement('input');
+            inputToken.type  = 'hidden';
+            inputToken.name  = '__RequestVerificationToken';
+            inputToken.value = token;
+
+            form.appendChild(inputToken);
+            document.body.appendChild(form);
+            form.submit();
+
+            return false;
+        }
+
+        $buscador.on('input', filtrar);
+        $filtroEstado.on('change', filtrar);
+
+        $btnLimpiarTexto.on('click', function () {
+            $buscador.val('').trigger('input').focus();
+        });
+
+        $btnLimpiarFiltros.on('click', function () {
+            $buscador.val('');
+            $filtroEstado.val('');
+            restaurarVista();
+        });
+
+        $('#btnLimpiarDesdeVacio').on('click', function () {
+            $buscador.val('');
+            $filtroEstado.val('');
+            restaurarVista();
+        });
+
+        $('#btnRemoveTexto').on('click', function () {
+            $buscador.val('').trigger('input');
+        });
+
+        $('#btnRemoveEstado').on('click', function () {
+            $filtroEstado.val('').trigger('change');
+        });
+    </script>
+}
