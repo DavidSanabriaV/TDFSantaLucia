@@ -21,7 +21,7 @@ namespace TDFSantaLucia.Models
         public Cliente? Cliente { get; set; }
 
         [ForeignKey(nameof(Empleado))]
-        public int Empleado_Id { get; set; }
+        public int? Empleado_Id { get; set; }
         public Empleado? Empleado { get; set; }
     }
 }

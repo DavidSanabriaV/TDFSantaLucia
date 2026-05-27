@@ -1,0 +1,102 @@
+﻿@model TDFSantaLucia.Models.CitaViewModel
+
+@{
+    ViewData["Title"] = "Revisar Cita";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">🔍 Revisar Cita</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <!-- Datos de la cita -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h5>📋 Datos del Cliente</h5>
+        <hr />
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Servicio:</strong> @Model.Servicio</p>
+                <p><strong>Fecha:</strong> @Model.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+                <p><strong>Observaciones:</strong> @Model.Observaciones</p>
+            </div>
+            <div class="col-md-6">
+                <p>
+                    <strong>Estado actual:</strong>
+                    @if (Model.Estado == "Aceptada")
+                    {
+                        <span class="badge bg-success fs-6">✔ Aceptada</span>
+                    }
+                    else if (Model.Estado == "Cancelada")
+                    {
+                        <span class="badge bg-danger fs-6">✖ Cancelada</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark fs-6">⏳ En Proceso</span>
+                    }
+                </p>
+                @if (Model.Empleado_Id.HasValue)
+                {
+                    <p><strong>Empleado asignado:</strong> @Model.NombreEmpleado</p>
+                }
+                else
+                {
+                    <p class="text-muted">Sin empleado asignado aún.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Asignar Empleado -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h5>👤 Asignar Empleado</h5>
+        <form asp-action="Asignar" asp-route-id="@Model.Cita_Id" method="post" class="row g-3 mt-1">
+            <div class="col-md-8">
+                <select name="empleadoId" class="form-select">
+                    <option value="">Seleccione un empleado</option>
+                    @foreach (var emp in Model.Empleados)
+                    {
+                        @if (Model.Empleado_Id == emp.Empleado_Id)
+                        {
+                            <option value="@emp.Empleado_Id" selected>
+                                @emp.Usuario?.Nombre @emp.Usuario?.Primer_Apellido
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@emp.Empleado_Id">
+                                @emp.Usuario?.Nombre @emp.Usuario?.Primer_Apellido
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Asignar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Cambiar Estado -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h5>🔄 Cambiar Estado</h5>
+        <div class="d-flex gap-3 mt-2">
+            <form asp-action="CambiarEstado" asp-route-id="@Model.Cita_Id" method="post">
+                <input type="hidden" name="estado" value="Aceptada" />
+                <button type="submit" class="btn btn-success">✔ Aceptar Cita</button>
+            </form>
+            <form asp-action="CambiarEstado" asp-route-id="@Model.Cita_Id" method="post">
+                <input type="hidden" name="estado" value="Cancelada" />
+                <button type="submit" class="btn btn-danger"
+                        onclick="return confirm('¿Seguro que desea cancelar esta cita?')">
+                    ✖ Cancelar Cita
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <a asp-action="Index" class="btn btn-secondary">⬅ Volver</a>
+</div>

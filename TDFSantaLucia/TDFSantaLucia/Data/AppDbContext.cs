@@ -75,11 +75,12 @@ namespace TDFSantaLucia.Data
                 .HasForeignKey(c => c.Cliente_Id)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Cita -> Empleado
+            // Cita -> Empleado (opcional)
             modelBuilder.Entity<Cita>()
                 .HasOne(c => c.Empleado)
                 .WithMany(e => e.Citas)
                 .HasForeignKey(c => c.Empleado_Id)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Expediente -> Cliente

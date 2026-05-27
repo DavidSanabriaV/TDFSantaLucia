@@ -1,0 +1,55 @@
+﻿@model TDFSantaLucia.Models.Cita
+
+@{
+    ViewData["Title"] = "Detalle Cita";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">📋 Detalle de Cita</h2>
+
+    <div class="card shadow-sm p-4" style="max-width: 700px;">
+        <h5 class="card-title">@Model.Servicio</h5>
+        <hr />
+
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Cliente:</strong> @Model.Cliente?.Usuario?.Nombre @Model.Cliente?.Usuario?.Primer_Apellido</p>
+                <p><strong>Fecha:</strong> @Model.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+                <p><strong>Observaciones:</strong> @Model.Observaciones</p>
+            </div>
+            <div class="col-md-6">
+                <p>
+                    <strong>Estado:</strong>
+                    @if (Model.Estado == "Aceptada")
+                    {
+                        <span class="badge bg-success">✔ Aceptada</span>
+                    }
+                    else if (Model.Estado == "Cancelada")
+                    {
+                        <span class="badge bg-danger">✖ Cancelada</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">⏳ En Proceso</span>
+                    }
+                </p>
+                <p>
+                    <strong>Empleado:</strong>
+                    @if (Model.Empleado != null)
+                    {
+                        @($"{Model.Empleado.Usuario?.Nombre} {Model.Empleado.Usuario?.Primer_Apellido}")
+                    }
+                    else
+                    {
+                        <span class="text-muted">Sin asignar</span>
+                    }
+                </p>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <a asp-action="Index" class="btn btn-secondary">⬅ Volver</a>
+            <a asp-action="Revisar" asp-route-id="@Model.Cita_Id" class="btn btn-warning">🔍 Revisar</a>
+        </div>
+    </div>
+</div>

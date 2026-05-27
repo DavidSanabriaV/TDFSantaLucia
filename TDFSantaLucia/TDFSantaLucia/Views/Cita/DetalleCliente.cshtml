@@ -1,0 +1,44 @@
+﻿@model TDFSantaLucia.Models.Cita
+
+@{
+    ViewData["Title"] = "Detalle de Cita";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">📋 Detalle de Cita</h2>
+
+    <div class="card shadow-sm p-4" style="max-width: 600px;">
+        <h5 class="card-title">@Model.Servicio</h5>
+        <hr />
+
+        <p><strong>Fecha:</strong> @Model.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Observaciones:</strong> @Model.Observaciones</p>
+        <p>
+            <strong>Estado:</strong>
+            @if (Model.Estado == "Aceptada")
+            {
+                <span class="badge bg-success fs-6">✔ Aceptada</span>
+            }
+            else if (Model.Estado == "Cancelada")
+            {
+                <span class="badge bg-danger fs-6">✖ Cancelada</span>
+            }
+            else
+            {
+                <span class="badge bg-warning text-dark fs-6">⏳ En Proceso</span>
+            }
+        </p>
+
+        @if (Model.Empleado != null)
+        {
+            <p><strong>Empleado asignado:</strong> @Model.Empleado.Usuario?.Nombre @Model.Empleado.Usuario?.Primer_Apellido</p>
+        }
+        else
+        {
+            <p class="text-muted">Aún no se ha asignado un empleado.</p>
+        }
+
+        <a asp-action="MisCitas" asp-route-clienteId="@Model.Cliente_Id"
+           class="btn btn-secondary mt-3">⬅ Volver</a>
+    </div>
+</div>

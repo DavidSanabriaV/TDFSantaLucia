@@ -1,0 +1,61 @@
+﻿@model List<TDFSantaLucia.Models.Cita>
+
+@{
+    ViewData["Title"] = "Mis Citas";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📋 Mis Citas</h2>
+        <a asp-action="Agendar" class="btn btn-success">➕ Nueva Cita</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No tienes citas agendadas.</div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var cita in Model)
+            {
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@cita.Servicio</h5>
+                            <p><strong>Fecha:</strong> @cita.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p><strong>Observaciones:</strong> @cita.Observaciones</p>
+                            <p>
+                                <strong>Estado:</strong>
+                                @if (cita.Estado == "Aceptada")
+                                {
+                                    <span class="badge bg-success fs-6">✔ Aceptada</span>
+                                }
+                                else if (cita.Estado == "Cancelada")
+                                {
+                                    <span class="badge bg-danger fs-6">✖ Cancelada</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark fs-6">⏳ En Proceso</span>
+                                }
+                            </p>
+
+                            @if (cita.Empleado != null)
+                            {
+                                <p><strong>Empleado:</strong> @cita.Empleado.Usuario?.Nombre @cita.Empleado.Usuario?.Primer_Apellido</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted">Aún no se ha asignado un empleado.</p>
+                            }
+
+                            <a asp-action="DetalleCliente" asp-route-id="@cita.Cita_Id"
+                               class="btn btn-primary btn-sm">Ver Detalle</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

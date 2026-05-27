@@ -25,8 +25,53 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Empleado" asp-action="Index">Empleados</a>
+
+                        <!-- Empleados -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                Empleados
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Empleado" asp-action="Index">Listado</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Empleado" asp-action="Crear">Nuevo Empleado</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Clientes -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                Clientes
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Cliente" asp-action="Index">Listado</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Cliente" asp-action="Crear">Nuevo Cliente</a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Citas -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                Citas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Cita" asp-action="Index">Gestión de Citas</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Cita" asp-action="Agendar">Agendar Cita</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Cita" asp-action="MisCitas" asp-route-clienteId="1">Mis Citas</a>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
                 </div>
