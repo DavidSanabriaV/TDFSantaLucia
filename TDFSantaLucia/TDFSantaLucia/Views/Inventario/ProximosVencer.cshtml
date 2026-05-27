@@ -1,0 +1,83 @@
+﻿@model List<TDFSantaLucia.Models.Inventario>
+@{
+    ViewData["Title"] = "Próximos a Vencer";
+    int diasAlerta = ViewBag.DiasAlerta;
+}
+
+<h2 class="mb-4">🗓️ Lotes Próximos a Vencer</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        No hay lotes próximos a vencer en los próximos @diasAlerta días.
+    </div>
+}
+else
+{
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-calendar-x-fill fs-5"></i>
+        <strong>@Model.Count lote(s)</strong> vencen en los próximos @diasAlerta días.
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Producto</th>
+                    <th>Lote</th>
+                    <th class="text-center">Disponible</th>
+                    <th class="text-center">F. Vencimiento</th>
+                    <th class="text-center">Días restantes</th>
+                    <th>Proveedor</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var i in Model)
+                {
+                    var dias = (i.Fecha_Vencimiento - DateTime.Today).Days;
+                    <tr>
+                        <td class="fw-semibold">@i.Producto?.Nombre</td>
+                        <td><span class="badge bg-secondary">@(i.Numero_Lote ?? "—")</span></td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@i.Cantidad_Disponible</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-danger">@i.Fecha_Vencimiento.ToString("dd/MM/yyyy")</span>
+                        </td>
+                        <td class="text-center">
+                            @if (dias <= 7)
+                            {
+                                <span class="badge bg-danger">@dias día(s)</span>
+                            }
+                            else if (dias <= 15)
+                            {
+                                <span class="badge bg-warning text-dark">@dias días</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info text-dark">@dias días</span>
+                            }
+                        </td>
+                        <td class="text-muted">@(i.Proveedor ?? "—")</td>
+                        <td class="text-center">
+                            <a asp-action="Detalle" asp-route-id="@i.Inventario_Id"
+                                   class="btn btn-info btn-sm text-white">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a asp-action="Editar" asp-route-id="@i.Inventario_Id"
+                                   class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<a asp-action="Index" class="btn btn-secondary mt-2">
+    <i class="bi bi-arrow-left"></i> Volver al inventario
+</a>
