@@ -1,0 +1,66 @@
+﻿@model List<TDFSantaLucia.Models.Inventario>
+@{
+    ViewData["Title"] = "Stock Bajo";
+}
+
+<h2 class="mb-4">⚠️ Lotes con Stock Bajo</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success d-flex align-items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        Todos los lotes tienen stock suficiente.
+    </div>
+}
+else
+{
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <strong>@Model.Count lote(s)</strong> con cantidad disponible por debajo del mínimo establecido.
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Producto</th>
+                    <th>Lote</th>
+                    <th class="text-center">Disponible</th>
+                    <th class="text-center">Mínimo</th>
+                    <th>Proveedor</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var i in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@i.Producto?.Nombre</td>
+                        <td><span class="badge bg-secondary">@(i.Numero_Lote ?? "—")</span></td>
+                        <td class="text-center">
+                            <span class="badge bg-danger">@i.Cantidad_Disponible</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@i.Cantidad_Minima</span>
+                        </td>
+                        <td class="text-muted">@(i.Proveedor ?? "—")</td>
+                        <td class="text-center">
+                            <a asp-action="Detalle" asp-route-id="@i.Inventario_Id"
+                                   class="btn btn-info btn-sm text-white">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a asp-action="Editar" asp-route-id="@i.Inventario_Id"
+                                   class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<a asp-action="Index" class="btn btn-secondary mt-2">
+    <i class="bi bi-arrow-left"></i> Volver al inventario
+</a>

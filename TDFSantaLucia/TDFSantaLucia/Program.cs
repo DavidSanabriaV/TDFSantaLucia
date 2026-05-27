@@ -66,11 +66,20 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
+builder.Services.AddScoped<IExpedienteRepository, ExpedienteRepository>();
 
-// Registrar Repositories
+
+// Registrar Services
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
+builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
+builder.Services.AddScoped<IInventarioService, InventarioService>();
+builder.Services.AddScoped<IExpedienteService, ExpedienteService>();
+
+
 // Add services to the container
 
 builder.Services.AddControllersWithViews();
@@ -141,15 +150,15 @@ using (var scope = app.Services.CreateScope())
 
 }
 
-if (!app.Environment.IsDevelopment())
-
+if (app.Environment.IsDevelopment())
 {
-
-    app.UseExceptionHandler("/Home/Error");
-
+    app.UseDeveloperExceptionPage();
 }
-
-app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
+else
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
+}
 
 app.UseStaticFiles();
 

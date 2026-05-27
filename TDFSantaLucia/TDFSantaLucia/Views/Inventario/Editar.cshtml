@@ -1,0 +1,92 @@
+﻿@model TDFSantaLucia.Models.Inventario
+@{
+    ViewData["Title"] = "Editar Lote";
+}
+
+<h2 class="mb-4">✏️ Editar Lote de Inventario</h2>
+
+@if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
+{
+    <div class="alert alert-danger">
+        <h6 class="fw-bold">Por favor corrija los siguientes errores:</h6>
+        <ul class="mb-0">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<div class="card border-0 shadow-sm" style="max-width: 750px;">
+    <div class="card-body p-4">
+        @using (Html.BeginForm("Editar", "Inventario", new { id = Model.Inventario_Id }, FormMethod.Post, null, new { @class = "row g-3" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Inventario_Id)
+
+            <div class="col-md-12">
+                <label class="form-label fw-semibold">Producto</label>
+                @Html.DropDownList("Producto_Id",
+                    (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Productos,
+                    "-- Seleccione un producto --",
+                    new { @class = "form-select" })
+                @Html.ValidationMessageFor(m => m.Producto_Id, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-md-6">
+                @Html.LabelFor(m => m.Numero_Lote, "Número de Lote", new { @class = "form-label fw-semibold" })
+                @Html.TextBoxFor(m => m.Numero_Lote, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Numero_Lote, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-md-6">
+                @Html.LabelFor(m => m.Proveedor, new { @class = "form-label fw-semibold" })
+                @Html.TextBoxFor(m => m.Proveedor, new { @class = "form-control" })
+                @Html.ValidationMessageFor(m => m.Proveedor, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-md-6">
+                @Html.LabelFor(m => m.Cantidad_Disponible, "Cantidad Disponible", new { @class = "form-label fw-semibold" })
+                @Html.TextBoxFor(m => m.Cantidad_Disponible, new { @class = "form-control", type = "number", min = "0" })
+                @Html.ValidationMessageFor(m => m.Cantidad_Disponible, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-md-6">
+                @Html.LabelFor(m => m.Cantidad_Minima, "Cantidad Mínima (alerta stock)", new { @class = "form-label fw-semibold" })
+                @Html.TextBoxFor(m => m.Cantidad_Minima, new { @class = "form-control", type = "number", min = "0" })
+                @Html.ValidationMessageFor(m => m.Cantidad_Minima, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-md-6">
+                @Html.LabelFor(m => m.Fecha_Ingreso, "Fecha de Ingreso", new { @class = "form-label fw-semibold" })
+                @Html.TextBoxFor(m => m.Fecha_Ingreso, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                @Html.ValidationMessageFor(m => m.Fecha_Ingreso, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-md-6">
+                @Html.LabelFor(m => m.Fecha_Vencimiento, "Fecha de Vencimiento", new { @class = "form-label fw-semibold" })
+                @Html.TextBoxFor(m => m.Fecha_Vencimiento, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                @Html.ValidationMessageFor(m => m.Fecha_Vencimiento, "", new { @class = "text-danger small" })
+            </div>
+
+            <div class="col-12">
+                <div class="form-check form-switch">
+                    @Html.CheckBoxFor(m => m.Estado, new { @class = "form-check-input", role = "switch" })
+                    @Html.LabelFor(m => m.Estado, "Lote Activo", new { @class = "form-check-label" })
+                </div>
+            </div>
+
+            <div class="col-12 d-flex gap-2 mt-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Guardar cambios
+                </button>
+                @Html.ActionLink("Cancelar", "Index", "Inventario", null, new { @class = "btn btn-secondary" })
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

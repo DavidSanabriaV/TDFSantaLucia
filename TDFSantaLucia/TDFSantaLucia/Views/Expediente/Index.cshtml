@@ -1,0 +1,261 @@
+﻿@model List<TDFSantaLucia.Models.Expediente>
+@{
+    ViewData["Title"] = "Expedientes";
+
+    var clientesAgrupados = Model
+        .GroupBy(e => e.Cliente_Id)
+        .Select(g => new
+        {
+            ClienteId = g.Key,
+            ClienteNombre = g.First().Cliente?.Usuario != null
+                ? $"{g.First().Cliente.Usuario.Nombre} {g.First().Cliente.Usuario.Primer_Apellido} {g.First().Cliente.Usuario.Segundo_Apellido}"
+                : "—",
+            Expedientes = g.OrderByDescending(e => e.Fecha_Creacion).ToList()
+        })
+        .OrderBy(g => g.ClienteNombre)
+        .ToList();
+}
+
+<h2 class="mb-4">📋 Gestión de Expedientes</h2>
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        ✅ @TempData["Exito"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        ❌ @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-7">
+                <label class="form-label fw-semibold text-muted small">BUSCAR CLIENTE</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text"
+                           id="buscador"
+                           class="form-control border-start-0 ps-0"
+                           placeholder="Nombre del cliente..." />
+                    <button class="btn btn-outline-secondary" id="btnLimpiarTexto" type="button" style="display:none;">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button id="btnExpandirTodo" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrows-expand"></i> Expandir todo
+                </button>
+            </div>
+            <div class="col-md-2 text-end">
+                <a asp-action="Crear" class="btn btn-success w-100">
+                    ➕ Nuevo expediente
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-2">
+    <small id="contadorResultados" class="text-muted"></small>
+</div>
+
+<div id="listaClientes" class="accordion" id="accordionExpedientes">
+    @foreach (var grupo in clientesAgrupados)
+    {
+        var collapseId = $"collapse_{grupo.ClienteId}";
+        var headingId = $"heading_{grupo.ClienteId}";
+
+        <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden cliente-grupo"
+             data-cliente="@grupo.ClienteNombre.ToLower()">
+
+            <h2 class="accordion-header" id="@headingId">
+                <button class="accordion-button collapsed fw-semibold"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#@collapseId"
+                        aria-expanded="false"
+                        aria-controls="@collapseId">
+                    <div class="d-flex align-items-center gap-3 w-100 me-3">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold"
+                             style="width:38px; height:38px; font-size:14px; flex-shrink:0;">
+                            @(grupo.ClienteNombre != "—" ? grupo.ClienteNombre[0].ToString().ToUpper() : "?")
+                        </div>
+                        <div>
+                            <span>@grupo.ClienteNombre</span>
+                            <span class="badge bg-primary ms-2">
+                                @grupo.Expedientes.Count expediente@(grupo.Expedientes.Count != 1 ? "s" : "")
+                            </span>
+                        </div>
+                    </div>
+                </button>
+            </h2>
+
+            <div id="@collapseId"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="@headingId">
+                <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Empleado responsable</th>
+                                    <th>Descripción</th>
+                                    <th class="text-center">Recetas</th>
+                                    <th class="text-center">Fecha creación</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int fila = 1;
+                                }
+                                @foreach (var e in grupo.Expedientes)
+                                {
+                                    <tr>
+                                        <td class="text-muted small ps-3">@fila</td>
+                                        <td>
+                                            @(e.Empleado?.Usuario != null
+                                                ? $"{e.Empleado.Usuario.Nombre} {e.Empleado.Usuario.Primer_Apellido}"
+                                                : "—")
+                                        </td>
+                                        <td class="text-muted">@(e.Descripcion ?? "—")</td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">@e.RecetasMedicas.Count</span>
+                                        </td>
+                                        <td class="text-center small">
+                                            @e.Fecha_Creacion.ToString("dd/MM/yyyy")
+                                        </td>
+                                        <td class="text-center">
+                                            <a asp-action="Detalle" asp-route-id="@e.Expediente_Id"
+                                                   class="btn btn-info btn-sm text-white">
+                                                <i class="bi bi-eye"></i> Ver
+                                            </a>
+                                            <a asp-action="Editar" asp-route-id="@e.Expediente_Id"
+                                                   class="btn btn-warning btn-sm">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </a>
+                                            <a href="/expediente/eliminar/@e.Expediente_Id"
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirmarEliminar(event, '@(e.Cliente?.Usuario?.Nombre ?? "—")', @e.RecetasMedicas.Count, @e.Expediente_Id)">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    fila++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    }
+</div>
+
+<div id="estadoVacio" class="text-center py-5 d-none">
+    <i class="bi bi-inbox display-4 text-muted"></i>
+    <p class="text-muted mt-2">No se encontraron clientes con los filtros aplicados.</p>
+    <button class="btn btn-outline-secondary btn-sm" id="btnLimpiarDesdeVacio">
+        Limpiar búsqueda
+    </button>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        const grupos         = document.querySelectorAll('.cliente-grupo');
+        const buscador       = document.getElementById('buscador');
+        const btnLimpiar     = document.getElementById('btnLimpiarTexto');
+        const btnExpandir    = document.getElementById('btnExpandirTodo');
+        const estadoVacio    = document.getElementById('estadoVacio');
+        const contador       = document.getElementById('contadorResultados');
+        let   expandidoTodo  = false;
+
+        buscador.addEventListener('input', function () {
+            const texto = this.value.trim().toLowerCase();
+            btnLimpiar.style.display = texto ? 'block' : 'none';
+
+            let visibles = 0;
+            grupos.forEach(function (g) {
+                const coincide = g.dataset.cliente.includes(texto);
+                g.classList.toggle('d-none', !coincide);
+                if (coincide) visibles++;
+
+                if (coincide && texto) {
+                    const collapse = g.querySelector('.accordion-collapse');
+                    new bootstrap.Collapse(collapse, { show: true });
+                }
+            });
+
+            estadoVacio.classList.toggle('d-none', visibles > 0);
+            contador.innerHTML = texto
+                ? `<span class="fw-semibold">${visibles}</span> cliente${visibles !== 1 ? 's' : ''} encontrado${visibles !== 1 ? 's' : ''}`
+                : '';
+        });
+
+        btnLimpiar.addEventListener('click', function () {
+            buscador.value = '';
+            buscador.dispatchEvent(new Event('input'));
+            buscador.focus();
+        });
+
+        document.getElementById('btnLimpiarDesdeVacio').addEventListener('click', function () {
+            buscador.value = '';
+            buscador.dispatchEvent(new Event('input'));
+        });
+
+        btnExpandir.addEventListener('click', function () {
+            expandidoTodo = !expandidoTodo;
+            grupos.forEach(function (g) {
+                const collapse = g.querySelector('.accordion-collapse');
+                new bootstrap.Collapse(collapse, { toggle: false });
+                expandidoTodo
+                    ? collapse.classList.add('show')
+                    : collapse.classList.remove('show');
+            });
+            this.innerHTML = expandidoTodo
+                ? '<i class="bi bi-arrows-collapse"></i> Contraer todo'
+                : '<i class="bi bi-arrows-expand"></i> Expandir todo';
+        });
+
+        function confirmarEliminar(e, nombreCliente, totalRecetas, id) {
+            e.preventDefault();
+
+            if (totalRecetas > 0) {
+                alert(`⚠️ No se puede eliminar el expediente de "${nombreCliente}" porque tiene ${totalRecetas} receta(s) médica(s) asociada(s).`);
+                return false;
+            }
+
+            if (!confirm(`¿Está seguro de eliminar este expediente de "${nombreCliente}"?`))
+                return false;
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const form  = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/expediente/eliminar/${id}`;
+
+            const inputToken   = document.createElement('input');
+            inputToken.type    = 'hidden';
+            inputToken.name    = '__RequestVerificationToken';
+            inputToken.value   = token;
+
+            form.appendChild(inputToken);
+            document.body.appendChild(form);
+            form.submit();
+            return false;
+        }
+    </script>
+}
