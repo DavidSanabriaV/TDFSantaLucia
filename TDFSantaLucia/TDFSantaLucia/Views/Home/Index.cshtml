@@ -2,33 +2,97 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-
-    <div class="d-flex justify-content-center gap-4">
-        <a asp-controller="Cliente"
-           asp-action="Index"
-           class="btn btn-primary btn-lg">Clientes</a>
-    </div>
-    <div class="d-flex justify-content-center gap-4">
-        <a asp-controller="Categoria"
-           asp-action="Index"
-           class="btn btn-primary btn-lg">Categorias</a>
-    </div>
-    <div class="d-flex justify-content-center gap-4">
-        <a asp-controller="Inventario"
-           asp-action="Index"
-           class="btn btn-primary btn-lg">Inventario</a>
-    </div>
-    <div class="d-flex justify-content-center gap-4">
-        <a asp-controller="Producto"
-           asp-action="Index"
-           class="btn btn-primary btn-lg">Productos</a>
-    </div>
-    <div class="d-flex justify-content-center gap-4">
-        <a asp-controller="Expediente"
-           asp-action="Index"
-           class="btn btn-primary btn-lg">Expedientes</a>
+<div style="position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; width:100vw;">
+    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="~/images/fotoLO.png" class="d-block w-100" alt="Imagen 1">
+            </div>
+            <div class="carousel-item">
+                <img src="~/images/fotoL4.png" class="d-block w-100" alt="Imagen 2">
+            </div>
+            <div class="carousel-item">
+                <img src="~/images/fotoL2.png" class="d-block w-100" alt="Imagen 3">
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
 </div>
+
+<div id="photo-container" class="photo-container">
+    <div class="photo-grid">
+        <a href="#" class="photo-card" style="background-color:#CFE8B7;">
+            <div class="card-content">
+                <p><span class="title">NovaGexiPlus</span></p>
+            </div>
+            <img src="~/images/foto1.jpg" alt="Logo">
+        </a>
+        <a href="#" class="photo-card" style="background-color:#B8892D;">
+            <div class="card-content">
+                <p style="color:white;"><span class="title">Mencetamol</span></p>
+            </div>
+            <img src="~/images/foto2.jpg" alt="Imagen 2">
+        </a>
+        <a href="#" class="photo-card" style="background-color:#5A0B8F;">
+            <div class="card-content">
+                <p style="color:white;"><span class="title">Nervotiamin</span></p>
+            </div>
+            <img src="~/images/foto3.jpg" alt="Imagen 3">
+        </a>
+    </div>
+</div>
+
+@{
+    var productos = ViewBag.Productos as List<TDFSantaLucia.Models.Producto>
+                   ?? new List<TDFSantaLucia.Models.Producto>();
+}
+
+
+<div style="position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; width:100vw;" class="bg-light py-2">
+    <div id="carouselProductos" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+
+            @for (int i = 0; i < productos.Count; i += 3)
+            {
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <div class="d-flex justify-content-center gap-3 px-5">
+
+                        @for (int j = i; j < productos.Count && j < i + 3; j++)
+                        {
+                            var p = productos[j];
+                            <a href="/producto/detalle/@p.Producto_Id" class="producto-card">
+                                <img src="@(string.IsNullOrWhiteSpace(p.Imagen_URL) ? Url.Content("~/img/producto-default.png") : p.Imagen_URL)"
+                                     class="producto-img" alt="@p.Nombre">
+                                <p class="producto-nombre">@p.Nombre</p>
+                                <p class="producto-precio">₡@p.Precio.ToString("N2")</p>
+                            </a>
+                        }
+
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselProductos" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bg-dark rounded-circle p-2"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselProductos" data-bs-slide="next">
+            <span class="carousel-control-next-icon bg-dark rounded-circle p-2"></span>
+        </button>
+    </div>
+</div>
+
+
