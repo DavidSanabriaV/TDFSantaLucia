@@ -3,148 +3,231 @@
 @{
     ViewData["Title"] = "Productos";
     var lista = Model ?? new List<TDFSantaLucia.Models.Producto>();
+
+    var categorias = lista
+        .Where(p => p.Categoria != null)
+        .Select(p => p.Categoria!.Nombre)
+        .Distinct()
+        .OrderBy(n => n)
+        .ToList();
+
+    var marcas = lista
+        .Where(p => !string.IsNullOrWhiteSpace(p.Marca))
+        .Select(p => p.Marca!)
+        .Distinct()
+        .OrderBy(m => m)
+        .ToList();
 }
 
 <div class="container-fluid px-4 py-4">
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-
         <div>
             <h2 class="fw-bold mb-1" style="color:#1a3c5e;">
                 <i class="bi bi-capsule-pill me-2 text-primary"></i>
                 Nuestros Productos
             </h2>
-
-            <p class="text-muted mb-0">
-                Encuentra medicamentos y productos fácilmente
-            </p>
+            <p class="text-muted mb-0">Encuentra medicamentos y productos fácilmente</p>
         </div>
-
         <a asp-action="Crear" class="btn btn-primary rounded-3 shadow-sm">
             <i class="bi bi-plus-circle me-1"></i>
             Nuevo Producto
         </a>
-
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4">
+            <div class="row g-3 align-items-end">
 
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search text-muted"></i>
-                </span>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-muted small">BUSCAR</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input id="searchInput"
+                               class="form-control border-start-0 ps-0"
+                               type="search"
+                               placeholder="Nombre, categoría o marca..." />
+                        <button class="btn btn-outline-secondary" id="btnLimpiarTexto" type="button" style="display:none;">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
 
-                <input id="searchInput"
-                       class="form-control border-start-0 ps-0"
-                       type="search"
-                       placeholder="Buscar por nombre, categoría o marca..." />
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold text-muted small">CATEGORÍA</label>
+                    <select id="filtroCategoria" class="form-select rounded-3">
+                        <option value="">Todas</option>
+                        @foreach (var cat in categorias)
+                        {
+                            <option value="@cat.ToLower()">@cat</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold text-muted small">MARCA</label>
+                    <select id="filtroMarca" class="form-select rounded-3">
+                        <option value="">Todas</option>
+                        @foreach (var marca in marcas)
+                        {
+                            <option value="@marca.ToLower()">@marca</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold text-muted small">RECETA</label>
+                    <select id="filtroReceta" class="form-select rounded-3">
+                        <option value="">Todos</option>
+                        <option value="true">Requiere receta</option>
+                        <option value="false">Sin receta</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold text-muted small">ESTADO</label>
+                    <select id="filtroEstado" class="form-select rounded-3">
+                        <option value="">Todos</option>
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="row g-3 align-items-end mt-1">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-muted small">PRECIO MÁXIMO: <span id="precioLabel">₡@lista.Any() ? lista.Max(p => (int)p.Precio).ToString("N0") : "0"</span></label>
+                    <input type="range"
+                           id="filtroPrecio"
+                           class="form-range"
+                           min="0"
+                           max="@(lista.Any() ? (int)lista.Max(p => p.Precio) : 0)"
+                           value="@(lista.Any() ? (int)lista.Max(p => p.Precio) : 0)"
+                           step="100" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-muted small">ORDENAR POR</label>
+                    <select id="ordenar" class="form-select rounded-3">
+                        <option value="">Por defecto</option>
+                        <option value="nombre-asc">Nombre A → Z</option>
+                        <option value="nombre-desc">Nombre Z → A</option>
+                        <option value="precio-asc">Precio menor → mayor</option>
+                        <option value="precio-desc">Precio mayor → menor</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button id="btnLimpiarFiltros" class="btn btn-outline-secondary w-100 rounded-3" style="display:none;">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar filtros
+                    </button>
+                </div>
+                <div class="col-md-2 text-end">
+                    <small id="contadorResultados" class="text-muted"></small>
+                </div>
+            </div>
+
+            <div id="filtrosActivos" class="mt-3 d-none">
+                <small class="text-muted me-2">Filtros activos:</small>
+                <span id="chipTexto" class="badge bg-primary me-1 d-none"></span>
+                <span id="chipCategoria" class="badge bg-secondary me-1 d-none"></span>
+                <span id="chipMarca" class="badge bg-secondary me-1 d-none"></span>
+                <span id="chipReceta" class="badge bg-warning text-dark me-1 d-none"></span>
+                <span id="chipEstado" class="badge bg-info text-dark me-1 d-none"></span>
+                <span id="chipPrecio" class="badge bg-success me-1 d-none"></span>
             </div>
 
         </div>
     </div>
 
-    <div class="row g-4">
-
+    <div id="gridProductos" class="row g-4">
         @foreach (var p in lista)
         {
             <div class="col-12 col-sm-6 col-lg-4 col-xl-3 producto-card"
                  data-nombre="@p.Nombre?.ToLower()"
                  data-categoria="@p.Categoria?.Nombre?.ToLower()"
-                 data-marca="@p.Marca?.ToLower()">
+                 data-marca="@p.Marca?.ToLower()"
+                 data-receta="@p.Receta.ToString().ToLower()"
+                 data-estado="@p.Estado.ToString().ToLower()"
+                 data-precio="@p.Precio">
 
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-
                     <div class="position-relative">
-
                         @{
                             var img = !string.IsNullOrWhiteSpace(p.Imagen_URL)
-                            ? p.Imagen_URL
-                            : Url.Content("~/img/producto-default.png");
+                                ? p.Imagen_URL
+                                : Url.Content("~/img/producto-default.png");
                         }
-
                         <img src="@img"
                              class="card-img-top"
                              style="height:220px; object-fit:cover;"
                              alt="@p.Nombre"
-                             onerror="this.src='@Url.Content("~/img/producto-default.png")'" />
+                             onerror="this.onerror=null; this.src='@Url.Content("~/img/producto-default.png")'" />
 
                         @if (p.Receta)
                         {
                             <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2 rounded-pill">
-                                <i class="bi bi-file-medical me-1"></i>
-                                Receta
+                                <i class="bi bi-file-medical me-1"></i>Receta
                             </span>
                         }
-
-                        <span class="badge bg-primary position-absolute top-0 end-0 m-2 rounded-pill">
-                            @(p.Categoria?.Nombre ?? "General")
-                        </span>
-
+                        @if (!p.Estado)
+                        {
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2 rounded-pill">
+                                Inactivo
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-primary position-absolute top-0 end-0 m-2 rounded-pill">
+                                @(p.Categoria?.Nombre ?? "General")
+                            </span>
+                        }
                     </div>
 
                     <div class="card-body d-flex flex-column">
-
-                        <h5 class="fw-bold mb-1" style="color:#1a3c5e;">
-                            @p.Nombre
-                        </h5>
-
+                        <h5 class="fw-bold mb-1" style="color:#1a3c5e;">@p.Nombre</h5>
                         <p class="text-muted small mb-2">
-                            <i class="bi bi-tag me-1"></i>
-                            @(p.Marca ?? "Sin marca")
+                            <i class="bi bi-tag me-1"></i>@(p.Marca ?? "Sin marca")
                         </p>
-
                         <p class="text-muted small flex-grow-1"
-                               style="display:-webkit-box;
-                            -webkit-line-clamp:2;
-                            -webkit-box-orient:vertical;
-                            overflow:hidden;">
+                               style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
                             @(p.Descripcion ?? "Sin descripción.")
                         </p>
 
                         <div class="mt-3">
-
-                            <h4 class="fw-bold text-primary mb-3">
-                                ₡@p.Precio.ToString("N2")
-                            </h4>
-
+                            <h4 class="fw-bold text-primary mb-3">₡@p.Precio.ToString("N2")</h4>
                             <div class="d-grid gap-2">
-
-                                <a asp-action="Detalle"
-                                       asp-route-id="@p.Producto_Id"
+                                <a asp-action="Detalle" asp-route-id="@p.Producto_Id"
                                        class="btn btn-outline-primary rounded-3">
-                                    <i class="bi bi-eye me-1"></i>
-                                    Ver Detalle
+                                    <i class="bi bi-eye me-1"></i>Ver Detalle
                                 </a>
-
-                                <a asp-action="Editar"
-                                       asp-route-id="@p.Producto_Id"
+                                <a asp-action="Editar" asp-route-id="@p.Producto_Id"
                                        class="btn btn-warning rounded-3 text-white">
-                                    <i class="bi bi-pencil-square me-1"></i>
-                                    Editar
+                                    <i class="bi bi-pencil-square me-1"></i>Editar
                                 </a>
-
                                 <button class="btn btn-primary rounded-3"
                                         onclick="agregarAlCarrito(@p.Producto_Id, '@p.Nombre')">
-                                    <i class="bi bi-cart-plus me-1"></i>
-                                    Agregar al carrito
+                                    <i class="bi bi-cart-plus me-1"></i>Agregar al carrito
                                 </button>
-
                                 <button class="btn btn-danger rounded-3"
                                         onclick="eliminarProducto(@p.Producto_Id, '@p.Nombre')">
-                                    <i class="bi bi-trash me-1"></i>
-                                    Eliminar
+                                    <i class="bi bi-trash me-1"></i>Eliminar
                                 </button>
-
                             </div>
-
                         </div>
-
                     </div>
                 </div>
             </div>
         }
+    </div>
 
+    <div id="estadoVacio" class="text-center py-5 d-none">
+        <i class="bi bi-inbox display-4 text-muted"></i>
+        <p class="text-muted mt-2">No se encontraron productos con los filtros aplicados.</p>
+        <button class="btn btn-outline-secondary btn-sm rounded-3" id="btnLimpiarDesdeVacio">
+            Limpiar filtros
+        </button>
     </div>
 
 </div>
@@ -152,100 +235,143 @@
 @Html.AntiForgeryToken()
 
 @section Scripts {
-
     <script>
+        const cards        = Array.from(document.querySelectorAll('.producto-card'));
+        const precioMax    = Math.max(...cards.map(c => parseFloat(c.dataset.precio) || 0));
+        const sliderPrecio = document.getElementById('filtroPrecio');
 
-        (function () {
+        sliderPrecio.max   = precioMax;
+        sliderPrecio.value = precioMax;
+        document.getElementById('precioLabel').textContent = '₡' + precioMax.toLocaleString('es-CR');
 
-            const input = document.getElementById('searchInput');
+        function filtrar() {
+            const texto     = document.getElementById('searchInput').value.trim().toLowerCase();
+            const categoria = document.getElementById('filtroCategoria').value;
+            const marca     = document.getElementById('filtroMarca').value;
+            const receta    = document.getElementById('filtroReceta').value;
+            const estado    = document.getElementById('filtroEstado').value;
+            const precio    = parseFloat(sliderPrecio.value);
+            const orden     = document.getElementById('ordenar').value;
 
-            const cards = Array.from(document.querySelectorAll('.producto-card'));
+            const hayFiltros = texto || categoria || marca || receta || estado || precio < precioMax || orden;
+            document.getElementById('btnLimpiarFiltros').style.display = hayFiltros ? 'block' : 'none';
 
-            function filtrar() {
+            actualizarChips(texto, categoria, marca, receta, estado, precio);
 
-                const q = input.value.trim().toLowerCase();
+            let visibles = cards.filter(c => {
+                const ok =
+                    (!texto     || c.dataset.nombre.includes(texto) || (c.dataset.categoria||'').includes(texto) || (c.dataset.marca||'').includes(texto)) &&
+                    (!categoria || c.dataset.categoria === categoria) &&
+                    (!marca     || c.dataset.marca     === marca)     &&
+                    (!receta    || c.dataset.receta     === receta)   &&
+                    (!estado    || c.dataset.estado     === estado)   &&
+                    (parseFloat(c.dataset.precio) <= precio);
 
-                cards.forEach(card => {
+                c.classList.toggle('d-none', !ok);
+                return ok;
+            });
 
-                    const nombre =
-                        card.dataset.nombre || '';
-
-                    const categoria =
-                        card.dataset.categoria || '';
-
-                    const marca =
-                        card.dataset.marca || '';
-
-                    const visible =
-                        nombre.includes(q) ||
-                        categoria.includes(q) ||
-                        marca.includes(q);
-
-                    card.classList.toggle('d-none', !visible);
+            if (orden) {
+                const grid = document.getElementById('gridProductos');
+                visibles.sort((a, b) => {
+                    if (orden === 'nombre-asc')   return a.dataset.nombre.localeCompare(b.dataset.nombre);
+                    if (orden === 'nombre-desc')  return b.dataset.nombre.localeCompare(a.dataset.nombre);
+                    if (orden === 'precio-asc')   return parseFloat(a.dataset.precio) - parseFloat(b.dataset.precio);
+                    if (orden === 'precio-desc')  return parseFloat(b.dataset.precio) - parseFloat(a.dataset.precio);
                 });
+                visibles.forEach(c => grid.appendChild(c));
             }
 
-            input.addEventListener('input', filtrar);
+            const total = visibles.length;
+            document.getElementById('contadorResultados').innerHTML =
+                total > 0 ? `<span class="fw-semibold">${total}</span> producto${total !== 1 ? 's' : ''}` : '';
 
-        })();
+            document.getElementById('estadoVacio').classList.toggle('d-none', total > 0);
+        }
+
+        function actualizarChips(texto, categoria, marca, receta, estado, precio) {
+            const chips = document.getElementById('filtrosActivos');
+            const hayAlguno = texto || categoria || marca || receta || estado || precio < precioMax;
+            chips.classList.toggle('d-none', !hayAlguno);
+
+            setChip('chipTexto',     texto     ? `"${texto}"` : null);
+            setChip('chipCategoria', categoria || null);
+            setChip('chipMarca',     marca     || null);
+            setChip('chipReceta',    receta === 'true' ? 'Con receta' : receta === 'false' ? 'Sin receta' : null);
+            setChip('chipEstado',    estado    === 'true' ? 'Activo' : estado === 'false' ? 'Inactivo' : null);
+            setChip('chipPrecio',    precio < precioMax ? `Hasta ₡${precio.toLocaleString('es-CR')}` : null);
+        }
+
+        function setChip(id, texto) {
+            const el = document.getElementById(id);
+            if (texto) { el.textContent = texto; el.classList.remove('d-none'); }
+            else        { el.classList.add('d-none'); }
+        }
+
+        function limpiarTodo() {
+            document.getElementById('searchInput').value   = '';
+            document.getElementById('filtroCategoria').value = '';
+            document.getElementById('filtroMarca').value   = '';
+            document.getElementById('filtroReceta').value  = '';
+            document.getElementById('filtroEstado').value  = '';
+            document.getElementById('ordenar').value       = '';
+            sliderPrecio.value = precioMax;
+            document.getElementById('precioLabel').textContent = '₡' + precioMax.toLocaleString('es-CR');
+            cards.forEach(c => c.classList.remove('d-none'));
+            document.getElementById('btnLimpiarFiltros').style.display = 'none';
+            document.getElementById('estadoVacio').classList.add('d-none');
+            document.getElementById('filtrosActivos').classList.add('d-none');
+            document.getElementById('contadorResultados').textContent = '';
+            document.getElementById('btnLimpiarTexto').style.display = 'none';
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function () {
+            document.getElementById('btnLimpiarTexto').style.display = this.value ? 'block' : 'none';
+            filtrar();
+        });
+        document.getElementById('filtroCategoria').addEventListener('change', filtrar);
+        document.getElementById('filtroMarca').addEventListener('change', filtrar);
+        document.getElementById('filtroReceta').addEventListener('change', filtrar);
+        document.getElementById('filtroEstado').addEventListener('change', filtrar);
+        document.getElementById('ordenar').addEventListener('change', filtrar);
+
+        sliderPrecio.addEventListener('input', function () {
+            document.getElementById('precioLabel').textContent = '₡' + parseInt(this.value).toLocaleString('es-CR');
+            filtrar();
+        });
+
+        document.getElementById('btnLimpiarTexto').addEventListener('click', function () {
+            document.getElementById('searchInput').value = '';
+            this.style.display = 'none';
+            filtrar();
+        });
+        document.getElementById('btnLimpiarFiltros').addEventListener('click', limpiarTodo);
+        document.getElementById('btnLimpiarDesdeVacio').addEventListener('click', limpiarTodo);
 
         function agregarAlCarrito(productoId, nombre) {
-
-            const token =
-                document.querySelector('input[name="__RequestVerificationToken"]').value;
-
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             fetch('/producto/agregaralcarrito', {
-
                 method: 'POST',
-
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'RequestVerificationToken': token
-                },
-
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
                 body: `productoId=${productoId}&cantidad=1`
             })
-
             .then(res => res.json())
-
-            .then(data => {
-
-                if (data.exito)
-                    alert(nombre + ' agregado al carrito');
-                else
-                    alert(data.mensaje);
-            });
+            .then(data => alert(data.exito ? nombre + ' agregado al carrito' : data.mensaje));
         }
 
         function eliminarProducto(id, nombre) {
-
-            if (!confirm(`¿Desea eliminar "${nombre}"?`))
-                return;
-
-            const token =
-                document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-            const form = document.createElement('form');
-
+            if (!confirm(`¿Desea eliminar "${nombre}"?`)) return;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const form  = document.createElement('form');
             form.method = 'POST';
-
             form.action = `/producto/eliminar/${id}`;
-
             const input = document.createElement('input');
-
-            input.type = 'hidden';
-
-            input.name = '__RequestVerificationToken';
-
+            input.type  = 'hidden';
+            input.name  = '__RequestVerificationToken';
             input.value = token;
-
             form.appendChild(input);
-
             document.body.appendChild(form);
-
             form.submit();
         }
-
     </script>
-
 }

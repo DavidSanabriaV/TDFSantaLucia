@@ -7,75 +7,100 @@
 <div class="container py-4" style="max-width:750px;">
 
     <div class="card border-0 shadow-sm rounded-4">
-
         <div class="card-body p-4">
 
             <h2 class="fw-bold mb-4 text-primary">
                 <i class="bi bi-pencil-square me-2"></i>
-                @(ViewData["Title"] ?? "Editar Producto")
+                Editar Producto
             </h2>
 
-            <form asp-action="Editar">
+            @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
+            {
+                <div class="alert alert-danger rounded-3">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle me-1"></i> Por favor corrija los siguientes errores:</h6>
+                    <ul class="mb-0">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <form asp-action="Editar" method="post">
+                @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Producto_Id" />
 
                 <div class="row g-4">
 
                     <div class="col-12">
                         <label asp-for="Nombre" class="form-label fw-semibold"></label>
-                        <input asp-for="Nombre" class="form-control rounded-3" />
+                        <input asp-for="Nombre"
+                               class="form-control rounded-3 @(ViewData.ModelState["Nombre"]?.Errors.Any() == true ? "is-invalid" : "")" />
+                        <span asp-validation-for="Nombre" class="invalid-feedback"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="Categoria_Id" class="form-label fw-semibold"></label>
-
+                        <label asp-for="Categoria" class="form-label fw-semibold"></label>
                         <select asp-for="Categoria_Id"
                                 asp-items="ViewBag.Categorias"
-                                class="form-select rounded-3">
-
-                            <option value="">Seleccione</option>
+                                class="form-select rounded-3 @(ViewData.ModelState["Categoria_Id"]?.Errors.Any() == true ? "is-invalid" : "")">
+                            <option value="">— Seleccione una categoría —</option>
                         </select>
+                        <span asp-validation-for="Categoria_Id" class="invalid-feedback"></span>
                     </div>
 
                     <div class="col-md-6">
                         <label asp-for="Marca" class="form-label fw-semibold"></label>
-                        <input asp-for="Marca" class="form-control rounded-3" />
+                        <input asp-for="Marca"
+                               class="form-control rounded-3 @(ViewData.ModelState["Marca"]?.Errors.Any() == true ? "is-invalid" : "")" />
+                        <span asp-validation-for="Marca" class="invalid-feedback"></span>
                     </div>
 
                     <div class="col-md-6">
                         <label asp-for="Precio" class="form-label fw-semibold"></label>
-
-                        <input asp-for="Precio"
-                               type="number"
-                               step="0.01"
-                               class="form-control rounded-3" />
+                        <div class="input-group">
+                            <span class="input-group-text rounded-start-3">₡</span>
+                            <input asp-for="Precio"
+                                   type="number"
+                                   step="0.01"
+                                   min="0"
+                                   max="9999999.99"
+                                   class="form-control rounded-end-3 @(ViewData.ModelState["Precio"]?.Errors.Any() == true ? "is-invalid" : "")"
+                                   placeholder="0.00" />
+                            <span asp-validation-for="Precio" class="invalid-feedback"></span>
+                        </div>
                     </div>
 
                     <div class="col-md-6">
                         <label asp-for="Imagen_URL" class="form-label fw-semibold"></label>
-
                         <input asp-for="Imagen_URL"
-                               class="form-control rounded-3" />
+                               class="form-control rounded-3 @(ViewData.ModelState["Imagen_URL"]?.Errors.Any() == true ? "is-invalid" : "")" />
+                        <span asp-validation-for="Imagen_URL" class="invalid-feedback"></span>
+                        <div id="previewImagen" class="mt-2 @(string.IsNullOrWhiteSpace(Model.Imagen_URL) ? "d-none" : "")">
+                            <img id="imgPreview"
+                                 src="@Model.Imagen_URL"
+                                 alt="Vista previa"
+                                 class="rounded-3 border"
+                                 style="max-height:120px; object-fit:cover;" />
+                        </div>
                     </div>
 
                     <div class="col-12">
                         <label asp-for="Descripcion" class="form-label fw-semibold"></label>
-
                         <textarea asp-for="Descripcion"
                                   rows="4"
-                                  class="form-control rounded-3"></textarea>
+                                  class="form-control rounded-3 @(ViewData.ModelState["Descripcion"]?.Errors.Any() == true ? "is-invalid" : "")"></textarea>
+                        <span asp-validation-for="Descripcion" class="invalid-feedback"></span>
+                        <small class="text-muted"><span id="contadorDesc">0</span> caracteres</small>
                     </div>
 
                     <div class="col-md-6">
                         <div class="form-check form-switch">
                             <input asp-for="Estado"
                                    class="form-check-input"
-                                   type="checkbox"
-                                   checked />
-
-                            <label asp-for="Estado"
-                                   class="form-check-label">
-                                Producto activo
-                            </label>
+                                   type="checkbox" />
+                            <label asp-for="Estado" class="form-check-label">Producto activo</label>
                         </div>
                     </div>
 
@@ -84,34 +109,50 @@
                             <input asp-for="Receta"
                                    class="form-check-input"
                                    type="checkbox" />
-
-                            <label asp-for="Receta"
-                                   class="form-check-label">
-                                Requiere receta
-                            </label>
+                            <label asp-for="Receta" class="form-check-label">Requiere receta</label>
                         </div>
                     </div>
 
                 </div>
 
                 <div class="d-flex justify-content-end gap-3 mt-4">
-
-                    <a asp-action="Administrar"
-                           class="btn btn-outline-secondary rounded-3">
-                        Cancelar
+                    <a asp-action="Administrar" class="btn btn-outline-secondary rounded-3">
+                        <i class="bi bi-x-circle me-1"></i> Cancelar
                     </a>
-
-                    <button type="submit"
-                            class="btn btn-primary rounded-3">
-                        Actualizar Producto
+                    <button type="submit" class="btn btn-primary rounded-3">
+                        <i class="bi bi-save me-1"></i> Actualizar Producto
                     </button>
-
                 </div>
 
             </form>
-
         </div>
-
     </div>
-
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const imgInput    = document.getElementById('Imagen_URL');
+        const preview     = document.getElementById('previewImagen');
+        const imgPreview  = document.getElementById('imgPreview');
+        const descripcion = document.getElementById('Descripcion');
+        const contador    = document.getElementById('contadorDesc');
+
+        imgInput.addEventListener('input', function () {
+            const url = this.value.trim();
+            if (url) {
+                imgPreview.src = url;
+                preview.classList.remove('d-none');
+                imgPreview.onerror = () => preview.classList.add('d-none');
+            } else {
+                preview.classList.add('d-none');
+            }
+        });
+
+        descripcion.addEventListener('input', function () {
+            contador.textContent = this.value.length;
+        });
+
+        contador.textContent = descripcion.value.length;
+    </script>
+}

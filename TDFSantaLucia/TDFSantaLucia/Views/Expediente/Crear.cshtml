@@ -1,0 +1,67 @@
+﻿@model TDFSantaLucia.Models.Expediente
+@{
+    ViewData["Title"] = "Nuevo Expediente";
+}
+
+<h2 class="mb-4">📋 Nuevo Expediente</h2>
+
+@if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
+{
+    <div class="alert alert-danger rounded-3">
+        <h6 class="fw-bold mb-2">
+            <i class="bi bi-exclamation-triangle me-1"></i> Por favor corrija los siguientes errores:
+        </h6>
+        <ul class="mb-0">
+            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<div class="card border-0 shadow-sm" style="max-width: 600px;">
+    <div class="card-body p-4">
+        @using (Html.BeginForm("Crear", "Expediente", FormMethod.Post, new { @class = "row g-3" }))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="col-12">
+                <label class="form-label fw-semibold">Cliente</label>
+                @Html.DropDownList("Cliente_Id", (SelectList)ViewBag.Clientes,
+                    "— Seleccione un cliente —",
+                    new { @class = "form-select " + (ViewData.ModelState["Cliente_Id"]?.Errors.Any() == true ? "is-invalid" : "") })
+                @Html.ValidationMessage("Cliente_Id", "", new { @class = "invalid-feedback" })
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold">Empleado responsable</label>
+                @Html.DropDownList("Empleado_Id", (SelectList)ViewBag.Empleados,
+                    "— Seleccione un empleado —",
+                    new { @class = "form-select " + (ViewData.ModelState["Empleado_Id"]?.Errors.Any() == true ? "is-invalid" : "") })
+                @Html.ValidationMessage("Empleado_Id", "", new { @class = "invalid-feedback" })
+            </div>
+
+            <div class="col-12">
+                @Html.LabelFor(m => m.Descripcion, new { @class = "form-label fw-semibold" })
+                @Html.TextAreaFor(m => m.Descripcion, 4, 0, new
+                {
+                    @class = "form-control" + (ViewData.ModelState["Descripcion"]?.Errors.Any() == true ? " is-invalid" : ""),
+                    placeholder = "Descripción general del expediente (opcional)..."
+                })
+                @Html.ValidationMessageFor(m => m.Descripcion, "", new { @class = "invalid-feedback" })
+            </div>
+
+            <div class="col-12 d-flex gap-2 mt-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+                @Html.ActionLink("Cancelar", "Index", "Expediente", null, new { @class = "btn btn-secondary" })
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
