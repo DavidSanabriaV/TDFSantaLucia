@@ -14,8 +14,6 @@ namespace TDFSantaLucia.Controllers
             _citaService = citaService;
         }
 
-        // ── VISTA CLIENTE ──────────────────────────────
-
         [HttpGet("agendar")]
         public IActionResult Agendar()
         {
@@ -62,8 +60,6 @@ namespace TDFSantaLucia.Controllers
             if (cita == null) return NotFound();
             return View(cita);
         }
-
-        // ── VISTA ADMIN ────────────────────────────────
 
         [HttpGet("crear")]
         public IActionResult Crear()
