@@ -66,7 +66,6 @@ namespace TDFSantaLucia.Services
 
             _repo.Agregar(inventario);
 
-            // Si el producto estaba inactivo y ahora tiene stock, activarlo
             if (!producto.Estado && inventario.Cantidad_Disponible > 0)
             {
                 producto.Estado = true;
@@ -109,6 +108,21 @@ namespace TDFSantaLucia.Services
             existente.Estado = inventario.Estado;
 
             _repo.Actualizar(existente);
+
+            var tieneStock = _repo.ObtenerPorProducto(inventario.Producto_Id)
+                .Any(i => i.Estado && i.Cantidad_Disponible > 0);
+
+            if (tieneStock && !producto.Estado)
+            {
+                producto.Estado = true;
+                _productoRepo.Actualizar(producto);
+            }
+            else if (!tieneStock && producto.Estado)
+            {
+                producto.Estado = false;
+                _productoRepo.Actualizar(producto);
+            }
+
             return (true, null);
         }
 
