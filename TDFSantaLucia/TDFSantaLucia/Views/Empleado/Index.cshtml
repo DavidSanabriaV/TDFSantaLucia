@@ -1,6 +1,23 @@
 ﻿@model List<TDFSantaLucia.Models.Empleado>
 
 <h2>Empleados</h2>
+
+@if (TempData["Exito"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Exito"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <a asp-action="Crear" class="btn btn-success mb-3">Nuevo</a>
 
 <table class="table table-striped">
@@ -27,9 +44,17 @@
                 <td>@(e.Estado ? "Activo" : "Inactivo")</td>
                 <td>
                     <a asp-action="Detalle" asp-route-id="@e.Empleado_Id" class="btn btn-primary btn-sm">Ver</a>
+
                     <a asp-action="Editar" asp-route-id="@e.Empleado_Id" class="btn btn-warning btn-sm">Editar</a>
-                    <form asp-action="Eliminar" asp-route-id="@e.Empleado_Id" method="post" style="display:inline;">
-                        <button class="btn btn-danger btn-sm">Eliminar</button>
+
+                    <form asp-action="Eliminar"
+                          asp-route-id="@e.Empleado_Id"
+                          method="post"
+                          style="display:inline;">
+
+                        <button class="btn btn-danger btn-sm">
+                            Eliminar
+                        </button>
                     </form>
                 </td>
             </tr>
