@@ -1,22 +1,44 @@
 ﻿@model TDFSantaLucia.Models.CitaViewModel
-
 @{
     ViewData["Title"] = "Crear Cita";
 }
 
 <div class="container mt-4">
     <h2 class="mb-4">➕ Nueva Cita</h2>
-
     <form asp-action="Crear" method="post" class="card p-4 shadow-sm">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
         <div class="row g-3">
+
             <div class="col-md-6">
-                <label asp-for="Cliente_Id" class="form-label">Cliente</label>
-                <select asp-for="Cliente_Id" class="form-select"
-                        asp-items="@(new SelectList(Model.Clientes, "Cliente_Id", "Usuario.Nombre"))">
-                    <option value="">Seleccione un cliente</option>
-                </select>
+                <label class="form-label">Cliente</label>
+
+                <input type="text" id="buscadorCliente" class="form-control mb-2"
+                       placeholder="🔍 Buscar por nombre, apellido o cédula..."
+                       autocomplete="off" />
+
+                <div id="listaClientes"
+                     style="max-height:220px; overflow-y:auto; border:1px solid #dee2e6;
+                            border-radius:10px; background:white;">
+                    @foreach (var c in Model.Clientes)
+                    {
+                        <div class="cliente-item px-3 py-2"
+                             style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
+                             data-id="@c.Cliente_Id"
+                             data-nombre="@c.Usuario?.Nombre @c.Usuario?.Primer_Apellido @c.Usuario?.Segundo_Apellido"
+                             data-cedula="@c.Usuario?.Cedula">
+                            <div class="fw-semibold">@c.Usuario?.Nombre @c.Usuario?.Primer_Apellido @c.Usuario?.Segundo_Apellido</div>
+                            <div class="text-muted" style="font-size:0.82rem;">Cédula: @c.Usuario?.Cedula</div>
+                        </div>
+                    }
+                </div>
+
+                <input type="hidden" asp-for="Cliente_Id" id="clienteIdHidden" />
+
+                <div id="clienteSeleccionado" class="mt-2" style="display:none;">
+                    <span class="badge bg-success px-3 py-2 fs-6" id="clienteNombreBadge"></span>
+                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="btnLimpiar">✕ Cambiar</button>
+                </div>
+
                 <span asp-validation-for="Cliente_Id" class="text-danger"></span>
             </div>
 
@@ -48,4 +70,33 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+
+    <script>
+        const items = Array.from(document.querySelectorAll('.cliente-item'));
+        const $ = id => document.getElementById(id);
+
+        document.getElementById('buscadorCliente').addEventListener('input', e =>
+            items.forEach(i => i.style.display =
+                (i.dataset.nombre + i.dataset.cedula).toLowerCase().includes(e.target.value.toLowerCase()) ? '' : 'none'));
+
+        items.forEach(i => {
+            i.addEventListener('mouseenter', () => i.style.background = '#f0f7ff');
+            i.addEventListener('mouseleave', () => i.style.background = 'white');
+            i.addEventListener('click', () => {
+                $('clienteIdHidden').value = i.dataset.id;
+                $('clienteNombreBadge').textContent = `${i.dataset.nombre} — ${i.dataset.cedula}`;
+                $('clienteSeleccionado').style.display = 'block';
+                $('listaClientes').style.display = $('buscadorCliente').style.display = 'none';
+            });
+        });
+
+        $('btnLimpiar').addEventListener('click', () => {
+            $('clienteIdHidden').value = $('buscadorCliente').value = '';
+            $('clienteSeleccionado').style.display = 'none';
+            $('listaClientes').style.display = $('buscadorCliente').style.display = '';
+            items.forEach(i => i.style.display = '');
+        });
+    </script>
+}
 }

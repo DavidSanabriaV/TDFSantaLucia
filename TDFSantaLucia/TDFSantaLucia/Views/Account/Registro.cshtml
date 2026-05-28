@@ -106,10 +106,14 @@
                 <input asp-for="Segundo_Apellido" class="form-control" placeholder="García" />
                 <span asp-validation-for="Segundo_Apellido" class="text-danger small"></span>
             </div>
-            <div class="col-md-6">
-                <label asp-for="Cedula" class="form-label fw-semibold small text-muted">CÉDULA</label>
-                <input asp-for="Cedula" class="form-control" placeholder="1-1234-5678" />
-            </div>
+                <div class="col-md-4">
+                    <label asp-for="Cedula" class="form-label"></label>
+                    <input asp-for="Cedula" class="form-control"
+                           maxlength="9"
+                           minlength="9"
+                           placeholder="000000000" />
+                    <span asp-validation-for="Cedula" class="text-danger"></span>
+                </div>
             <div class="col-md-6">
                 <label asp-for="Telefono" class="form-label fw-semibold small text-muted">TELÉFONO</label>
                 <input asp-for="Telefono" class="form-control" placeholder="8888-8888" />
