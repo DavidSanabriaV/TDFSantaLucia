@@ -35,7 +35,10 @@
 
             <div class="col-md-6">
                 <label asp-for="Cedula" class="form-label"></label>
-                <input asp-for="Cedula" class="form-control" />
+                <input asp-for="Cedula" class="form-control"
+                       maxlength="9"
+                       minlength="9"
+                       placeholder="000000000" />
                 <span asp-validation-for="Cedula" class="text-danger"></span>
             </div>
 

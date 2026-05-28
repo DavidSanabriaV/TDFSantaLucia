@@ -21,7 +21,8 @@ namespace TDFSantaLucia.Models
         public string Email { get; set; }
 
         public string? Password { get; set; }
-
+        [Required]
+        [RegularExpression(@"^\d{9}$", ErrorMessage = "La cédula debe tener exactamente 9 dígitos numéricos.")]
         public string? Cedula { get; set; }
         public string? Telefono { get; set; }
         public string? Direccion_Exacta { get; set; }

@@ -1,18 +1,14 @@
 ﻿@model TDFSantaLucia.Models.CitaViewModel
-
 @{
     ViewData["Title"] = "Revisar Cita";
 }
-
 <div class="container mt-4">
     <h2 class="mb-4">🔍 Revisar Cita</h2>
-
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger">@TempData["Error"]</div>
     }
 
-    <!-- Datos de la cita -->
     <div class="card shadow-sm p-4 mb-4">
         <h5>📋 Datos del Cliente</h5>
         <hr />
@@ -50,27 +46,18 @@
         </div>
     </div>
 
-    <!-- Asignar Empleado -->
     <div class="card shadow-sm p-4 mb-4">
         <h5>👤 Asignar Empleado</h5>
         <form asp-action="Asignar" asp-route-id="@Model.Cita_Id" method="post" class="row g-3 mt-1">
             <div class="col-md-8">
-                <select name="empleadoId" class="form-select">
+                <select name="empleadoId" class="form-select" required>
                     <option value="">Seleccione un empleado</option>
                     @foreach (var emp in Model.Empleados)
                     {
-                        @if (Model.Empleado_Id == emp.Empleado_Id)
-                        {
-                            <option value="@emp.Empleado_Id" selected>
-                                @emp.Usuario?.Nombre @emp.Usuario?.Primer_Apellido
-                            </option>
-                        }
-                        else
-                        {
-                            <option value="@emp.Empleado_Id">
-                                @emp.Usuario?.Nombre @emp.Usuario?.Primer_Apellido
-                            </option>
-                        }
+                        <option value="@emp.Empleado_Id"
+                                selected="@(Model.Empleado_Id.HasValue && Model.Empleado_Id.Value == emp.Empleado_Id ? "selected" : null)">
+                            @emp.Usuario?.Nombre @emp.Usuario?.Primer_Apellido
+                        </option>
                     }
                 </select>
             </div>
@@ -80,13 +67,15 @@
         </form>
     </div>
 
-    <!-- Cambiar Estado -->
     <div class="card shadow-sm p-4 mb-4">
         <h5>🔄 Cambiar Estado</h5>
         <div class="d-flex gap-3 mt-2">
             <form asp-action="CambiarEstado" asp-route-id="@Model.Cita_Id" method="post">
                 <input type="hidden" name="estado" value="Aceptada" />
-                <button type="submit" class="btn btn-success">✔ Aceptar Cita</button>
+                <button type="submit" class="btn btn-success"
+                        @(!Model.Empleado_Id.HasValue ? "disabled" : "")>
+                    ✔ Aceptar Cita
+                </button>
             </form>
             <form asp-action="CambiarEstado" asp-route-id="@Model.Cita_Id" method="post">
                 <input type="hidden" name="estado" value="Cancelada" />
@@ -96,6 +85,10 @@
                 </button>
             </form>
         </div>
+        @if (!Model.Empleado_Id.HasValue)
+        {
+            <small class="text-warning mt-2 d-block">⚠️ Debe asignar un empleado antes de aceptar la cita.</small>
+        }
     </div>
 
     <a asp-action="Index" class="btn btn-secondary">⬅ Volver</a>
