@@ -1308,3 +1308,44 @@ body {
     font-weight: 600;
     border-radius: 10px;
 }
+#gridProductos {
+    justify-content: center;
+}
+
+    #gridProductos .producto-card {
+        width: auto !important;
+        max-width: none !important;
+        flex: 0 0 auto;
+        padding: 10px;
+    }
+
+        #gridProductos .producto-card .card {
+            width: 285px; 
+            margin: auto;
+        }
+
+    #gridProductos .card-body {
+        padding: 1.1rem !important;
+    }
+
+    #gridProductos h5 {
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: unset !important;
+        font-size: 1.35rem;
+    }
+
+    #gridProductos .btn {
+        font-size: .9rem;
+        padding: .7rem .95rem;
+        white-space: normal;
+    }
+
+    #gridProductos .card-img-top {
+        height: 190px !important; 
+        object-fit: contain !important;
+    }
+
+    #gridProductos h4 {
+        font-size: 1.8rem;
+    }

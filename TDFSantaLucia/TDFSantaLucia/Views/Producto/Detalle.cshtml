@@ -1,9 +1,12 @@
 @model TDFSantaLucia.Models.Producto
+
 @{
     ViewData["Title"] = "Detalle";
 }
 
-<div class="container py-5">
+<div class="container py-5" style="max-width:900px;">
+
+    <div id="alertaContainer"></div>
 
     <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="row g-0">
@@ -32,22 +35,19 @@
                         <span class="badge bg-danger rounded-pill mb-3 ms-1">Inactivo</span>
                     }
 
-                    <h2 class="fw-bold mb-3" style="color:#1a3c5e;">@Model.Nombre</h2>
+                    <h2 class="fw-bold mb-2" style="color:#1a3c5e;">@Model.Nombre</h2>
+
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-tag me-1"></i><strong>Marca:</strong> @(Model.Marca ?? "No especificada")
+                    </p>
+
+                    <h3 class="fw-bold text-primary my-3 text-nowrap">
+                        ₡@Model.Precio.ToString("N2")
+                    </h3>
 
                     <p class="text-muted mb-4">
                         @(Model.Descripcion ?? "Sin descripción disponible.")
                     </p>
-
-                    <div class="mb-3">
-                        <strong>Marca:</strong> @(Model.Marca ?? "No especificada")
-                    </div>
-
-                    <div class="mb-4">
-                        <strong>Precio:</strong>
-                        <span class="fs-3 fw-bold text-primary">
-                            ₡@Model.Precio.ToString("N2")
-                        </span>
-                    </div>
 
                     @if (Model.Receta)
                     {
@@ -57,16 +57,41 @@
                         </div>
                     }
 
-                    <div class="d-flex gap-3 mt-4 flex-wrap">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <label class="fw-semibold text-muted small">CANTIDAD</label>
+                            <div class="input-group" style="width:130px;">
+                                <button class="btn btn-outline-secondary" type="button" id="btnMenos">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <input type="number"
+                                       id="inputCantidad"
+                                       class="form-control text-center"
+                                       value="1"
+                                       min="1"
+                                       max="99" />
+                                <button class="btn btn-outline-secondary" type="button" id="btnMas">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
 
-                        <a asp-action="Administrar" class="btn btn-outline-secondary rounded-3">
+                    <div class="d-flex gap-3 mt-3 flex-wrap">
+
+                        <a asp-action="Index" class="btn btn-outline-secondary rounded-3">
                             <i class="bi bi-arrow-left me-1"></i>Volver
                         </a>
 
-                        <button class="btn btn-primary rounded-3"
-                                onclick="agregarAlCarrito(@Model.Producto_Id, '@Model.Nombre')">
-                            <i class="bi bi-cart-plus me-1"></i>Agregar al carrito
-                        </button>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="btn btn-primary rounded-3"
+                                    id="btnAgregarCarrito"
+                                    onclick="agregarAlCarrito(@Model.Producto_Id, '@Model.Nombre')">
+                                <i class="bi bi-cart-plus me-1"></i>Agregar al carrito
+                            </button>
+                        }
 
                         @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
                         {
@@ -91,26 +116,82 @@
 
 @section Scripts {
     <script>
+        const inputCantidad = document.getElementById('inputCantidad');
+        const btnMenos      = document.getElementById('btnMenos');
+        const btnMas        = document.getElementById('btnMas');
+
+        if (btnMenos && btnMas && inputCantidad) {
+            btnMenos.addEventListener('click', function () {
+                const val = parseInt(inputCantidad.value) || 1;
+                if (val > 1) inputCantidad.value = val - 1;
+            });
+
+            btnMas.addEventListener('click', function () {
+                const val = parseInt(inputCantidad.value) || 1;
+                if (val < 99) inputCantidad.value = val + 1;
+            });
+
+            inputCantidad.addEventListener('change', function () {
+                let val = parseInt(this.value) || 1;
+                if (val < 1)  val = 1;
+                if (val > 99) val = 99;
+                this.value = val;
+            });
+        }
+
         function agregarAlCarrito(productoId, nombre) {
             @if (User.Identity?.IsAuthenticated != true)
             {
                     <text>
-                        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
-                        return;
+                            window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                            return;
                     </text>
             }
 
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const cantidad = inputCantidad ? parseInt(inputCantidad.value) || 1 : 1;
+            const token    = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const btn = document.getElementById('btnAgregarCarrito');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Agregando...';
+
             fetch('/producto/agregaralcarrito', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'RequestVerificationToken': token
                 },
-                body: `productoId=${productoId}&cantidad=1`
+                body: `productoId=${productoId}&cantidad=${cantidad}`
             })
             .then(res => res.json())
-            .then(data => alert(data.exito ? nombre + ' agregado al carrito' : data.mensaje));
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Agregar al carrito';
+
+                if (data.exito) {
+                    mostrarAlerta('success',
+                        `<strong>${cantidad}x ${nombre}</strong> agregado${cantidad > 1 ? 's' : ''} al carrito.`);
+                } else {
+                    mostrarAlerta('danger', data.mensaje);
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Agregar al carrito';
+                mostrarAlerta('danger', 'Ocurrió un error al agregar al carrito.');
+            });
+        }
+
+        function mostrarAlerta(tipo, mensaje) {
+            const contenedor = document.getElementById('alertaContainer');
+            const div = document.createElement('div');
+            div.className = `alert alert-${tipo} alert-dismissible fade show rounded-3 shadow-sm`;
+            div.role = 'alert';
+            div.innerHTML = `<i class="bi bi-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+            contenedor.innerHTML = '';
+            contenedor.appendChild(div);
+            setTimeout(() => div.remove(), 4000);
         }
     </script>
 }

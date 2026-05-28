@@ -64,7 +64,7 @@ namespace TDFSantaLucia.Controllers
                 return View(expediente);
             }
 
-            TempData["Exito"] = "Expediente creado correctamente";
+            TempData["ExitoExpediente"] = "Expediente creado correctamente";
             return RedirectToAction("Index");
         }
 
@@ -100,7 +100,7 @@ namespace TDFSantaLucia.Controllers
                 return View(expediente);
             }
 
-            TempData["Exito"] = "Expediente actualizado correctamente";
+            TempData["ExitoExpediente"] = "Expediente actualizado correctamente";
             return RedirectToAction("Index");
         }
 
@@ -110,9 +110,9 @@ namespace TDFSantaLucia.Controllers
         {
             var (exito, error) = _expedienteService.EliminarExpediente(id);
             if (!exito)
-                TempData["Error"] = error;
+                TempData["ErrorExpediente"] = error;
             else
-                TempData["Exito"] = "Expediente eliminado correctamente";
+                TempData["ExitoExpediente"] = "Expediente eliminado correctamente";
 
             return RedirectToAction("Index");
         }

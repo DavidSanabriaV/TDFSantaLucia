@@ -52,7 +52,7 @@ namespace TDFSantaLucia.Controllers
                 return View(categoria);
             }
 
-            TempData["Exito"] = "Categoria creada correctamente";
+            TempData["ExitoCategoria"] = "Categoria creada correctamente";
             return RedirectToAction("Index");
         }
 
@@ -83,7 +83,7 @@ namespace TDFSantaLucia.Controllers
                 return View(categoria);
             }
 
-            TempData["Exito"] = "Categoria actualizada correctamente";
+            TempData["ExitoCategoria"] = "Categoria actualizada correctamente";
             return RedirectToAction("Index");
         }
 
@@ -93,9 +93,9 @@ namespace TDFSantaLucia.Controllers
         {
             var (exito, error) = _categoriaService.EliminarCategoria(id);
             if (!exito)
-                TempData["Error"] = error;
+                TempData["ErrorCategoria"] = error;
             else
-                TempData["Exito"] = "Categoria eliminada correctamente";
+                TempData["ExitoCategoria"] = "Categoria eliminada correctamente";
 
             return RedirectToAction("Index");
         }

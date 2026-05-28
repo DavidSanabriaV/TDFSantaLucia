@@ -11,5 +11,7 @@ namespace TDFSantaLucia.Services
         void Actualizar(Producto producto);
         void Eliminar(int id);
         bool ExisteAsync(int id);
+        bool ExisteNombre(string nombre);
+        bool ExisteNombreEnOtra(string nombre, int id);
     }
 }

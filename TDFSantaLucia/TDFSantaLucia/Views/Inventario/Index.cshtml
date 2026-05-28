@@ -20,17 +20,17 @@
 
 <h2 class="mb-4">📦 Gestión de Inventario</h2>
 
-@if (TempData["Exito"] != null)
+@if (TempData["ExitoInventario"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show">
-        ✅ @TempData["Exito"]
+        ✅ @TempData["ExitoInventario"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
-@if (TempData["Error"] != null)
+@if (TempData["ErrorInventario"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show">
-        ❌ @TempData["Error"]
+        ❌ @TempData["ErrorInventario"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
@@ -259,7 +259,6 @@
         const $btnLimpiarTexto   = $('#btnLimpiarTexto');
         const $btnLimpiarFiltros = $('#btnLimpiarFiltros');
 
-        // ── Recalcular diasParaVencer correctamente sin desfase de timezone ──
         todosLosLotes.forEach(function (i) {
             const partes = i.fecha_Vencimiento.split('-');
             const fechaVenc = new Date(
@@ -303,7 +302,6 @@
                     (stock === 'bajo' && i.stockBajo) ||
                     (stock === 'ok'   && !i.stockBajo);
 
-                // Solo lotes que aún no han vencido y caen dentro del rango
                 const coincideVenc = vencDias === '' ||
                     (i.diasParaVencer >= 0 && i.diasParaVencer <= parseInt(vencDias));
 

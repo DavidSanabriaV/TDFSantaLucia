@@ -93,30 +93,41 @@
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <label asp-for="Nombre" class="form-label fw-semibold small text-muted">NOMBRE</label>
-                <input asp-for="Nombre" class="form-control" placeholder="Nombre" />
+                <input asp-for="Nombre" class="form-control" placeholder="Juan" />
                 <span asp-validation-for="Nombre" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="Primer_Apellido" class="form-label fw-semibold small text-muted">PRIMER APELLIDO</label>
-                <input asp-for="Primer_Apellido" class="form-control" placeholder="Prime apellido" />
+                <input asp-for="Primer_Apellido" class="form-control" placeholder="Pérez" />
                 <span asp-validation-for="Primer_Apellido" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="Segundo_Apellido" class="form-label fw-semibold small text-muted">SEGUNDO APELLIDO</label>
-                <input asp-for="Segundo_Apellido" class="form-control" placeholder="Segundo apellido" />
+                <input asp-for="Segundo_Apellido" class="form-control" placeholder="García" />
                 <span asp-validation-for="Segundo_Apellido" class="text-danger small"></span>
             </div>
-                <div class="col-md-4">
-                    <label asp-for="Cedula" class="form-label"></label>
-                    <input asp-for="Cedula" class="form-control"
-                           maxlength="9"
-                           minlength="9"
-                           placeholder="Cédula" />
-                    <span asp-validation-for="Cedula" class="text-danger"></span>
-                </div>
             <div class="col-md-6">
-                <label asp-for="Telefono" class="form-label fw-semibold small text-muted">TELÉFONO</label>
-                <input asp-for="Telefono" class="form-control" placeholder="Teléfono" />
+                <label asp-for="Cedula" class="form-label"></label>
+
+                <input asp-for="Cedula"
+                       type="text"
+                       class="form-control"
+                       maxlength="9"
+                       minlength="9"
+                       inputmode="numeric"
+                       placeholder="000000000"
+                       oninput="this.value = this.value.replace(/\D/g, '')" />
+
+                <span asp-validation-for="Cedula" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Telefono" class="form-label"></label>
+                <input asp-for="Telefono"
+                       class="form-control"
+                       pattern="[0-9]*"
+                       inputmode="numeric"
+                       oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
             </div>
             <div class="col-md-6">
                 <label asp-for="Fecha_Nacimiento" class="form-label fw-semibold small text-muted">FECHA DE NACIMIENTO</label>

@@ -14,17 +14,17 @@
 
 <h2 class="mb-4">🗂️ Gestión de Categorías</h2>
 
-@if (TempData["Exito"] != null)
+@if (TempData["ExitoCategoria"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show">
-        ✅ @TempData["Exito"]
+        ✅ @TempData["ExitoCategoria"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
-@if (TempData["Error"] != null)
+@if (TempData["ErrorCategoria"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show">
-        ❌ @TempData["Error"]
+        ❌ @TempData["ErrorCategoria"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }

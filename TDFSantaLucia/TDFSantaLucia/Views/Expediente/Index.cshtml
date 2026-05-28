@@ -18,17 +18,17 @@
 
 <h2 class="mb-4">📋 Gestión de Expedientes</h2>
 
-@if (TempData["Exito"] != null)
+@if (TempData["ExitoExpediente"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show">
-        ✅ @TempData["Exito"]
+        ✅ @TempData["ExitoExpediente"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
-@if (TempData["Error"] != null)
+@if (TempData["ErrorExpediente"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show">
-        ❌ @TempData["Error"]
+        ❌ @TempData["ErrorExpediente"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }

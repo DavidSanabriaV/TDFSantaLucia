@@ -1,4 +1,4 @@
-﻿    using TDFSantaLucia.Models;
+﻿using TDFSantaLucia.Models;
 using TDFSantaLucia.Repositories;
 using System.Collections.Generic;
 
@@ -15,5 +15,7 @@ namespace TDFSantaLucia.Services
         public void Actualizar(Producto producto) => _repo.Actualizar(producto);
         public void Eliminar(int id) => _repo.Eliminar(id);
         public bool ExisteAsync(int id) => _repo.ObtenerPorId(id) != null;
+        public bool ExisteNombre(string nombre) => _repo.ExisteNombre(nombre);
+        public bool ExisteNombreEnOtra(string n, int id) => _repo.ExisteNombreEnOtra(n, id);
     }
 }
