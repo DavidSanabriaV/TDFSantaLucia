@@ -7,6 +7,7 @@ namespace TDFSantaLucia.Services
         List<Cita> ObtenerTodas();
         List<Cita> ObtenerPorCliente(int clienteId);
         Cita? ObtenerPorId(int id);
+        Cliente? ObtenerClientePorUsuarioId(string usuarioId); 
         CitaViewModel ObtenerViewModel(int? citaId = null);
         (bool success, string? error) AgendarCita(CitaViewModel model);
         (bool success, string? error) AsignarEmpleado(int citaId, int empleadoId);

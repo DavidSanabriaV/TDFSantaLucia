@@ -22,7 +22,6 @@ namespace TDFSantaLucia.Binders
 
             bool estado = request.Form["Estado"].Contains("true");
 
-            // Generar username automático desde nombre y primer apellido
             string username;
             if (!string.IsNullOrWhiteSpace(nombre) && !string.IsNullOrWhiteSpace(primerApellido))
             {
@@ -39,7 +38,6 @@ namespace TDFSantaLucia.Binders
                 username = Guid.NewGuid().ToString("N");
             }
 
-            // El email puede venir del campo Email o Correo
             var emailFinal = !string.IsNullOrWhiteSpace(email)
                 ? email
                 : (!string.IsNullOrWhiteSpace(correo) ? correo : null);
@@ -61,7 +59,6 @@ namespace TDFSantaLucia.Binders
                 Correo = string.IsNullOrWhiteSpace(correo) ? null : correo,
             };
 
-            // Pasar el password al controller via HttpContext.Items
             bindingContext.HttpContext.Items["Password"] = password;
 
             bindingContext.Result = ModelBindingResult.Success(usuario);

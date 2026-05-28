@@ -25,6 +25,10 @@ namespace TDFSantaLucia.Services
         public List<Cita> ObtenerPorCliente(int clienteId)
             => _citaRepo.ObtenerPorCliente(clienteId);
 
+        public Cliente? ObtenerClientePorUsuarioId(string usuarioId)
+    => _clienteRepo.ObtenerTodos()
+        .FirstOrDefault(c => c.Usuario_ID == usuarioId);
+
         public Cita? ObtenerPorId(int id)
             => _citaRepo.ObtenerPorId(id);
 

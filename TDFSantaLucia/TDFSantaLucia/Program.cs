@@ -83,6 +83,7 @@ builder.Services.AddScoped<IEmpleadoService, EmpleadoService>();
 builder.Services.AddScoped<IInventarioService, InventarioService>();
 builder.Services.AddScoped<IExpedienteService, ExpedienteService>();
 builder.Services.AddScoped<ICitaService, CitaService>();
+builder.Services.AddScoped<ICuentaService, CuentaService>();
 
 
 // Add services to the container

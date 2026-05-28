@@ -45,11 +45,21 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("MisCitas", new { clienteId = model.Cliente_Id });
         }
 
-        [HttpGet("miscitas/{clienteId:int}")]
-        public IActionResult MisCitas(int clienteId)
+        [HttpGet("miscitas")]
+        public IActionResult MisCitas()
         {
-            var citas = _citaService.ObtenerPorCliente(clienteId);
-            ViewBag.ClienteId = clienteId;
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToAction("Login", "Account");
+
+            var cliente = _citaService.ObtenerClientePorUsuarioId(userId);
+
+            if (cliente == null)
+                return RedirectToAction("Index", "Home");
+
+            var citas = _citaService.ObtenerPorCliente(cliente.Cliente_Id);
+            ViewBag.ClienteId = cliente.Cliente_Id;
             return View(citas);
         }
 
