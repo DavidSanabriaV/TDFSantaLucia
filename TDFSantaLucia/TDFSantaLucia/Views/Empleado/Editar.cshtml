@@ -41,21 +41,43 @@
                 <span asp-validation-for="Segundo_Apellido" class="text-danger"></span>
             </div>
 
-            <div class="col-md-4">
-                <label asp-for="Cedula" class="form-label"></label>
-                <input asp-for="Cedula" class="form-control"
+            <div class="col-md-6">
+
+                <label asp-for="Cedula"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Cedula"
+                       class="form-control"
                        maxlength="9"
-                       minlength="9"
-                       placeholder="000000000" />
-                <span asp-validation-for="Cedula" class="text-danger"></span>
+                       placeholder="000000000"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,9)" />
+
+                <span asp-validation-for="Cedula"
+                      class="text-danger">
+                </span>
+
             </div>
 
-            <div class="col-md-4">
-                <label asp-for="Telefono" class="form-label"></label>
-                <input asp-for="Telefono" class="form-control" />
+            <div class="col-md-6">
+
+                <label asp-for="Telefono"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Telefono"
+                       class="form-control"
+                       maxlength="8"
+                       placeholder="00000000"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,8)" />
+
+                <span asp-validation-for="Telefono"
+                      class="text-danger">
+                </span>
+
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-12">
                 <label asp-for="Direccion_Exacta" class="form-label"></label>
                 <input asp-for="Direccion_Exacta" class="form-control" />
             </div>
@@ -77,18 +99,33 @@
             </div>
 
             <div class="col-md-4">
-                <label asp-for="password" class="form-label">
+
+                <label asp-for="password"
+                       class="form-label">
                     Nueva Contraseña
                 </label>
 
-                <input asp-for="password"
-                       type="password"
-                       class="form-control" />
+                <div class="input-group">
+
+                    <input asp-for="password"
+                           type="password"
+                           class="form-control"
+                           id="passwordInput" />
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="togglePassword()">
+                        👁
+                    </button>
+
+                </div>
+
             </div>
 
             <div class="col-md-6">
 
-                <label asp-for="rol" class="form-label">
+                <label asp-for="rol"
+                       class="form-label">
                     Rol
                 </label>
 
@@ -127,6 +164,7 @@
                        min="0"
                        class="form-control"
                        value="@(Model.SalarioBruto?.ToString("0.##"))" />
+
             </div>
 
             <div class="col-md-4">
@@ -155,7 +193,7 @@
         <div class="d-flex justify-content-between mt-4">
 
             <a asp-action="Index"
-               class="btn btn-secondary">
+                   class="btn btn-secondary">
                 ⬅ Volver
             </a>
 
@@ -170,7 +208,31 @@
 
 </div>
 
+<script>
+
+    function togglePassword() {
+
+        const input = document.getElementById("passwordInput");
+
+        if (input.type === "password") {
+            input.type = "text";
+        }
+        else {
+            input.type = "password";
+        }
+    }
+
+</script>
+
+<style>
+
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+        display: none;
+    }
+
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-
