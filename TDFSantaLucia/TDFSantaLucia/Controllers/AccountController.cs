@@ -43,6 +43,31 @@ namespace TDFSantaLucia.Controllers
             return View(model);
         }
 
+        [HttpGet("Registro")]
+        public IActionResult Registro()
+        {
+            if (User.Identity?.IsAuthenticated == true)
+                return RedirectToAction("Index", "Home");
+
+            return View(new RegisterViewModel());
+        }
+
+        [HttpPost("Registro")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Registro(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var (succeeded, errorMessage) = await _cuentaService.RegistrarClienteAsync(model);
+
+            if (succeeded)
+                return RedirectToAction("Index", "Home");
+
+            ModelState.AddModelError(string.Empty, errorMessage!);
+            return View(model);
+        }
+
         [HttpPost("Logout")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()

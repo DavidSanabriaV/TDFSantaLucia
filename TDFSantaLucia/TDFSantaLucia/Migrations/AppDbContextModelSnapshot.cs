@@ -177,7 +177,7 @@ namespace TDFSantaLucia.Migrations
                     b.Property<int>("Cliente_Id")
                         .HasColumnType("int");
 
-                    b.Property<int>("Empleado_Id")
+                    b.Property<int?>("Empleado_Id")
                         .HasColumnType("int");
 
                     b.Property<string>("Estado")
@@ -837,8 +837,7 @@ namespace TDFSantaLucia.Migrations
                     b.HasOne("TDFSantaLucia.Models.Empleado", "Empleado")
                         .WithMany("Citas")
                         .HasForeignKey("Empleado_Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Cliente");
 
