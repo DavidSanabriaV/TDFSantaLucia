@@ -5,61 +5,109 @@
 }
 
 <div class="container mt-4">
+
     <h2 class="mb-4">➕ Nuevo Empleado</h2>
 
-    <form asp-action="Crear" method="post" class="card p-4 shadow-sm">
+    <form asp-action="Crear"
+          method="post"
+          class="card p-4 shadow-sm">
 
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger mb-3">
+        </div>
 
         <h5 class="mb-3">Datos Personales</h5>
 
         <div class="row g-3">
 
             <div class="col-md-4">
-                <label asp-for="Nombre" class="form-label"></label>
-                <input asp-for="Nombre" class="form-control" />
-                <span asp-validation-for="Nombre" class="text-danger"></span>
+
+                <label asp-for="Nombre"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Nombre"
+                       class="form-control" />
+
+                <span asp-validation-for="Nombre"
+                      class="text-danger">
+                </span>
+
             </div>
 
             <div class="col-md-4">
-                <label asp-for="Primer_Apellido" class="form-label"></label>
-                <input asp-for="Primer_Apellido" class="form-control" />
-                <span asp-validation-for="Primer_Apellido" class="text-danger"></span>
+
+                <label asp-for="Primer_Apellido"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Primer_Apellido"
+                       class="form-control" />
+
+                <span asp-validation-for="Primer_Apellido"
+                      class="text-danger">
+                </span>
+
             </div>
 
             <div class="col-md-4">
-                <label asp-for="Segundo_Apellido" class="form-label"></label>
-                <input asp-for="Segundo_Apellido" class="form-control" />
-                <span asp-validation-for="Segundo_Apellido" class="text-danger"></span>
+
+                <label asp-for="Segundo_Apellido"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Segundo_Apellido"
+                       class="form-control" />
+
+                <span asp-validation-for="Segundo_Apellido"
+                      class="text-danger">
+                </span>
+
             </div>
 
             <div class="col-md-6">
-                <label asp-for="Cedula" class="form-label"></label>
+
+                <label asp-for="Cedula"
+                       class="form-label">
+                </label>
 
                 <input asp-for="Cedula"
-                       type="text"
                        class="form-control"
                        maxlength="9"
-                       minlength="9"
-                       inputmode="numeric"
-                       placeholder="000000000"
-                       oninput="this.value = this.value.replace(/\D/g, '')" />
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,9)" />
 
-                <span asp-validation-for="Cedula" class="text-danger"></span>
+                <span asp-validation-for="Cedula"
+                      class="text-danger">
+                </span>
+
             </div>
 
             <div class="col-md-6">
-                <label asp-for="Telefono" class="form-label"></label>
+
+                <label asp-for="Telefono"
+                       class="form-label">
+                </label>
+
                 <input asp-for="Telefono"
                        class="form-control"
-                       pattern="[0-9]*"
-                       inputmode="numeric"
-                       oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+                       maxlength="8"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,8)" />
+
+                <span asp-validation-for="Telefono"
+                      class="text-danger">
+                </span>
+
             </div>
 
             <div class="col-md-12">
-                <label asp-for="Direccion_Exacta" class="form-label"></label>
-                <input asp-for="Direccion_Exacta" class="form-control" />
+
+                <label asp-for="Direccion_Exacta"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Direccion_Exacta"
+                       class="form-control" />
+
             </div>
 
         </div>
@@ -68,30 +116,70 @@
 
         <div class="row g-3">
 
-          
-
             <div class="col-md-6">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+
+                <label asp-for="Email"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Email"
+                       class="form-control" />
+
+                <span asp-validation-for="Email"
+                      class="text-danger">
+                </span>
+
             </div>
 
             <div class="col-md-6">
-                <label asp-for="password" class="form-label">Contraseña</label>
-                <input asp-for="password" type="password" class="form-control" />
-                <span asp-validation-for="password" class="text-danger"></span>
+
+                <label asp-for="password"
+                       class="form-label">
+                    Contraseña
+                </label>
+
+                <div class="input-group">
+
+                    <input asp-for="password"
+                           type="password"
+                           class="form-control"
+                           id="passwordInput" />
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="togglePassword()">
+                        👁
+                    </button>
+
+                </div>
+
+                <span asp-validation-for="password"
+                      class="text-danger">
+                </span>
+
             </div>
 
             <div class="col-md-6">
-                <label asp-for="rol" class="form-label">Rol</label>
+
+                <label asp-for="rol"
+                       class="form-label">
+                    Rol
+                </label>
 
                 <select asp-for="rol"
                         asp-items='new SelectList(ViewBag.Roles)'
                         class="form-select">
-                    <option value="">Seleccione un rol</option>
+
+                    <option value="">
+                        Seleccione un rol
+                    </option>
+
                 </select>
 
-                <span asp-validation-for="rol" class="text-danger"></span>
+                <span asp-validation-for="rol"
+                      class="text-danger">
+                </span>
+
             </div>
 
         </div>
@@ -101,21 +189,32 @@
         <div class="row g-3">
 
             <div class="col-md-6">
-                <label asp-for="Puesto" class="form-label"></label>
-                <input asp-for="Puesto" class="form-control" />
+
+                <label asp-for="Puesto"
+                       class="form-label">
+                </label>
+
+                <input asp-for="Puesto"
+                       class="form-control" />
+
             </div>
 
             <div class="col-md-6">
-                <label asp-for="SalarioBruto" class="form-label"></label>
+
+                <label asp-for="SalarioBruto"
+                       class="form-label">
+                </label>
 
                 <input asp-for="SalarioBruto"
                        type="number"
                        step="0.01"
                        min="0"
                        class="form-control" />
+
             </div>
 
             <div class="col-md-12">
+
                 <div class="form-check mt-2">
 
                     <input asp-for="Estado"
@@ -127,6 +226,7 @@
                     </label>
 
                 </div>
+
             </div>
 
         </div>
@@ -134,7 +234,7 @@
         <div class="d-flex justify-content-between mt-4">
 
             <a asp-action="Index"
-               class="btn btn-secondary">
+                   class="btn btn-secondary">
                 ⬅ Volver
             </a>
 
@@ -146,9 +246,34 @@
         </div>
 
     </form>
+
 </div>
+
+<script>
+
+    function togglePassword() {
+
+        const input = document.getElementById("passwordInput");
+
+        if (input.type === "password") {
+            input.type = "text";
+        }
+        else {
+            input.type = "password";
+        }
+    }
+
+</script>
+
+<style>
+
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+        display: none;
+    }
+
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-

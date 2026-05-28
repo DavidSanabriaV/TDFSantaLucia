@@ -6,7 +6,7 @@ namespace TDFSantaLucia.Models
     {
         public int Empleado_Id { get; set; }
 
-    public string? UsuarioId { get; set; }
+        public string? UsuarioId { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
         public string Nombre { get; set; }
@@ -29,19 +29,23 @@ namespace TDFSantaLucia.Models
         public string rol { get; set; }
 
         [Required(ErrorMessage = "La cédula es obligatoria")]
-        [RegularExpression(@"^[0-9]+$", ErrorMessage = "La cédula solo puede contener números")]
+        [RegularExpression(@"^\d{9}$",
+            ErrorMessage = "La cédula debe tener exactamente 9 números")]
         public string Cedula { get; set; }
 
+        [Required(ErrorMessage = "El teléfono es obligatorio")]
+        [RegularExpression(@"^\d{8}$",
+            ErrorMessage = "El teléfono debe tener exactamente 8 números")]
         public string? Telefono { get; set; }
 
         public string? Direccion_Exacta { get; set; }
 
         public string? Puesto { get; set; }
+
         public decimal? SalarioBruto { get; set; }
 
         public decimal? SalarioNeto { get; set; }
 
         public bool Estado { get; set; } = true;
     }
-
 }

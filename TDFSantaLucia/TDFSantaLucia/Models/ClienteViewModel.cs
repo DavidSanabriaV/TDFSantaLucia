@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TDFSantaLucia.Validators;
 
 namespace TDFSantaLucia.Models
 {
     public class ClienteViewModel
     {
         public int Cliente_Id { get; set; }
+
         public string? Usuario_ID { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio")]
@@ -21,13 +23,24 @@ namespace TDFSantaLucia.Models
         public string Email { get; set; }
 
         public string? Password { get; set; }
-        [Required]
-        [RegularExpression(@"^\d{9}$", ErrorMessage = "La cédula debe tener exactamente 9 dígitos numéricos.")]
+
+        [Required(ErrorMessage = "La cédula es obligatoria")]
+        [RegularExpression(@"^\d{9}$",
+            ErrorMessage = "La cédula debe tener exactamente 9 números")]
         public string? Cedula { get; set; }
+
+        [Required(ErrorMessage = "El teléfono es obligatorio")]
+        [RegularExpression(@"^\d{8}$",
+            ErrorMessage = "El teléfono debe tener exactamente 8 números")]
         public string? Telefono { get; set; }
+
         public string? Direccion_Exacta { get; set; }
+
         public bool Estado { get; set; } = true;
+
+        [FechaNoFutura(ErrorMessage = "La fecha no puede ser futura")]
         public DateTime? Fecha_Nacimiento { get; set; }
+
         public int Puntos_Acumulados { get; set; }
     }
 }
