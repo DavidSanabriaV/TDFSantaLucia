@@ -5,67 +5,155 @@
 }
 
 <div class="container mt-4">
+
     <h2 class="mb-4">✏️ Editar Cliente</h2>
 
     <form asp-action="Editar" method="post" class="card p-4 shadow-sm">
+
         <input asp-for="Cliente_Id" type="hidden" />
         <input asp-for="Usuario_ID" type="hidden" />
+
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
         <h5 class="mb-3">Datos Personales</h5>
+
         <div class="row g-3">
+
             <div class="col-md-4">
                 <label asp-for="Nombre" class="form-label">Nombre</label>
                 <input asp-for="Nombre" class="form-control" />
                 <span asp-validation-for="Nombre" class="text-danger"></span>
             </div>
+
             <div class="col-md-4">
                 <label asp-for="Primer_Apellido" class="form-label">Primer Apellido</label>
                 <input asp-for="Primer_Apellido" class="form-control" />
                 <span asp-validation-for="Primer_Apellido" class="text-danger"></span>
             </div>
+
             <div class="col-md-4">
                 <label asp-for="Segundo_Apellido" class="form-label">Segundo Apellido</label>
                 <input asp-for="Segundo_Apellido" class="form-control" />
                 <span asp-validation-for="Segundo_Apellido" class="text-danger"></span>
             </div>
+
             <div class="col-md-4">
                 <label asp-for="Email" class="form-label">Correo</label>
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
+
             <div class="col-md-6">
-                <label asp-for="Cedula" class="form-label"></label>
-                <input asp-for="Cedula" class="form-control"
+                <label asp-for="Password" class="form-label">Nueva Contraseña</label>
+
+                <div class="input-group">
+
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control"
+                           id="passwordInput" />
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="togglePassword()">
+                        👁
+                    </button>
+
+                </div>
+
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Cedula" class="form-label">Cédula</label>
+
+                <input asp-for="Cedula"
+                       class="form-control"
                        maxlength="9"
-                       minlength="9"
-                       placeholder="000000000" />
+                       placeholder="000000000"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,9)" />
+
                 <span asp-validation-for="Cedula" class="text-danger"></span>
             </div>
+
             <div class="col-md-4">
                 <label asp-for="Telefono" class="form-label">Teléfono</label>
-                <input asp-for="Telefono" class="form-control" />
+
+                <input asp-for="Telefono"
+                       class="form-control"
+                       maxlength="8"
+                       placeholder="00000000"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,8)" />
+
+                <span asp-validation-for="Telefono" class="text-danger"></span>
             </div>
+
             <div class="col-md-4">
                 <label asp-for="Fecha_Nacimiento" class="form-label">Fecha Nacimiento</label>
                 <input asp-for="Fecha_Nacimiento" type="date" class="form-control" />
             </div>
+
             <div class="col-md-8">
                 <label asp-for="Direccion_Exacta" class="form-label">Dirección</label>
                 <input asp-for="Direccion_Exacta" class="form-control" />
             </div>
+
             <div class="col-md-4">
                 <label class="form-label">Estado</label>
+
                 <div class="form-check mt-2">
-                    <input asp-for="Estado" class="form-check-input" type="checkbox" />
-                    <label asp-for="Estado" class="form-check-label">Activo</label>
+                    <input asp-for="Estado"
+                           class="form-check-input"
+                           type="checkbox" />
+
+                    <label asp-for="Estado"
+                           class="form-check-label">
+                        Activo
+                    </label>
                 </div>
             </div>
+
         </div>
 
         <div class="d-flex justify-content-between mt-4">
-            <a asp-action="Index" class="btn btn-secondary">⬅ Volver</a>
-            <button type="submit" class="btn btn-warning">✔ Actualizar</button>
+
+            <a asp-action="Index"
+                   class="btn btn-secondary">
+                ⬅ Volver
+            </a>
+
+            <button type="submit"
+                    class="btn btn-warning">
+                ✔ Actualizar
+            </button>
+
         </div>
+
     </form>
+
 </div>
+
+<script>
+
+    function togglePassword() {
+
+        const input = document.getElementById("passwordInput");
+
+        if (input.type === "password") {
+            input.type = "text";
+        }
+        else {
+            input.type = "password";
+        }
+    }
+
+</script>
+
+<style>
+
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+        display: none;
+    }
+
+</style>
