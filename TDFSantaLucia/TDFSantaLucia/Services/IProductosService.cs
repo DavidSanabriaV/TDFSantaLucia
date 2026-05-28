@@ -8,10 +8,11 @@ namespace TDFSantaLucia.Services
         List<Producto> ObtenerTodos();
         Producto? ObtenerPorId(int id);
         void Crear(Producto producto);
-        void Actualizar(Producto producto);
+        (bool exito, string? error) Actualizar(Producto producto);
         void Eliminar(int id);
         bool ExisteAsync(int id);
         bool ExisteNombre(string nombre);
+       
         bool ExisteNombreEnOtra(string nombre, int id);
     }
 }

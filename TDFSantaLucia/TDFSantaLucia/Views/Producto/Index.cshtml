@@ -2,7 +2,12 @@
 
 @{
     ViewData["Title"] = "Productos";
-    var lista = Model ?? new List<TDFSantaLucia.Models.Producto>();
+    var esAdminOEmpleado = User.IsInRole("Admin") || User.IsInRole("Empleado");
+    var lista = esAdminOEmpleado
+        ? Model ?? new List<TDFSantaLucia.Models.Producto>()
+        : (Model ?? new List<TDFSantaLucia.Models.Producto>()).Where(p => p.Estado).ToList();
+
+
 }
 
 <div class="container-fluid px-4 py-4">
@@ -93,14 +98,21 @@
                     </select>
                 </div>
 
-                <div class="col-md-2">
-                    <label class="form-label fw-semibold text-muted small">ESTADO</label>
-                    <select id="filtroEstado" class="form-select rounded-3">
-                        <option value="">Todos</option>
-                        <option value="true">Activo</option>
-                        <option value="false">Inactivo</option>
-                    </select>
-                </div>
+                @if (esAdminOEmpleado)
+                {
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold text-muted small">ESTADO</label>
+                        <select id="filtroEstado" class="form-select rounded-3">
+                            <option value="">Todos</option>
+                            <option value="true">Activo</option>
+                            <option value="false">Inactivo</option>
+                        </select>
+                    </div>
+                }
+                else
+                {
+                    <input type="hidden" id="filtroEstado" value="" />
+                }
             </div>
 
             <div class="row g-3 align-items-end mt-1">

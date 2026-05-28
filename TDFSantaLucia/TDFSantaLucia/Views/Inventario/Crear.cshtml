@@ -23,13 +23,38 @@
         @using (Html.BeginForm("Crear", "Inventario", FormMethod.Post, new { @class = "row g-3" }))
         {
             @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Producto_Id, new { id = "productoIdHidden" })
 
+            @* Buscador de producto *@
             <div class="col-md-12">
                 <label class="form-label fw-semibold">Producto</label>
-                @Html.DropDownList("Producto_Id",
-                    (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Productos,
-                    "-- Seleccione un producto --",
-                    new { @class = "form-select" })
+
+                <input type="text" id="buscadorProducto" class="form-control mb-2"
+                       placeholder="🔍 Buscar por nombre o marca..."
+                       autocomplete="off" />
+
+                <div id="listaProductos"
+                     style="max-height:220px; overflow-y:auto; border:1px solid #dee2e6;
+                            border-radius:10px; background:white;">
+                    @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Productos)
+                    {
+                        var sinStock = item.Text.Contains("⚠️ Sin stock");
+                        <div class="producto-item px-3 py-2"
+                             style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
+                             data-id="@item.Value"
+                             data-nombre="@item.Text">
+                            <div class="fw-semibold @(sinStock ? "text-muted" : "")">@item.Text</div>
+                        </div>
+                    }
+                </div>
+
+                <div id="productoSeleccionado" class="mt-2" style="display:none;">
+                    <span class="badge bg-success px-3 py-2 fs-6" id="productoNombreBadge"></span>
+                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="btnLimpiarProducto">
+                        ✕ Cambiar
+                    </button>
+                </div>
+
                 @Html.ValidationMessageFor(m => m.Producto_Id, "", new { @class = "text-danger small" })
             </div>
 
@@ -81,4 +106,41 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const items   = Array.from(document.querySelectorAll('.producto-item'));
+        const byId    = id => document.getElementById(id);
+
+        // Filtrar lista al escribir
+        byId('buscadorProducto').addEventListener('input', function () {
+            const texto = this.value.toLowerCase();
+            items.forEach(i => {
+                i.style.display = i.dataset.nombre.toLowerCase().includes(texto) ? '' : 'none';
+            });
+        });
+
+        // Hover
+        items.forEach(i => {
+            i.addEventListener('mouseenter', () => i.style.background = '#f0f7ff');
+            i.addEventListener('mouseleave', () => i.style.background = 'white');
+
+            // Seleccionar producto
+            i.addEventListener('click', () => {
+                byId('productoIdHidden').value       = i.dataset.id;
+                byId('productoNombreBadge').textContent = i.dataset.nombre;
+                byId('productoSeleccionado').style.display = 'block';
+                byId('listaProductos').style.display       = 'none';
+                byId('buscadorProducto').style.display     = 'none';
+            });
+        });
+
+        // Limpiar selección
+        byId('btnLimpiarProducto').addEventListener('click', () => {
+            byId('productoIdHidden').value             = '';
+            byId('buscadorProducto').value             = '';
+            byId('productoSeleccionado').style.display = 'none';
+            byId('listaProductos').style.display       = '';
+            byId('buscadorProducto').style.display     = '';
+            items.forEach(i => i.style.display = '');
+        });
+    </script>
 }

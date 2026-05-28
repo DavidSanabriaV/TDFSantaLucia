@@ -150,11 +150,13 @@ namespace TDFSantaLucia.Controllers
         private void CargarProductos()
         {
             var productos = _service.ObtenerProductos()
-                .Where(p => p.Estado)
+                .OrderBy(p => p.Nombre)
                 .Select(p => new SelectListItem
                 {
                     Value = p.Producto_Id.ToString(),
-                    Text = $"{p.Nombre} {(p.Marca != null ? "- " + p.Marca : "")}"
+                    Text = p.Estado
+                        ? $"{p.Nombre} {(p.Marca != null ? "- " + p.Marca : "")}"
+                        : $"{p.Nombre} {(p.Marca != null ? "- " + p.Marca : "")} ⚠️ Sin stock"
                 }).ToList();
 
             ViewBag.Productos = productos;

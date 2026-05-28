@@ -24,9 +24,7 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Index()
         {
             ViewData["Title"] = "Productos";
-            var productos = _productoService.ObtenerTodos()
-                .Where(p => p.Estado)
-                .ToList();
+            var productos = _productoService.ObtenerTodos();
             return View(productos);
         }
 
@@ -55,18 +53,18 @@ namespace TDFSantaLucia.Controllers
         [HttpPost("crear")]
         [ValidateAntiForgeryToken]
         public IActionResult Crear(
-            [Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
-            Producto producto)
+        [Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
+        Producto producto)
         {
-            // Evitar nombre duplicado
             if (_productoService.ExisteNombre(producto.Nombre?.Trim() ?? ""))
                 ModelState.AddModelError("Nombre", "Ya existe un producto con ese nombre.");
 
             if (ModelState.IsValid)
             {
+                // Siempre crear inactivo, se activa cuando tenga stock
+                producto.Estado = false;
                 _productoService.Crear(producto);
-                TempData["Exito"] = "Producto creado exitosamente.";
-                // PRG: evita doble submit al recargar
+                TempData["Exito"] = "Producto creado. Estará inactivo hasta que se registre stock en inventario.";
                 return RedirectToAction(nameof(Administrar));
             }
 
@@ -89,8 +87,8 @@ namespace TDFSantaLucia.Controllers
         [HttpPost("editar/{id:int}")]
         [ValidateAntiForgeryToken]
         public IActionResult Editar(
-    int id,
-    [Bind("Producto_Id,Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
+            int id,
+            [Bind("Producto_Id,Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
     Producto producto)
         {
             if (id != producto.Producto_Id) return NotFound();
@@ -112,7 +110,14 @@ namespace TDFSantaLucia.Controllers
             {
                 try
                 {
-                    _productoService.Actualizar(producto);
+                    var (exito, error) = _productoService.Actualizar(producto);
+                    if (!exito)
+                    {
+                        ModelState.AddModelError("Estado", error!);
+                        CargarCategorias(producto.Categoria_Id);
+                        ViewData["Title"] = "Editar Producto";
+                        return View(producto);
+                    }
                     TempData["Exito"] = "Producto actualizado exitosamente.";
                 }
                 catch (DbUpdateConcurrencyException)

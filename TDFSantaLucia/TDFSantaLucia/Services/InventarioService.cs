@@ -44,18 +44,15 @@ namespace TDFSantaLucia.Services
             if (producto == null)
                 return (false, "El producto seleccionado no existe.");
 
-            if (!producto.Estado)
-                return (false, "No se puede agregar inventario a un producto inactivo.");
-
             if (!string.IsNullOrWhiteSpace(inventario.Numero_Lote) &&
                 _repo.ExisteNumeroLote(inventario.Numero_Lote.Trim()))
-                return (false, "Ya existe un lote con ese número.");
+                return (false, "Ya existe un lote con ese numero.");
 
             if (inventario.Cantidad_Disponible < 0)
                 return (false, "La cantidad disponible no puede ser negativa.");
 
             if (inventario.Cantidad_Minima < 0)
-                return (false, "La cantidad mínima no puede ser negativa.");
+                return (false, "La cantidad minima no puede ser negativa.");
 
             if (inventario.Fecha_Vencimiento <= DateTime.Today)
                 return (false, "La fecha de vencimiento debe ser futura.");
@@ -68,6 +65,14 @@ namespace TDFSantaLucia.Services
             inventario.Estado = true;
 
             _repo.Agregar(inventario);
+
+            // Si el producto estaba inactivo y ahora tiene stock, activarlo
+            if (!producto.Estado && inventario.Cantidad_Disponible > 0)
+            {
+                producto.Estado = true;
+                _productoRepo.Actualizar(producto);
+            }
+
             return (true, null);
         }
 
@@ -114,9 +119,24 @@ namespace TDFSantaLucia.Services
                 return (false, "El lote de inventario no existe.");
 
             if (inventario.Cantidad_Disponible > 0)
-                return (false, $"No se puede eliminar un lote con {inventario.Cantidad_Disponible} unidades disponibles. Primero vacíe el stock.");
+                return (false, $"No se puede eliminar un lote con {inventario.Cantidad_Disponible} unidades disponibles. Primero vacie el stock.");
 
+            var productoId = inventario.Producto_Id;
             _repo.Eliminar(id);
+
+            var lotesConStock = _repo.ObtenerPorProducto(productoId)
+                .Any(i => i.Estado && i.Cantidad_Disponible > 0);
+
+            if (!lotesConStock)
+            {
+                var producto = _productoRepo.ObtenerPorId(productoId);
+                if (producto != null && producto.Estado)
+                {
+                    producto.Estado = false;
+                    _productoRepo.Actualizar(producto);
+                }
+            }
+
             return (true, null);
         }
     }
