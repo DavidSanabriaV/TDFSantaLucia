@@ -93,34 +93,36 @@
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <label asp-for="Nombre" class="form-label fw-semibold small text-muted">NOMBRE</label>
-                <input asp-for="Nombre" class="form-control" placeholder="Nombre" />
+                <input asp-for="Nombre" class="form-control" placeholder="Juan" />
                 <span asp-validation-for="Nombre" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="Primer_Apellido" class="form-label fw-semibold small text-muted">PRIMER APELLIDO</label>
-                <input asp-for="Primer_Apellido" class="form-control" placeholder="Primer apellido" />
+                <input asp-for="Primer_Apellido" class="form-control" placeholder="Pérez" />
                 <span asp-validation-for="Primer_Apellido" class="text-danger small"></span>
             </div>
             <div class="col-md-4">
                 <label asp-for="Segundo_Apellido" class="form-label fw-semibold small text-muted">SEGUNDO APELLIDO</label>
-                <input asp-for="Segundo_Apellido" class="form-control" placeholder="Segundo apellido" />
+                <input asp-for="Segundo_Apellido" class="form-control" placeholder="García" />
                 <span asp-validation-for="Segundo_Apellido" class="text-danger small"></span>
             </div>
             <div class="col-md-6">
                 <label asp-for="Cedula" class="form-label fw-semibold small text-muted">CÉDULA</label>
-                <input asp-for="Cedula" class="form-control" placeholder="Cédula" />
+                <input asp-for="Cedula" class="form-control" placeholder="1-1234-5678" />
             </div>
             <div class="col-md-6">
                 <label asp-for="Telefono" class="form-label fw-semibold small text-muted">TELÉFONO</label>
-                <input asp-for="Telefono" class="form-control" placeholder="Teléfono" />
+                <input asp-for="Telefono" class="form-control" placeholder="8888-8888" />
             </div>
             <div class="col-md-6">
                 <label asp-for="Fecha_Nacimiento" class="form-label fw-semibold small text-muted">FECHA DE NACIMIENTO</label>
-                <input asp-for="Fecha_Nacimiento" type="date" class="form-control" />
+                <input asp-for="Fecha_Nacimiento" type="date" class="form-control"
+                       max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="Fecha_Nacimiento" class="text-danger small"></span>
             </div>
             <div class="col-md-6">
                 <label asp-for="Direccion_Exacta" class="form-label fw-semibold small text-muted">DIRECCIÓN</label>
-                <input asp-for="Direccion_Exacta" class="form-control" placeholder="Dirección" />
+                <input asp-for="Direccion_Exacta" class="form-control" placeholder="Barva, Heredia" />
             </div>
         </div>
 

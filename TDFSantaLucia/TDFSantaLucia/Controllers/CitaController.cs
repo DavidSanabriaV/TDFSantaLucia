@@ -17,32 +17,34 @@ namespace TDFSantaLucia.Controllers
         [HttpGet("agendar")]
         public IActionResult Agendar()
         {
-            var model = _citaService.ObtenerViewModel();
-            return View(model);
+            return View(new CitaViewModel());
         }
 
         [HttpPost("agendar")]
         public IActionResult Agendar(CitaViewModel model)
         {
-            if (!ModelState.IsValid)
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var cliente = _citaService.ObtenerClientePorUsuarioId(userId!);
+
+            if (cliente == null)
             {
-                var vm = _citaService.ObtenerViewModel();
-                vm.Servicio = model.Servicio;
-                vm.Fecha = model.Fecha;
-                vm.Observaciones = model.Observaciones;
-                vm.Cliente_Id = model.Cliente_Id;
-                return View(vm);
+                ModelState.AddModelError("", "No se encontró el cliente asociado a tu cuenta.");
+                return View(model);
             }
+
+            model.Cliente_Id = cliente.Cliente_Id;
+
+            if (!ModelState.IsValid)
+                return View(model);
 
             var resultado = _citaService.AgendarCita(model);
             if (!resultado.success)
             {
                 ModelState.AddModelError("", resultado.error ?? "Error al agendar");
-                var vm = _citaService.ObtenerViewModel();
-                return View(vm);
+                return View(model);
             }
 
-            return RedirectToAction("MisCitas", new { clienteId = model.Cliente_Id });
+            return RedirectToAction("MisCitas");
         }
 
         [HttpGet("miscitas")]
@@ -123,9 +125,8 @@ namespace TDFSantaLucia.Controllers
         {
             var resultado = _citaService.AsignarEmpleado(id, empleadoId);
             if (!resultado.success)
-            {
                 TempData["Error"] = resultado.error;
-            }
+
             return RedirectToAction("Revisar", new { id });
         }
 

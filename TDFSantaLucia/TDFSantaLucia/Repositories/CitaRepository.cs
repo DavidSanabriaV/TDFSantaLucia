@@ -15,23 +15,29 @@ namespace TDFSantaLucia.Repositories
 
         public List<Cita> ObtenerTodas()
             => _context.Citas
-                .Include(c => c.Cliente).ThenInclude(c => c.Usuario)
-                .Include(c => c.Empleado).ThenInclude(e => e.Usuario)
+                .Include(c => c.Cliente)
+                    .ThenInclude(cl => cl.Usuario)
+                .Include(c => c.Empleado)
+                    .ThenInclude(e => e.Usuario)
                 .OrderByDescending(c => c.Fecha)
                 .ToList();
 
         public List<Cita> ObtenerPorCliente(int clienteId)
             => _context.Citas
-                .Include(c => c.Cliente).ThenInclude(c => c.Usuario)
-                .Include(c => c.Empleado).ThenInclude(e => e.Usuario)
+                .Include(c => c.Cliente)
+                    .ThenInclude(cl => cl.Usuario)
+                .Include(c => c.Empleado)
+                    .ThenInclude(e => e.Usuario)
                 .Where(c => c.Cliente_Id == clienteId)
                 .OrderByDescending(c => c.Fecha)
                 .ToList();
 
         public Cita? ObtenerPorId(int id)
             => _context.Citas
-                .Include(c => c.Cliente).ThenInclude(c => c.Usuario)
-                .Include(c => c.Empleado).ThenInclude(e => e.Usuario)
+                .Include(c => c.Cliente)
+                    .ThenInclude(cl => cl.Usuario)
+                .Include(c => c.Empleado)
+                    .ThenInclude(e => e.Usuario)
                 .FirstOrDefault(c => c.Cita_Id == id);
 
         public void Agregar(Cita cita)
@@ -58,7 +64,6 @@ namespace TDFSantaLucia.Repositories
 
         public bool EmpleadoTieneCitaEnHorario(int empleadoId, DateTime fecha, int? excluirCitaId = null)
         {
-            var margen = TimeSpan.FromMinutes(30);
             var fechaMin = fecha.AddMinutes(-30);
             var fechaMax = fecha.AddMinutes(30);
 

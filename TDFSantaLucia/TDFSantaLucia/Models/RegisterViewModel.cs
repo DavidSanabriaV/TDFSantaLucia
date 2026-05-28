@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TDFSantaLucia.Validators;
 
 namespace TDFSantaLucia.Models
 {
@@ -30,6 +31,10 @@ namespace TDFSantaLucia.Models
         public string? Cedula { get; set; }
         public string? Telefono { get; set; }
         public string? Direccion_Exacta { get; set; }
+
+        [DataType(DataType.Date)]
+        [Display(Name = "Fecha de Nacimiento")]
+        [FechaNoFutura(ErrorMessage = "La fecha de nacimiento no puede ser futura")]
         public DateTime? Fecha_Nacimiento { get; set; }
     }
 }

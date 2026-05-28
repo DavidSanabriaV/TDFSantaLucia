@@ -26,8 +26,8 @@ namespace TDFSantaLucia.Services
             => _citaRepo.ObtenerPorCliente(clienteId);
 
         public Cliente? ObtenerClientePorUsuarioId(string usuarioId)
-    => _clienteRepo.ObtenerTodos()
-        .FirstOrDefault(c => c.Usuario_ID == usuarioId);
+            => _clienteRepo.ObtenerTodos()
+                .FirstOrDefault(c => c.Usuario_ID == usuarioId);
 
         public Cita? ObtenerPorId(int id)
             => _citaRepo.ObtenerPorId(id);
@@ -62,6 +62,9 @@ namespace TDFSantaLucia.Services
         {
             if (model.Fecha < DateTime.Now)
                 return (false, "La fecha no puede ser en el pasado");
+
+            if (model.Cliente_Id <= 0)
+                return (false, "Cliente no válido");
 
             var cita = new Cita
             {
