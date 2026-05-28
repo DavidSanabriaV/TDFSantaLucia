@@ -68,7 +68,7 @@ namespace TDFSantaLucia.Controllers
                 return View(inventario);
             }
 
-            TempData["Exito"] = "Lote de inventario registrado correctamente.";
+            TempData["ExitoInventario"] = "Lote de inventario registrado correctamente.";
             return RedirectToAction("Index");
         }
 
@@ -104,7 +104,7 @@ namespace TDFSantaLucia.Controllers
                 return View(inventario);
             }
 
-            TempData["Exito"] = "Lote actualizado correctamente.";
+            TempData["ExitoInventario"] = "Lote actualizado correctamente.";
             return RedirectToAction("Index");
         }
 
@@ -114,9 +114,9 @@ namespace TDFSantaLucia.Controllers
         {
             var (exito, error) = _service.Eliminar(id);
             if (!exito)
-                TempData["Error"] = error;
+                TempData["ErrorInventario"] = error;
             else
-                TempData["Exito"] = "Lote eliminado correctamente.";
+                TempData["ExitoInventario"] = "Lote eliminado correctamente.";
 
             return RedirectToAction("Index");
         }
