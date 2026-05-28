@@ -1,16 +1,18 @@
 using Microsoft.AspNetCore.Identity;
-
 using Microsoft.EntityFrameworkCore;
-
 using TDFSantaLucia.Constants;
-
 using TDFSantaLucia.Data;
-
+using TDFSantaLucia.Binders;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Repositories;
 using TDFSantaLucia.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.ModelBinderProviders.Insert(0, new UsuarioModelBinderProvider());
+});
 
 // Configure database context
 

@@ -41,13 +41,14 @@ namespace TDFSantaLucia.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var resultado = await _clienteService.CrearCliente(model);
-            if (!resultado)
+            var (exito, error) = await _clienteService.CrearCliente(model);
+            if (!exito)
             {
-                ModelState.AddModelError("", "Error al crear el cliente. Verifique que el correo no esté en uso.");
+                ModelState.AddModelError("", error ?? "Error al crear el cliente.");
                 return View(model);
             }
 
+            TempData["Exito"] = "Cliente creado correctamente.";
             return RedirectToAction("Index");
         }
 
@@ -61,14 +62,14 @@ namespace TDFSantaLucia.Controllers
             {
                 Cliente_Id = cliente.Cliente_Id,
                 Usuario_ID = cliente.Usuario_ID,
-                Nombre = cliente.Usuario.Nombre,
-                Primer_Apellido = cliente.Usuario.Primer_Apellido,
-                Segundo_Apellido = cliente.Usuario.Segundo_Apellido,
-                Email = cliente.Usuario.Email,
-                Cedula = cliente.Usuario.Cedula,
-                Telefono = cliente.Usuario.Telefono,
-                Direccion_Exacta = cliente.Usuario.Direccion_Exacta,
-                Estado = cliente.Usuario.Estado,
+                Nombre = cliente.Usuario?.Nombre,
+                Primer_Apellido = cliente.Usuario?.Primer_Apellido,
+                Segundo_Apellido = cliente.Usuario?.Segundo_Apellido,
+                Email = cliente.Usuario?.Email,
+                Cedula = cliente.Usuario?.Cedula,
+                Telefono = cliente.Usuario?.Telefono,
+                Direccion_Exacta = cliente.Usuario?.Direccion_Exacta,
+                Estado = cliente.Usuario?.Estado ?? true,
                 Fecha_Nacimiento = cliente.Fecha_Nacimiento,
                 Puntos_Acumulados = cliente.Puntos_Acumulados
             };
@@ -82,20 +83,26 @@ namespace TDFSantaLucia.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var resultado = await _clienteService.ActualizarCliente(model);
-            if (!resultado)
+            var (exito, error) = await _clienteService.ActualizarCliente(model);
+            if (!exito)
             {
-                ModelState.AddModelError("", "Error al actualizar el cliente.");
+                ModelState.AddModelError("", error ?? "Error al actualizar el cliente.");
                 return View(model);
             }
 
+            TempData["Exito"] = "Cliente actualizado correctamente.";
             return RedirectToAction("Index");
         }
 
         [HttpPost("eliminar/{id:int}")]
-        public IActionResult Eliminar(int id)
+        public async Task<IActionResult> Eliminar(int id)
         {
-            _clienteService.EliminarCliente(id);
+            var (exito, error) = await _clienteService.EliminarClienteAsync(id);
+            if (!exito)
+                TempData["Error"] = error;
+            else
+                TempData["Exito"] = "Cliente eliminado correctamente.";
+
             return RedirectToAction("Index");
         }
     }

@@ -17,8 +17,7 @@ namespace TDFSantaLucia.Models
         [Required(ErrorMessage = "El segundo apellido es obligatorio")]
         public string Segundo_Apellido { get; set; }
 
-        [Required(ErrorMessage = "El username es obligatorio")]
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         [Required(ErrorMessage = "El correo es obligatorio")]
         [EmailAddress(ErrorMessage = "Correo inválido")]

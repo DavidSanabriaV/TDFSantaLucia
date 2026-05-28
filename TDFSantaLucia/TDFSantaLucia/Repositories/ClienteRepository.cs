@@ -16,12 +16,17 @@ namespace TDFSantaLucia.Repositories
         public List<Cliente> ObtenerTodos()
             => _context.Clientes
                 .Include(c => c.Usuario)
-                .OrderBy(c => c.Usuario.Nombre)
+                .OrderBy(c => c.Usuario.Primer_Apellido)
                 .ToList();
 
         public Cliente? ObtenerPorId(int id)
             => _context.Clientes
                 .Include(c => c.Usuario)
+                .Include(c => c.Pedidos)
+                .Include(c => c.Facturas)
+                .Include(c => c.Citas)
+                .Include(c => c.Expedientes)
+                .Include(c => c.Tratamientos)
                 .FirstOrDefault(c => c.Cliente_Id == id);
 
         public bool ExisteId(int id)
@@ -41,12 +46,11 @@ namespace TDFSantaLucia.Repositories
 
         public void Eliminar(int id)
         {
-            var cliente = ObtenerPorId(id);
-            if (cliente != null)
-            {
-                _context.Clientes.Remove(cliente);
-                _context.SaveChanges();
-            }
+            var cliente = _context.Clientes.Find(id);
+            if (cliente == null) return;
+
+            _context.Clientes.Remove(cliente);
+            _context.SaveChanges();
         }
     }
 }

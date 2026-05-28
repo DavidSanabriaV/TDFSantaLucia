@@ -42,11 +42,10 @@ namespace TDFSantaLucia.Repositories
         public void Eliminar(int id)
         {
             var empleado = _context.Empleados.Find(id);
-            if (empleado != null)
-            {
-                _context.Empleados.Remove(empleado);
-                _context.SaveChanges();
-            }
+            if (empleado == null) return;
+
+            _context.Empleados.Remove(empleado);
+            _context.SaveChanges();
         }
     }
 }

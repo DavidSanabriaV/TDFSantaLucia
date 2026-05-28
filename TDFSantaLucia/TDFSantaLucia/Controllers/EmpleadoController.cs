@@ -104,9 +104,18 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("eliminar/{id:int}")]
-        public IActionResult Eliminar(int id)
+        public async Task<IActionResult> Eliminar(int id)
         {
-            _empleadoService.EliminarEmpleado(id);
+            try
+            {
+                await _empleadoService.EliminarEmpleadoAsync(id);
+                TempData["Exito"] = "Empleado eliminado correctamente.";
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
             return RedirectToAction("Index");
         }
     }

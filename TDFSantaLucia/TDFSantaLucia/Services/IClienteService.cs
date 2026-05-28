@@ -6,8 +6,8 @@ namespace TDFSantaLucia.Services
     {
         List<Cliente> ObtenerTodos();
         Cliente? ObtenerPorId(int id);
-        Task<bool> CrearCliente(ClienteViewModel model);
-        Task<bool> ActualizarCliente(ClienteViewModel model);
-        bool EliminarCliente(int id);
+        Task<(bool exito, string? error)> CrearCliente(ClienteViewModel model);
+        Task<(bool exito, string? error)> ActualizarCliente(ClienteViewModel model);
+        Task<(bool exito, string? error)> EliminarClienteAsync(int id);
     }
 }
