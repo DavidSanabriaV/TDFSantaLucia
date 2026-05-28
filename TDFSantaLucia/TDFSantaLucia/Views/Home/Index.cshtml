@@ -55,10 +55,11 @@
 </div>
 
 @{
-    var productos = ViewBag.Productos as List<TDFSantaLucia.Models.Producto>
-                   ?? new List<TDFSantaLucia.Models.Producto>();
+    var productos = (ViewBag.Productos as List<TDFSantaLucia.Models.Producto>
+                   ?? new List<TDFSantaLucia.Models.Producto>())
+                   .Where(p => p.Estado)
+                   .ToList();
 }
-
 
 <div style="position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; width:100vw;" class="bg-light py-2">
     <div id="carouselProductos" class="carousel slide" data-bs-ride="carousel">
