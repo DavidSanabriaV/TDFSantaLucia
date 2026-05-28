@@ -439,5 +439,12 @@
             document.querySelector('.container-fluid').prepend(div);
             setTimeout(() => div.remove(), 4000);
         }
+        const buscarInicial = '@ViewBag.BuscarInicial';
+        if (buscarInicial) {
+            const input = document.getElementById('searchInput');
+            input.value = buscarInicial;
+            document.getElementById('btnLimpiarTexto').style.display = 'block';
+            filtrar();
+        }
     </script>
 }

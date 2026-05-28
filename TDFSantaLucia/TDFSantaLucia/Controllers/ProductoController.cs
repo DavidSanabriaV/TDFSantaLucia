@@ -20,12 +20,27 @@ namespace TDFSantaLucia.Controllers
             _categoriaService = categoriaService;
         }
 
-        [HttpGet("")]
-        public IActionResult Index()
+        public IActionResult Index(string? buscar)
         {
             ViewData["Title"] = "Productos";
             var productos = _productoService.ObtenerTodos();
+            ViewBag.BuscarInicial = buscar ?? "";
             return View(productos);
+        }
+
+
+        [HttpGet("sugerencias")]
+        public IActionResult Sugerencias()
+        {
+            var productos = _productoService.ObtenerTodos()
+                .Where(p => p.Estado)
+                .Select(p => new {
+                    id = p.Producto_Id,
+                    nombre = p.Nombre,
+                    precio = p.Precio,
+                    imagen = p.Imagen_URL
+                });
+            return Json(productos);
         }
 
         [HttpGet("administrar")]

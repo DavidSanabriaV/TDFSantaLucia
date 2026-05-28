@@ -26,8 +26,8 @@
                       asp-action="Index"
                       method="get"
                       class="flex-grow-1 mx-4"
-                      style="max-width:550px;">
-                    <div class="input-group buscador-navbar">
+                      style="max-width:550px; position:relative;">
+                    <div class="input-group buscador-navbar" style="position:relative;">
                         <input type="text" name="buscar" class="form-control"
                                placeholder="Buscar producto..." autocomplete="off">
                         <button class="input-group-text">
@@ -266,4 +266,70 @@
             <script src="~/js/site.js" asp-append-version="true"></script>
             @await RenderSectionAsync("Scripts", required: false)
         </body>
+
+<script>
+    (function () {
+        const inputNav = document.querySelector('form[action*="producto"] input[name="buscar"]');
+        if (!inputNav) return;
+
+        const wrapper = inputNav.closest('form');
+        wrapper.style.position = 'relative';
+
+        const dropdown = document.createElement('div');
+        dropdown.id = 'sugerenciasDropdown';
+        dropdown.style.display = 'none';
+        wrapper.appendChild(dropdown);
+
+        let productos = [];
+
+        fetch('/producto/sugerencias')
+            .then(r => r.json())
+            .then(data => productos = data)
+            .catch(() => {});
+
+        inputNav.addEventListener('input', function () {
+            const q = this.value.trim().toLowerCase();
+            dropdown.innerHTML = '';
+
+            if (!q || productos.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            const coincidencias = productos
+                .filter(p => p.nombre.toLowerCase().includes(q))
+                .slice(0, 8);
+
+            if (coincidencias.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            coincidencias.forEach(p => {
+                const a = document.createElement('a');
+                a.className = 'sugerencia-item';
+                a.href = `/producto/detalle/${p.id}`;
+                a.innerHTML = `
+                    <img class="sugerencia-img"
+                         src="${p.imagen || '/img/producto-default.png'}"
+                         onerror="this.src='/img/producto-default.png'">
+                    <div>
+                        <div class="sugerencia-nombre">${p.nombre}</div>
+                        <div class="sugerencia-precio">₡${parseFloat(p.precio).toLocaleString('es-CR', {minimumFractionDigits:2})}</div>
+                    </div>`;
+                dropdown.appendChild(a);
+            });
+
+            dropdown.style.display = 'block';
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!wrapper.contains(e.target)) dropdown.style.display = 'none';
+        });
+
+        inputNav.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') dropdown.style.display = 'none';
+        });
+    })();
+</script>
     </html>
