@@ -61,10 +61,9 @@ namespace TDFSantaLucia.Controllers
 
             if (ModelState.IsValid)
             {
-                // Siempre crear inactivo, se activa cuando tenga stock
                 producto.Estado = false;
                 _productoService.Crear(producto);
-                TempData["Exito"] = "Producto creado. Estará inactivo hasta que se registre stock en inventario.";
+                TempData["ExitoProducto"] = "Producto creado. Estará inactivo hasta que se registre stock en inventario.";
                 return RedirectToAction(nameof(Administrar));
             }
 
@@ -118,7 +117,7 @@ namespace TDFSantaLucia.Controllers
                         ViewData["Title"] = "Editar Producto";
                         return View(producto);
                     }
-                    TempData["Exito"] = "Producto actualizado exitosamente.";
+                    TempData["ExitoProducto"] = "Producto actualizado exitosamente.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -152,10 +151,15 @@ namespace TDFSantaLucia.Controllers
             var producto = _productoService.ObtenerPorId(id);
             if (producto == null) return NotFound();
 
-            // Eliminación REAL en base de datos
-            _productoService.Eliminar(id);
+            var resultado = _productoService.Eliminar(id);
 
-            TempData["Exito"] = "Producto eliminado correctamente.";
+            if (!resultado.exito)
+            {
+                TempData["ErrorProducto"] = resultado.error;
+                return RedirectToAction(nameof(Administrar));
+            }
+
+            TempData["ExitoProducto"] = "Producto eliminado correctamente.";
             return RedirectToAction(nameof(Administrar));
         }
 

@@ -12,18 +12,18 @@
 
 <div class="container-fluid px-4 py-4">
 
-    @if (TempData["Exito"] != null)
+    @if (TempData["ExitoProducto"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
+            <i class="bi bi-check-circle me-2"></i>@TempData["ExitoProducto"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    @if (TempData["Error"] != null)
+    @if (TempData["ErrorProducto"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorProducto"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }

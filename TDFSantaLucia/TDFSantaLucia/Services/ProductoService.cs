@@ -19,7 +19,6 @@ namespace TDFSantaLucia.Services
         public void Crear(Producto producto) => _repo.Agregar(producto);
         public (bool exito, string? error) Actualizar(Producto producto)
         {
-            // Si quiere activar el producto validar que tenga stock
             if (producto.Estado)
             {
                 var tieneStock = _inventarioRepo.ObtenerPorProducto(producto.Producto_Id)
@@ -36,7 +35,18 @@ namespace TDFSantaLucia.Services
             _repo.Actualizar(producto);
             return (true, null);
         }
-        public void Eliminar(int id) => _repo.Eliminar(id);
+        public (bool exito, string? error) Eliminar(int id)
+        {
+            try
+            {
+                _repo.Eliminar(id);
+                return (true, null);
+            }
+            catch
+            {
+                return (false, "No se puede eliminar el producto porque tiene stock o registros relacionados.");
+            }
+        }
         public bool ExisteAsync(int id) => _repo.ObtenerPorId(id) != null;
         public bool ExisteNombre(string nombre) => _repo.ExisteNombre(nombre);
         public bool ExisteNombreEnOtra(string n, int id) => _repo.ExisteNombreEnOtra(n, id);

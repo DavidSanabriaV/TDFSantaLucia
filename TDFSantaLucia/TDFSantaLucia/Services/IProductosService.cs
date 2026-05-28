@@ -9,7 +9,7 @@ namespace TDFSantaLucia.Services
         Producto? ObtenerPorId(int id);
         void Crear(Producto producto);
         (bool exito, string? error) Actualizar(Producto producto);
-        void Eliminar(int id);
+        (bool exito, string? error) Eliminar(int id);
         bool ExisteAsync(int id);
         bool ExisteNombre(string nombre);
        
