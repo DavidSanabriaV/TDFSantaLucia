@@ -38,10 +38,8 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Detalle(int? id)
         {
             if (id == null) return NotFound();
-
             var producto = _productoService.ObtenerPorId(id.Value);
             if (producto == null) return NotFound();
-
             ViewData["Title"] = "Detalle de Producto";
             return View(producto);
         }
@@ -56,12 +54,19 @@ namespace TDFSantaLucia.Controllers
 
         [HttpPost("crear")]
         [ValidateAntiForgeryToken]
-        public IActionResult Crear([Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")] Producto producto)
+        public IActionResult Crear(
+            [Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
+            Producto producto)
         {
+            // Evitar nombre duplicado
+            if (_productoService.ExisteNombre(producto.Nombre?.Trim() ?? ""))
+                ModelState.AddModelError("Nombre", "Ya existe un producto con ese nombre.");
+
             if (ModelState.IsValid)
             {
                 _productoService.Crear(producto);
                 TempData["Exito"] = "Producto creado exitosamente.";
+                // PRG: evita doble submit al recargar
                 return RedirectToAction(nameof(Administrar));
             }
 
@@ -74,10 +79,8 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Editar(int? id)
         {
             if (id == null) return NotFound();
-
             var producto = _productoService.ObtenerPorId(id.Value);
             if (producto == null) return NotFound();
-
             CargarCategorias(producto.Categoria_Id);
             ViewData["Title"] = "Editar Producto";
             return View(producto);
@@ -85,16 +88,32 @@ namespace TDFSantaLucia.Controllers
 
         [HttpPost("editar/{id:int}")]
         [ValidateAntiForgeryToken]
-        public IActionResult Editar(int id, [Bind("Producto_Id,Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")] Producto producto)
+        public IActionResult Editar(
+    int id,
+    [Bind("Producto_Id,Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
+    Producto producto)
         {
             if (id != producto.Producto_Id) return NotFound();
+
+            if (producto.Precio == 0)
+            {
+                var original = _productoService.ObtenerPorId(id);
+                if (original != null)
+                {
+                    producto.Precio = original.Precio;
+                    ModelState.Remove("Precio");
+                }
+            }
+
+            if (_productoService.ExisteNombreEnOtra(producto.Nombre?.Trim() ?? "", id))
+                ModelState.AddModelError("Nombre", "Ya existe otro producto con ese nombre.");
 
             if (ModelState.IsValid)
             {
                 try
                 {
                     _productoService.Actualizar(producto);
-                        TempData["Exito"] = "Producto actualizado exitosamente.";
+                    TempData["Exito"] = "Producto actualizado exitosamente.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -102,7 +121,6 @@ namespace TDFSantaLucia.Controllers
                         return NotFound();
                     throw;
                 }
-
                 return RedirectToAction(nameof(Administrar));
             }
 
@@ -115,10 +133,8 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Eliminar(int? id)
         {
             if (id == null) return NotFound();
-
             var producto = _productoService.ObtenerPorId(id.Value);
             if (producto == null) return NotFound();
-
             ViewData["Title"] = "Eliminar Producto";
             return View(producto);
         }
@@ -131,11 +147,10 @@ namespace TDFSantaLucia.Controllers
             var producto = _productoService.ObtenerPorId(id);
             if (producto == null) return NotFound();
 
-            // Eliminado lógico
-            producto.Estado = false;
-            _productoService.Actualizar(producto);
+            // Eliminación REAL en base de datos
+            _productoService.Eliminar(id);
 
-            TempData["Exito"] = "Producto ocultado correctamente.";
+            TempData["Exito"] = "Producto eliminado correctamente.";
             return RedirectToAction(nameof(Administrar));
         }
 
@@ -144,9 +159,7 @@ namespace TDFSantaLucia.Controllers
         {
             var producto = _productoService.ObtenerPorId(productoId);
             if (producto == null || !producto.Estado)
-            {
                 return Json(new { exito = false, mensaje = "Producto no disponible." });
-            }
 
             return Json(new
             {

@@ -15,7 +15,10 @@ namespace TDFSantaLucia.Repositories
             => _db.Productos.Include(p => p.Categoria).AsNoTracking().ToList();
 
         public Producto? ObtenerPorId(int id)
-            => _db.Productos.Include(p => p.Categoria).FirstOrDefault(p => p.Producto_Id == id);
+    => _db.Productos.Include(p => p.Categoria)
+                    .AsNoTracking()  
+                    .FirstOrDefault(p => p.Producto_Id == id);
+
 
         public void Agregar(Producto entidad)
         {
@@ -25,7 +28,10 @@ namespace TDFSantaLucia.Repositories
 
         public void Actualizar(Producto entidad)
         {
-            _db.Productos.Update(entidad);
+            var entry = _db.Entry(entidad);
+            if (entry.State == EntityState.Detached)
+                _db.Productos.Attach(entidad);
+            entry.State = EntityState.Modified;
             _db.SaveChanges();
         }
 

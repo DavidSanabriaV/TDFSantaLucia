@@ -7,6 +7,22 @@
 
 <div class="container-fluid px-4 py-4">
 
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h2 class="fw-bold mb-1" style="color:#1a3c5e;">
@@ -48,7 +64,8 @@
                     <label class="form-label fw-semibold text-muted small">CATEGORÍA</label>
                     <select id="filtroCategoria" class="form-select rounded-3">
                         <option value="">Todas</option>
-                        @foreach (var cat in lista.Where(p => p.Categoria != null).Select(p => p.Categoria!.Nombre).Distinct().OrderBy(n => n))
+                        @foreach (var cat in lista.Where(p => p.Categoria != null)
+                                                    .Select(p => p.Categoria!.Nombre).Distinct().OrderBy(n => n))
                         {
                             <option value="@cat.ToLower()">@cat</option>
                         }
@@ -59,7 +76,8 @@
                     <label class="form-label fw-semibold text-muted small">MARCA</label>
                     <select id="filtroMarca" class="form-select rounded-3">
                         <option value="">Todas</option>
-                        @foreach (var marca in lista.Where(p => !string.IsNullOrWhiteSpace(p.Marca)).Select(p => p.Marca!).Distinct().OrderBy(m => m))
+                        @foreach (var marca in lista.Where(p => !string.IsNullOrWhiteSpace(p.Marca))
+                                                    .Select(p => p.Marca!).Distinct().OrderBy(m => m))
                         {
                             <option value="@marca.ToLower()">@marca</option>
                         }
@@ -131,7 +149,7 @@
     <div id="gridProductos" class="row g-4">
         @foreach (var p in lista)
         {
-            <div class="col-12 col-sm-6 col-lg-4 col-xl-3 producto-card"
+            <div class="producto-card col-md-6 col-lg-3 mb-4"
                  data-nombre="@p.Nombre?.ToLower()"
                  data-categoria="@p.Categoria?.Nombre?.ToLower()"
                  data-marca="@p.Marca?.ToLower()"
@@ -141,7 +159,7 @@
 
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
 
-                    <div class="position-relative">
+                    <div class="position-relative bg-light">
                         @{
                             var img = !string.IsNullOrWhiteSpace(p.Imagen_URL)
                                 ? p.Imagen_URL
@@ -149,7 +167,7 @@
                         }
                         <img src="@img"
                              class="card-img-top"
-                             style="height:220px; object-fit:cover;"
+                             style="height:200px; object-fit:contain; padding:12px;"
                              alt="@p.Nombre"
                              onerror="this.onerror=null; this.src='@Url.Content("~/img/producto-default.png")'" />
 
@@ -162,9 +180,7 @@
 
                         @if (!p.Estado)
                         {
-                            <span class="badge bg-danger position-absolute top-0 end-0 m-2 rounded-pill">
-                                Inactivo
-                            </span>
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2 rounded-pill">Inactivo</span>
                         }
                         else
                         {
@@ -174,9 +190,11 @@
                         }
                     </div>
 
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="fw-bold mb-1" style="color:#1a3c5e;">@p.Nombre</h5>
-                        <p class="text-muted small mb-2">
+                    <div class="card-body d-flex flex-column px-4 py-3">
+                        <h5 class="fw-bold mb-1 text-truncate" style="color:#1a3c5e;" title="@p.Nombre">
+                            @p.Nombre
+                        </h5>
+                        <p class="text-muted small mb-2 text-truncate">
                             <i class="bi bi-tag me-1"></i>@(p.Marca ?? "Sin marca")
                         </p>
                         <p class="text-muted small flex-grow-1"
@@ -185,7 +203,9 @@
                         </p>
 
                         <div class="mt-3">
-                            <h4 class="fw-bold text-primary mb-3">₡@p.Precio.ToString("N2")</h4>
+                            <h4 class="fw-bold text-primary mb-3 text-nowrap">
+                                ₡@p.Precio.ToString("N2")
+                            </h4>
                             <div class="d-grid gap-2">
 
                                 <a asp-action="Detalle"
@@ -263,15 +283,24 @@
             actualizarChips(texto, categoria, marca, receta, estado, precio);
 
             let visibles = cards.filter(c => {
-                const ok =
-                    (!texto     || c.dataset.nombre.includes(texto) || (c.dataset.categoria||'').includes(texto) || (c.dataset.marca||'').includes(texto)) &&
-                    (!categoria || c.dataset.categoria === categoria) &&
-                    (!marca     || c.dataset.marca     === marca)     &&
-                    (!receta    || c.dataset.receta     === receta)   &&
-                    (!estado    || c.dataset.estado     === estado)   &&
-                    (parseFloat(c.dataset.precio) <= precio);
-                c.classList.toggle('d-none', !ok);
-                return ok;
+                const nombreCard    = (c.dataset.nombre    || '');
+                const categoriaCard = (c.dataset.categoria || '');
+                const marcaCard     = (c.dataset.marca     || '');
+
+                const pasaTexto     = !texto     || nombreCard.includes(texto)
+                                                 || categoriaCard.includes(texto)
+                                                 || marcaCard.includes(texto);
+                const pasaCategoria = !categoria || categoriaCard === categoria;
+                const pasaMarca     = !marca     || marcaCard     === marca;
+                const pasaReceta    = !receta    || c.dataset.receta === receta;
+                const pasaEstado    = !estado    || c.dataset.estado === estado;
+                const pasaPrecio    = parseFloat(c.dataset.precio) <= precio;
+
+                const visible = pasaTexto && pasaCategoria && pasaMarca
+                             && pasaReceta && pasaEstado && pasaPrecio;
+
+                c.classList.toggle('d-none', !visible);
+                return visible;
             });
 
             if (orden) {
@@ -298,7 +327,7 @@
             setChip('chipCategoria', categoria || null);
             setChip('chipMarca',     marca     || null);
             setChip('chipReceta',    receta === 'true' ? 'Con receta' : receta === 'false' ? 'Sin receta' : null);
-            setChip('chipEstado',    estado === 'true' ? 'Activo' : estado === 'false' ? 'Inactivo' : null);
+            setChip('chipEstado',    estado === 'true' ? 'Activo'     : estado === 'false' ? 'Inactivo'   : null);
             setChip('chipPrecio',    precio < precioMax ? `Hasta ₡${precio.toLocaleString('es-CR')}` : null);
         }
 
@@ -309,12 +338,12 @@
         }
 
         function limpiarTodo() {
-            document.getElementById('searchInput').value    = '';
+            document.getElementById('searchInput').value     = '';
             document.getElementById('filtroCategoria').value = '';
-            document.getElementById('filtroMarca').value    = '';
-            document.getElementById('filtroReceta').value   = '';
-            document.getElementById('filtroEstado').value   = '';
-            document.getElementById('ordenar').value        = '';
+            document.getElementById('filtroMarca').value     = '';
+            document.getElementById('filtroReceta').value    = '';
+            document.getElementById('filtroEstado').value    = '';
+            document.getElementById('ordenar').value         = '';
             slider.value = precioMax;
             document.getElementById('precioLabel').textContent = '₡' + precioMax.toLocaleString('es-CR');
             cards.forEach(c => c.classList.remove('d-none'));
@@ -346,23 +375,31 @@
         document.getElementById('btnLimpiarFiltros').addEventListener('click', limpiarTodo);
         document.getElementById('btnLimpiarDesdeVacio').addEventListener('click', limpiarTodo);
 
-         function agregarAlCarrito(productoId, nombre) {
+        function agregarAlCarrito(productoId, nombre) {
             @if (User.Identity?.IsAuthenticated != true)
             {
                     <text>
-                        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
-                        return;
+                            window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                            return;
                     </text>
             }
-
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             fetch('/producto/agregaralcarrito', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
                 body: `productoId=${productoId}&cantidad=1`
             })
             .then(res => res.json())
-            .then(data => alert(data.exito ? nombre + ' agregado al carrito' : data.mensaje));
+            .then(data => {
+                if (data.exito) {
+                    mostrarAlerta('success', nombre + ' agregado al carrito.');
+                } else {
+                    mostrarAlerta('danger', data.mensaje);
+                }
+            });
         }
 
         function eliminarProducto(id, nombre) {
@@ -378,6 +415,16 @@
             form.appendChild(input);
             document.body.appendChild(form);
             form.submit();
+        }
+
+        function mostrarAlerta(tipo, mensaje) {
+            const div = document.createElement('div');
+            div.className = `alert alert-${tipo} alert-dismissible fade show rounded-3 shadow-sm`;
+            div.role = 'alert';
+            div.innerHTML = `<i class="bi bi-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+            document.querySelector('.container-fluid').prepend(div);
+            setTimeout(() => div.remove(), 4000);
         }
     </script>
 }
