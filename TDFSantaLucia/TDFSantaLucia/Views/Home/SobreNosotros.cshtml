@@ -1,0 +1,235 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmacia Santa Lucía</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+
+    <section class="hero">
+
+        <div class="hero-left">
+            <p class="hero-eyebrow">Santa Lucía de Barva, Heredia</p>
+            <h1 class="hero-title">Farmacia<br><em>Santa Lucía</em></h1>
+            <p class="hero-subtitle">Cuidando tu salud<br>desde hace 20 años</p>
+            <p class="hero-desc">
+                Nos dedicamos a brindar atención cercana, productos de calidad
+                y el mejor servicio para el bienestar de nuestra comunidad.
+                Confianza, accesibilidad y cuidado personalizado.
+            </p>
+            <a href="#section-sobre" class="hero-btn">Conócenos más</a>
+        </div>
+
+        <div class="hero-right">
+            <div class="gallery-stack">
+                <img class="img-top" src="~/images/foto7.jpg" alt="Farmacia Santa Lucía">
+                <img class="img-middle" src="~/images/foto8.jpg" alt="Farmacia Santa Lucía interior">
+                <img class="img-bottom" src="~/images/foto6.jpg" alt="Farmacia Santa Lucía equipo">
+            </div>
+        </div>
+
+    </section>
+
+    <section id="section-sobre" class="sobre">
+
+        <div class="sobre-img">
+            <img src="~/images/fotoL.jpg" alt="Farmacia Santa Lucía">
+        </div>
+
+        <div class="sobre-content">
+            <p class="eyebrow">Sobre Nosotros</p>
+            <h2>Más de <strong>20 años</strong><br>a tu lado</h2>
+            <p>
+                Farmacia Santa Lucía se encuentra en el corazón de Santa Lucía de Barva.
+                Con más de dos décadas de experiencia en el mercado farmacéutico,
+                somos parte de la comunidad.
+            </p>
+            <p>
+                Nos enfocamos en la salud integral de nuestros clientes: brindamos
+                seguimiento personalizado e información sobre tratamientos para que
+                cada persona aproveche al máximo su terapia.
+            </p>
+        </div>
+
+    </section>
+
+    <section class="info-section">
+
+        <div class="horario-box">
+
+            <h3>Horario de Apertura</h3>
+
+            <p id="estadoFarmacia" style="margin-bottom:20px;font-weight:600;font-size:15px;"></p>
+
+            <ul class="horario-lista">
+                <li data-dia="1">
+                    <span class="dia">Lunes</span>
+                    <span class="hora">08:00 – 21:00</span>
+                </li>
+
+                <li data-dia="2">
+                    <span class="dia">Martes</span>
+                    <span class="hora">08:00 – 21:00</span>
+                </li>
+
+                <li data-dia="3">
+                    <span class="dia">Miércoles</span>
+                    <span class="hora">08:00 – 21:00</span>
+                </li>
+
+                <li data-dia="4">
+                    <span class="dia">Jueves</span>
+                    <span class="hora">08:00 – 21:00</span>
+                </li>
+
+                <li data-dia="5">
+                    <span class="dia">Viernes</span>
+                    <span class="hora">08:00 – 21:00</span>
+                </li>
+
+                <li data-dia="6">
+                    <span class="dia">Sábado</span>
+                    <span class="hora">08:00 – 21:00</span>
+                </li>
+
+                <li data-dia="0">
+                    <span class="dia">Domingo</span>
+                    <span class="hora">09:00 – 20:00</span>
+                </li>
+            </ul>
+
+        </div>
+
+        <div class="mapa-box">
+            <div id="map"></div>
+        </div>
+
+    </section>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const map = L.map('map', {
+                center: [10.0128345, -84.1201918],
+                zoom: 18,
+                scrollWheelZoom: false
+            });
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            const farmaciaIcon = L.divIcon({
+                className: 'my-div-icon',
+                html: `
+                    <span style="display:block;">
+                        <img
+                            src="https://graph.facebook.com/1019936864721847/picture?type=large"
+                            width="40"
+                            height="40"
+                            style="border-radius:50%;border:2.5px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.25);">
+                    </span>
+                `,
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+                tooltipAnchor: [20, 0]
+            });
+
+            const marker = L.marker(
+                [10.0128345, -84.1201918],
+                { icon: farmaciaIcon }
+            ).addTo(map);
+
+            marker.bindTooltip(
+                `
+                <strong style="font-family:'DM Sans',sans-serif;font-size:13px;color:#243C8F;">
+                    Farmacia Santa Lucía de Barva
+                </strong>
+                <br>
+                2V7H+4WM, Jardines de Santa Lucía, Barva, Heredia
+                `,
+                {
+                    permanent: true,
+                    direction: 'bottom',
+                    opacity: 1,
+                    className: 'farmacia-tooltip'
+                }
+            ).openTooltip();
+
+            marker.on('click', () => {
+                window.open("https://maps.google.com/?q=10.0128345,-84.1201918", "_blank");
+            });
+
+        });
+
+                function actualizarHorario() {
+
+            const ahora = new Date();
+
+            const diaActual = ahora.getDay();
+            const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+
+            const estado = document.getElementById('estadoFarmacia');
+
+            document.querySelectorAll('.horario-lista li').forEach(li => {
+
+                li.classList.remove(
+                    'horario-activo',
+                    'horario-pronto-cerrar',
+                    'horario-cerrado'
+                );
+
+                const dia = parseInt(li.dataset.dia);
+
+                if (dia !== diaActual) return;
+
+                let apertura;
+                let cierre;
+
+                if (diaActual === 0) {
+                    apertura = 9 * 60;
+                    cierre = 20 * 60;
+                } else {
+                    apertura = 8 * 60;
+                    cierre = 21 * 60;
+                }
+
+                if (minutosActuales < apertura || minutosActuales >= cierre) {
+
+                    li.classList.add('horario-cerrado');
+
+                    estado.innerHTML = "🔴 Cerrado";
+
+                }
+                else if (cierre - minutosActuales <= 60) {
+
+                    li.classList.add('horario-pronto-cerrar');
+
+                    const faltan = cierre - minutosActuales;
+
+                    estado.innerHTML =
+                        `🟡 Cierra en ${faltan} minuto${faltan !== 1 ? 's' : ''}`;
+
+                }
+                else {
+
+                    li.classList.add('horario-activo');
+
+                    estado.innerHTML = "🟢 Abierto ahora";
+                }
+            });
+        }
+
+        actualizarHorario();
+
+        setInterval(actualizarHorario, 60000);
+    </script>
+
+</body>
+</html>

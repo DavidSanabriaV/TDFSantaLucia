@@ -1,7 +1,3 @@
-/* =========================================================
-   PALETA
-========================================================= */
-
 :root {
     --amarillo: #F7A400;
     --amarillo-hover: #ffbb33;
@@ -13,9 +9,6 @@
     --blanco: #FFFFFF;
 }
 
-/* =========================================================
-   GENERAL
-========================================================= */
 
 html {
     font-size: 15px;
@@ -30,11 +23,142 @@ body {
     margin-bottom: 0;
 }
 
-/* =========================================================
-   HEADER
-========================================================= */
 
-/* TOP NAVBAR */
+
+#section-farmacia-santa-lucia {
+    padding-top: 0;
+    padding-bottom: 0;
+    background: #fff;
+    overflow: hidden;
+}
+
+
+
+    #section-farmacia-santa-lucia .fsl-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: 520px;
+    }
+
+    #section-farmacia-santa-lucia .fsl-image {
+        position: relative;
+        overflow: hidden;
+        order: 0;
+    }
+
+        #section-farmacia-santa-lucia .fsl-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 0;
+            box-shadow: none;
+            filter: saturate(0.9);
+            transition: filter .4s;
+        }
+
+            #section-farmacia-santa-lucia .fsl-image img:hover {
+                filter: saturate(1);
+            }
+
+        #section-farmacia-santa-lucia .fsl-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,168,216,.12) 0%, transparent 55%);
+            pointer-events: none;
+        }
+
+    #section-farmacia-santa-lucia .fsl-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 72px 68px;
+        background: #fff;
+        order: 1;
+    }
+
+    #section-farmacia-santa-lucia .fsl-eyebrow {
+        display: inline-block;
+        background: rgba(0,168,216,.10);
+        color: var(--azul-oscuro);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: 999px;
+        margin-bottom: 22px;
+        width: fit-content;
+    }
+
+    #section-farmacia-santa-lucia h2 {
+        font-size: clamp(2rem, 3vw, 2.8rem);
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--azul-oscuro);
+        margin-bottom: 28px;
+        font-family: 'Georgia', serif;
+    }
+
+        #section-farmacia-santa-lucia h2 strong {
+            color: var(--amarillo);
+        }
+
+    #section-farmacia-santa-lucia p {
+        font-size: 1rem;
+        line-height: 1.85;
+        color: #4b5563;
+        margin-bottom: 16px;
+        max-width: 420px;
+    }
+
+    #section-farmacia-santa-lucia .fsl-btn {
+        display: inline-block;
+        margin-top: 20px;
+        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+        color: #fff !important;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 14px 34px;
+        border-radius: 999px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: opacity .25s, transform .25s;
+        width: fit-content;
+        box-shadow: 0 6px 20px rgba(0,168,216,.25);
+    }
+
+        #section-farmacia-santa-lucia .fsl-btn:hover {
+            opacity: .88;
+            transform: translateY(-2px);
+        }
+
+@media (max-width: 900px) {
+    #section-farmacia-santa-lucia .fsl-inner {
+        grid-template-columns: 1fr;
+    }
+
+    #section-farmacia-santa-lucia .fsl-image {
+        height: 50vw;
+        min-height: 260px;
+        order: 0;
+    }
+
+    #section-farmacia-santa-lucia .fsl-content {
+        padding: 48px 32px;
+        order: 1;
+    }
+
+    #section-farmacia-santa-lucia h2 {
+        font-size: 1.9rem;
+    }
+}
+
+
 
 .top-navbar {
     background: linear-gradient( 135deg, var(--amarillo), #ffcb57 );
@@ -58,20 +182,23 @@ body {
 }
 
 .icon-navbar {
-    width: 45px;
+    min-width: 45px;
     height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255,255,255,.18);
-    border-radius: 50%;
+    border-radius: 999px;
     color: white;
     text-decoration: none;
     transition: .25s;
+    padding: 0 14px;
+    gap: 8px;
 }
 
     .icon-navbar i {
         font-size: 1.4rem;
+        flex-shrink: 0;
     }
 
     .icon-navbar:hover {
@@ -80,7 +207,20 @@ body {
         transform: translateY(-2px);
     }
 
-/* MENU NAVBAR */
+    .icon-navbar span {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: white;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .icon-navbar:hover span {
+        color: var(--amarillo);
+    }
+
 
 .menu-navbar {
     background: linear-gradient( 135deg, var(--azul-oscuro), var(--azul) );
@@ -101,7 +241,6 @@ body {
         transform: translateY(-2px);
     }
 
-/* DROPDOWN */
 
 .dropdown-menu {
     border: none;
@@ -120,9 +259,6 @@ body {
         color: var(--azul-oscuro);
     }
 
-/* =========================================================
-   CAROUSEL PRINCIPAL
-========================================================= */
 
 #carouselExampleIndicators {
     overflow: hidden;
@@ -138,9 +274,159 @@ body {
         object-position: center;
     }
 
-/* =========================================================
-   APARTADOS
-========================================================= */
+
+.horario-mapa-wrapper {
+    display: flex;
+    align-items: stretch;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+.horario-box {
+    flex: 1;
+    background: #f9f9f9;
+    border-radius: 16px;
+    padding: 36px 40px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+}
+
+.horario-titulo {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #222;
+}
+
+.horario-lista {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .horario-lista li {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e8e8e8;
+        font-size: 1rem;
+        color: #444;
+    }
+
+        .horario-lista li:last-child {
+            border-bottom: none;
+        }
+
+    .horario-lista .dia {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .horario-lista .hora {
+        color: #666;
+    }
+
+    .horario-lista li.domingo .dia,
+    .horario-lista li.domingo .hora {
+        color: #c0392b;
+    }
+
+.mapa-box {
+    flex: 1.4;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+}
+
+    .mapa-box #map {
+        width: 100%;
+        height: 100%;
+        min-height: 380px;
+        border-radius: 16px;
+        border: none !important;
+    }
+
+@media (max-width: 768px) {
+    .horario-mapa-wrapper {
+        flex-direction: column;
+    }
+
+    .mapa-box #map {
+        min-height: 280px;
+    }
+}
+
+
+
+.images-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+    margin-top: 80px;
+    flex-wrap: wrap;
+    padding-bottom: 80px;
+}
+
+.images-wrapper__item {
+    width: 400px;
+    height: 520px;
+    object-fit: cover;
+    border-radius: 22px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .images-wrapper__item:hover {
+        transform: scale(1.03);
+        box-shadow: 0 14px 35px rgba(0,0,0,0.18);
+    }
+
+.item-top {
+    margin-top: -60px;
+}
+
+.item-middle {
+    margin-top: 30px;
+}
+
+.item-bottom {
+    margin-top: 100px;
+}
+
+@media (max-width: 1200px) {
+    .images-wrapper__item {
+        width: 320px;
+        height: 430px;
+    }
+}
+
+@media (max-width: 992px) {
+    .images-wrapper {
+        gap: 20px;
+    }
+
+    .images-wrapper__item {
+        width: 280px;
+        height: 370px;
+    }
+}
+
+@media (max-width: 768px) {
+    .images-wrapper {
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 20px;
+    }
+
+    .item-top,
+    .item-middle,
+    .item-bottom {
+        margin-top: 0;
+    }
+}
+
 
 section,
 .photo-container,
@@ -149,10 +435,6 @@ section,
     margin-bottom: 55px;
 }
 
-/* =========================================================
-   PHOTO GRID
-   (SE QUEDA IGUAL)
-========================================================= */
 
 .photo-container {
     background: #fff;
@@ -198,9 +480,6 @@ section,
     display: block;
 }
 
-/* =========================================================
-   PRODUCTOS
-========================================================= */
 
 #carouselProductos {
     margin-top: 30px;
@@ -254,9 +533,6 @@ section,
     margin-bottom: 0;
 }
 
-/* =========================================================
-   CARDS
-========================================================= */
 
 .card {
     border: none;
@@ -266,9 +542,6 @@ section,
     box-shadow: 0 10px 30px rgba(0,0,0,.06);
 }
 
-/* =========================================================
-   BOTONES
-========================================================= */
 
 .btn {
     border: none;
@@ -296,9 +569,6 @@ section,
     background: linear-gradient( 135deg, #ef4444, #dc2626 );
 }
 
-/* =========================================================
-   INPUTS
-========================================================= */
 
 .form-control,
 .form-select {
@@ -313,9 +583,6 @@ section,
         box-shadow: 0 0 0 4px rgba(0,168,216,.15) !important;
     }
 
-/* =========================================================
-   TABLAS
-========================================================= */
 
 .table-responsive {
     background: white;
@@ -352,9 +619,46 @@ section,
         padding: 14px;
     }
 
-/* =========================================================
-   BADGES
-========================================================= */
+.table-responsive {
+    background: white;
+    border-radius: 24px;
+    padding: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.05);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+    .table thead,
+    .table thead.table-dark,
+    .table-dark {
+        background: linear-gradient( 135deg, var(--azul-oscuro), var(--azul) ) !important;
+        color: white !important;
+    }
+
+        .table thead th,
+        .table thead.table-dark th,
+        .table-dark th {
+            background: transparent !important;
+            color: white !important;
+            border: none !important;
+            padding: 16px;
+            font-weight: 700;
+        }
+
+    .table tbody tr {
+        transition: .2s;
+    }
+
+        .table tbody tr:hover {
+            background: #F0FAFF;
+        }
+
+    .table td {
+        vertical-align: middle;
+        padding: 14px;
+    }
 
 .badge {
     border-radius: 999px;
@@ -362,9 +666,6 @@ section,
     font-weight: 700;
 }
 
-/* =========================================================
-   ALERTAS
-========================================================= */
 
 .alert {
     border: none;
@@ -372,26 +673,11 @@ section,
     box-shadow: 0 6px 18px rgba(0,0,0,.06);
 }
 
-/* =========================================================
-   TITULOS
-========================================================= */
 
 h1, h2, h3, h4, h5 {
     font-weight: 800;
     color: var(--azul-oscuro);
 }
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-/* =========================================================
-   FOOTER BLANCO TEXTO
-========================================================= */
-
-/* =========================================================
-   FOOTER
-========================================================= */
 
 .footer-custom {
     background: linear-gradient( 135deg, #243C8F, #00A8D8 );
@@ -402,7 +688,6 @@ h1, h2, h3, h4, h5 {
     margin-top: 70px;
 }
 
-    /* EFECTOS */
 
     .footer-custom::before {
         content: '';
@@ -426,7 +711,6 @@ h1, h2, h3, h4, h5 {
         border-radius: 50%;
     }
 
-/* TITULOS */
 
 .footer-title {
     color: white;
@@ -434,14 +718,11 @@ h1, h2, h3, h4, h5 {
     font-weight: 700;
 }
 
-/* TEXTO */
-
 .footer-text {
     color: white;
     font-weight: 500;
 }
 
-/* LINKS */
 
 .footer-link {
     color: white;
@@ -455,28 +736,21 @@ h1, h2, h3, h4, h5 {
         padding-left: 3px;
     }
 
-/* ICONOS */
 
 .footer-custom i {
     color: white;
 }
 
-/* DIVISOR */
 
 .footer-divider {
     border-color: rgba(255,255,255,.2);
 }
-
-/* COPYRIGHT */
 
 .footer-copy {
     color: white;
     font-size: 14px;
 }
 
-/* =========================================================
-   SCROLLBAR
-========================================================= */
 
 ::-webkit-scrollbar {
     width: 10px;
@@ -487,9 +761,20 @@ h1, h2, h3, h4, h5 {
     border-radius: 20px;
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
+#section-sobre-nosotros {
+    margin-bottom: 10px;
+}
+
+
+.eyebrow-element span {
+    background: #f3f4f6;
+    color: #1f2937;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+}
 
 @media(max-width:992px) {
 
@@ -508,4 +793,518 @@ h1, h2, h3, h4, h5 {
     .menu-navbar .nav {
         gap: 0 !important;
     }
+}
+
+:root {
+    --amarillo: #F7A400;
+    --azul: #00A8D8;
+    --azul-oscuro: #243C8F;
+    --morado: #5A0B8F;
+    --texto: #1F2937;
+    --gris: #F4F7FB;
+    --blanco: #FFFFFF;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 15px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    color: var(--texto);
+    background: #F7FAFD;
+    overflow-x: hidden;
+}
+
+.hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+    max-height: 920px;
+    background: linear-gradient(135deg, #f0f6ff 0%, #fffbf0 100%);
+    padding: 80px 80px 60px;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+    .hero::before {
+        content: '';
+        position: absolute;
+        top: -120px;
+        right: -120px;
+        width: 480px;
+        height: 480px;
+        border-radius: 50%;
+        background: rgba(0, 168, 216, 0.07);
+        pointer-events: none;
+    }
+
+.hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    z-index: 1;
+}
+
+.hero-eyebrow {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--azul);
+    background: rgba(0, 168, 216, 0.10);
+    padding: 6px 18px;
+    border-radius: 999px;
+    margin-bottom: 28px;
+    width: fit-content;
+}
+
+.hero-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(3.2rem, 6vw, 5.2rem);
+    font-weight: 300;
+    line-height: 1.0;
+    color: var(--azul-oscuro);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+}
+
+    .hero-title em {
+        font-style: italic;
+        color: var(--amarillo);
+        font-weight: 600;
+    }
+
+.hero-subtitle {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.2rem, 2vw, 1.55rem);
+    font-weight: 300;
+    color: #6b7280;
+    line-height: 1.5;
+    margin-bottom: 28px;
+}
+
+.hero-desc {
+    font-size: 0.97rem;
+    line-height: 1.85;
+    color: #4b5563;
+    max-width: 420px;
+    margin-bottom: 40px;
+}
+
+.hero-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 15px 36px;
+    border-radius: 999px;
+    text-decoration: none;
+    width: fit-content;
+    box-shadow: 0 8px 24px rgba(0, 168, 216, 0.28);
+    transition: opacity 0.25s, transform 0.25s;
+}
+
+    .hero-btn:hover {
+        opacity: 0.88;
+        transform: translateY(-2px);
+        color: #fff;
+        text-decoration: none;
+    }
+
+.hero-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.gallery-stack {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    height: 520px;
+}
+
+    .gallery-stack img {
+        position: absolute;
+        width: 220px;
+        height: 280px;
+        object-fit: cover;
+        border-radius: 20px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+
+        .gallery-stack img:hover {
+            transform: scale(1.03) translateY(-4px);
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.20);
+            z-index: 10;
+        }
+
+.img-top {
+    top: 0;
+    left: 0;
+    z-index: 3;
+}
+
+.img-middle {
+    top: 90px;
+    left: 100px;
+    z-index: 2;
+    width: 240px;
+    height: 300px;
+}
+
+.img-bottom {
+    top: 200px;
+    left: 30px;
+    z-index: 1;
+    width: 200px;
+    height: 260px;
+    filter: brightness(0.92);
+}
+
+.sobre {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 520px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.sobre-img {
+    position: relative;
+    overflow: hidden;
+}
+
+    .sobre-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        filter: saturate(0.9);
+        transition: filter 0.4s;
+    }
+
+        .sobre-img img:hover {
+            filter: saturate(1);
+        }
+
+    .sobre-img::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(0, 168, 216, 0.10) 0%, transparent 55%);
+        pointer-events: none;
+    }
+
+.sobre-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 72px 68px;
+}
+
+    .sobre-content .eyebrow {
+        display: inline-block;
+        background: rgba(0, 168, 216, 0.10);
+        color: var(--azul-oscuro);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: 999px;
+        margin-bottom: 22px;
+        width: fit-content;
+    }
+
+    .sobre-content h2 {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: clamp(2rem, 3vw, 2.8rem);
+        font-weight: 600;
+        line-height: 1.1;
+        color: var(--azul-oscuro);
+        margin-bottom: 28px;
+    }
+
+        .sobre-content h2 strong {
+            color: var(--amarillo);
+        }
+
+    .sobre-content p {
+        font-size: 0.98rem;
+        line-height: 1.85;
+        color: #4b5563;
+        margin-bottom: 16px;
+        max-width: 420px;
+    }
+
+    .sobre-content a {
+        display: inline-block;
+        margin-top: 20px;
+        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 14px 34px;
+        border-radius: 999px;
+        text-decoration: none;
+        width: fit-content;
+        box-shadow: 0 6px 20px rgba(0, 168, 216, 0.25);
+        transition: opacity 0.25s, transform 0.25s;
+    }
+
+        .sobre-content a:hover {
+            opacity: 0.88;
+            transform: translateY(-2px);
+        }
+
+.info-section {
+    display: flex;
+    align-items: stretch;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 70px auto;
+    padding: 0 24px;
+}
+
+.horario-box {
+    flex: 1;
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 44px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+}
+
+    .horario-box h3 {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--azul-oscuro);
+        margin-bottom: 28px;
+        padding-bottom: 14px;
+        border-bottom: 2px solid var(--amarillo);
+    }
+
+.horario-lista {
+    list-style: none;
+}
+
+    .horario-lista li {
+        display: flex;
+        justify-content: space-between;
+        padding: 11px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.97rem;
+        color: #444;
+    }
+
+        .horario-lista li:last-child {
+            border-bottom: none;
+        }
+
+    .horario-lista .dia {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .horario-lista .hora {
+        color: #6b7280;
+    }
+
+    .horario-lista li.domingo .dia,
+    .horario-lista li.domingo .hora {
+        color: #dc2626;
+        font-weight: 600;
+    }
+
+.mapa-box {
+    flex: 1.6;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10);
+    min-height: 380px;
+}
+
+    .mapa-box #map {
+        width: 100%;
+        height: 100%;
+        min-height: 380px;
+        border: none;
+    }
+
+.farmacia-tooltip {
+    background: #fff;
+    border: 1.5px solid var(--azul) !important;
+    border-radius: 10px !important;
+    padding: 6px 12px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12) !important;
+}
+
+    .farmacia-tooltip::before {
+        border-bottom-color: var(--azul) !important;
+    }
+
+
+@media (max-width: 1024px) {
+    .hero {
+        padding: 60px 48px 50px;
+        gap: 40px;
+    }
+
+    .gallery-stack {
+        max-width: 360px;
+        height: 460px;
+    }
+
+        .gallery-stack img {
+            width: 190px;
+            height: 245px;
+        }
+
+    .img-middle {
+        width: 210px;
+        height: 265px;
+    }
+
+    .img-bottom {
+        width: 175px;
+        height: 225px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding: 60px 28px 48px;
+        gap: 48px;
+        text-align: center;
+        align-items: start;
+    }
+
+    .hero-eyebrow, .hero-btn {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-desc {
+        max-width: 100%;
+    }
+
+    .hero-right {
+        justify-content: center;
+    }
+
+    .gallery-stack {
+        width: 320px;
+        height: 300px;
+        margin: 0 auto;
+    }
+
+        .gallery-stack img {
+            width: 150px;
+            height: 190px;
+        }
+
+    .img-top {
+        top: 0;
+        left: 0;
+    }
+
+    .img-middle {
+        top: 55px;
+        left: 75px;
+        width: 165px;
+        height: 210px;
+    }
+
+    .img-bottom {
+        top: 120px;
+        left: 20px;
+        width: 140px;
+        height: 175px;
+    }
+
+    .sobre {
+        grid-template-columns: 1fr;
+    }
+
+    .sobre-img {
+        height: 50vw;
+        min-height: 240px;
+    }
+
+    .sobre-content {
+        padding: 48px 28px;
+    }
+
+    .info-section {
+        flex-direction: column;
+        margin: 50px auto;
+    }
+
+    .mapa-box {
+        min-height: 280px;
+    }
+
+        .mapa-box #map {
+            min-height: 280px;
+        }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        padding: 48px 20px 40px;
+    }
+
+    .hero-title {
+        font-size: 2.8rem;
+    }
+
+    .gallery-stack {
+        width: 280px;
+        height: 270px;
+    }
+}
+.horario-lista li {
+    transition: .3s;
+}
+
+.horario-activo {
+    background: #d4edda;
+    color: #155724;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+.horario-pronto-cerrar {
+    background: #fff3cd;
+    color: #856404;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+.horario-cerrado {
+    background: #f8d7da;
+    color: #721c24;
+    font-weight: 600;
+    border-radius: 10px;
 }
