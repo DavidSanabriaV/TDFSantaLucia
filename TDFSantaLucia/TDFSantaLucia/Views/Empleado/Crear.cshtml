@@ -35,16 +35,26 @@
 
             <div class="col-md-6">
                 <label asp-for="Cedula" class="form-label"></label>
-                <input asp-for="Cedula" class="form-control"
+
+                <input asp-for="Cedula"
+                       type="text"
+                       class="form-control"
                        maxlength="9"
                        minlength="9"
-                       placeholder="000000000" />
+                       inputmode="numeric"
+                       placeholder="000000000"
+                       oninput="this.value = this.value.replace(/\D/g, '')" />
+
                 <span asp-validation-for="Cedula" class="text-danger"></span>
             </div>
 
             <div class="col-md-6">
                 <label asp-for="Telefono" class="form-label"></label>
-                <input asp-for="Telefono" class="form-control" />
+                <input asp-for="Telefono"
+                       class="form-control"
+                       pattern="[0-9]*"
+                       inputmode="numeric"
+                       oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
             </div>
 
             <div class="col-md-12">
