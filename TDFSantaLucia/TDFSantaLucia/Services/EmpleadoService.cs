@@ -22,8 +22,6 @@ namespace TDFSantaLucia.Services
             _userManager = userManager;
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────────
-
         public decimal CalcularSalarioNeto(decimal bruto)
         {
             var deducciones = bruto * (Seguro + Pension + Impuesto);
@@ -51,8 +49,6 @@ namespace TDFSantaLucia.Services
                 .Replace(" ", "")
                 .ToLower();
         }
-
-        // ── Consultas ─────────────────────────────────────────────────────────
 
         public async Task<List<Empleado>> ObtenerTodosAsync()
         {
@@ -112,11 +108,8 @@ namespace TDFSantaLucia.Services
             };
         }
 
-        // ── CRUD ──────────────────────────────────────────────────────────────
-
         public async Task<(bool success, string? error)> CrearEmpleadoAsync(EmpleadoViewModel model)
         {
-            // Autogenerar username y resolver duplicados
             var usernameBase = GenerarUsername(model.Nombre, model.Primer_Apellido);
             var username = usernameBase;
             int contador = 1;
@@ -127,7 +120,6 @@ namespace TDFSantaLucia.Services
                 contador++;
             }
 
-            // Verificar que el email no esté en uso usando Users directamente
             var emailNormalizado = model.Email.Trim().ToUpper();
             var emailExistente = _userManager.Users
                 .FirstOrDefault(u => u.NormalizedEmail == emailNormalizado);
@@ -182,7 +174,6 @@ namespace TDFSantaLucia.Services
             if (existente == null)
                 return (false, "Usuario no encontrado.");
 
-            // Verificar username duplicado en otro usuario
             if (existente.UserName != model.UserName)
             {
                 var existe = await _userManager.FindByNameAsync(model.UserName);
@@ -190,7 +181,6 @@ namespace TDFSantaLucia.Services
                     return (false, "Ya existe un usuario con ese username.");
             }
 
-            // Verificar email duplicado en otro usuario
             if (existente.Email?.ToUpper() != model.Email.Trim().ToUpper())
             {
                 var emailNormalizado = model.Email.Trim().ToUpper();
@@ -216,12 +206,10 @@ namespace TDFSantaLucia.Services
             if (!result.Succeeded)
                 return (false, string.Join(", ", result.Errors.Select(e => e.Description)));
 
-            // Actualizar rol
             var rolesActuales = await _userManager.GetRolesAsync(existente);
             await _userManager.RemoveFromRolesAsync(existente, rolesActuales);
             await _userManager.AddToRoleAsync(existente, model.rol);
 
-            // Cambiar contraseña solo si se proporcionó una nueva
             if (!string.IsNullOrWhiteSpace(model.password))
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(existente);

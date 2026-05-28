@@ -16,7 +16,6 @@ namespace TDFSantaLucia.Services
             _userManager = userManager;
         }
 
-        // ── Helpers ──────────────────────────────────────────────────────────
 
         private static string GenerarUsername(string nombre, string primerApellido)
         {
@@ -37,7 +36,6 @@ namespace TDFSantaLucia.Services
                 .ToLower();
         }
 
-        // ── Consultas ─────────────────────────────────────────────────────────
 
         public List<Cliente> ObtenerTodos()
             => _clienteRepo.ObtenerTodos();
@@ -45,11 +43,9 @@ namespace TDFSantaLucia.Services
         public Cliente? ObtenerPorId(int id)
             => _clienteRepo.ObtenerPorId(id);
 
-        // ── CRUD ──────────────────────────────────────────────────────────────
 
         public async Task<(bool exito, string? error)> CrearCliente(ClienteViewModel model)
         {
-            // Autogenerar username y resolver duplicados
             var usernameBase = GenerarUsername(model.Nombre, model.Primer_Apellido);
             var username = usernameBase;
             int contador = 1;
@@ -60,7 +56,6 @@ namespace TDFSantaLucia.Services
                 contador++;
             }
 
-            // Verificar email duplicado
             var emailNormalizado = model.Email.Trim().ToUpper();
             var emailExistente = _userManager.Users
                 .FirstOrDefault(u => u.NormalizedEmail == emailNormalizado);
@@ -113,7 +108,6 @@ namespace TDFSantaLucia.Services
             if (usuario == null)
                 return (false, "Usuario no encontrado.");
 
-            // Verificar email duplicado en otro usuario
             if (usuario.Email?.ToUpper() != model.Email.Trim().ToUpper())
             {
                 var emailNormalizado = model.Email.Trim().ToUpper();
@@ -138,7 +132,6 @@ namespace TDFSantaLucia.Services
             if (!resultado.Succeeded)
                 return (false, string.Join(", ", resultado.Errors.Select(e => e.Description)));
 
-            // Cambiar contraseña solo si se proporcionó una nueva
             if (!string.IsNullOrWhiteSpace(model.Password))
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(usuario);
@@ -161,7 +154,6 @@ namespace TDFSantaLucia.Services
             if (cliente == null)
                 return (false, "Cliente no encontrado.");
 
-            // Validar dependencias
             if (cliente.Pedidos?.Any() == true)
                 return (false, "No se puede eliminar un cliente con pedidos registrados.");
 
@@ -179,10 +171,8 @@ namespace TDFSantaLucia.Services
 
             var usuarioId = cliente.Usuario_ID;
 
-            // Primero eliminar el cliente
             _clienteRepo.Eliminar(id);
 
-            // Luego eliminar el usuario con UserManager
             if (!string.IsNullOrWhiteSpace(usuarioId))
             {
                 var usuario = await _userManager.FindByIdAsync(usuarioId);
