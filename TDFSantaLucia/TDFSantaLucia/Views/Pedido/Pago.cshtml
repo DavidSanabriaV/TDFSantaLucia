@@ -1,0 +1,158 @@
+﻿@model TDFSantaLucia.Models.CheckoutViewModel
+@{
+    ViewData["Title"] = "Método de Pago";
+}
+
+<div class="container py-4" style="max-width:700px;">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-credit-card me-2"></i>Método de Pago
+    </h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-1" style="color:#243C8F;">
+            Total a pagar
+        </h5>
+        <div class="display-6 fw-bold text-success">
+            ₡@Model.Total.ToString("N2")
+        </div>
+        <small class="text-muted">
+            Incluye IVA 13% (₡@Model.Impuesto.ToString("N2"))
+        </small>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100
+                metodo-card" id="cardSinpe"
+                 onclick="seleccionarMetodo('SINPE')"
+                 style="cursor:pointer; border: 3px solid transparent !important;">
+                <div class="text-center">
+                    <i class="bi bi-phone-fill display-4"
+                       style="color:#00A8D8;"></i>
+                    <h5 class="fw-bold mt-2">SINPE Móvil</h5>
+                    <p class="text-muted small">
+                        Transferencia rápida desde tu banca móvil
+                    </p>
+                    <div class="alert alert-info rounded-3 mt-2 mb-0">
+                        <strong>Número:</strong> 8888-7040<br>
+                        <strong>A nombre de:</strong>
+                        Farmacia Santa Lucía S.A.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100
+                metodo-card" id="cardBanco"
+                 onclick="seleccionarMetodo('Banco')"
+                 style="cursor:pointer; border: 3px solid transparent !important;">
+                <div class="text-center">
+                    <i class="bi bi-bank display-4"
+                       style="color:#243C8F;"></i>
+                    <h5 class="fw-bold mt-2">Transferencia Bancaria</h5>
+                    <p class="text-muted small">
+                        Transferencia desde tu cuenta bancaria
+                    </p>
+                    <div class="alert alert-secondary rounded-3 mt-2 mb-0
+                        text-start small">
+                        <strong>Banco:</strong> Banco Nacional de CR<br>
+                        <strong>Cuenta IBAN:</strong><br>
+                        CR21015100010020184452<br>
+                        <strong>A nombre de:</strong>
+                        Farmacia Santa Lucía S.A.<br>
+                        <strong>Cédula jurídica:</strong> 3-101-456789
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Pago" method="post" id="formPago">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="metodoPago" id="metodoPagoInput" />
+
+        <div id="instrucciones" class="alert alert-warning d-none rounded-4">
+            <h6 class="fw-bold">
+                <i class="bi bi-info-circle me-1"></i>
+                Instrucciones
+            </h6>
+            <div id="textoInstrucciones"></div>
+        </div>
+
+        <button type="button" id="btnProcesar"
+                class="btn btn-success w-100 rounded-3 fw-bold py-3 d-none"
+                onclick="procesarPago()">
+            <i class="bi bi-check-circle me-1"></i>
+            Procesar pedido
+        </button>
+
+        <a asp-action="Checkout"
+               class="btn btn-outline-secondary w-100 rounded-3 mt-2">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let metodoSeleccionado = null;
+
+        function seleccionarMetodo(metodo) {
+            metodoSeleccionado = metodo;
+            document.querySelectorAll('.metodo-card').forEach(c =>
+                c.style.border = '3px solid transparent !important');
+
+            const card = metodo === 'SINPE'
+                ? document.getElementById('cardSinpe')
+                : document.getElementById('cardBanco');
+            card.style.border = '3px solid #00A8D8';
+
+            document.getElementById('metodoPagoInput').value = metodo;
+
+            const instrucciones = document.getElementById('instrucciones');
+            const texto = document.getElementById('textoInstrucciones');
+            instrucciones.classList.remove('d-none');
+
+            if (metodo === 'SINPE') {
+                texto.innerHTML = `
+                    <ol class="mb-0">
+                        <li>Abre tu banca móvil y selecciona SINPE Móvil.</li>
+                        <li>Envía el monto de
+                            <strong>₡@Model.Total.ToString("N2")</strong>
+                            al número <strong>8888-7040</strong>.</li>
+                        <li>En el concepto escribe tu número de orden.</li>
+                        <li>Toma captura del comprobante.</li>
+                        <li>Haz clic en <strong>Procesar pedido</strong> y
+                            envía el comprobante por WhatsApp.</li>
+                    </ol>`;
+            } else {
+                texto.innerHTML = `
+                    <ol class="mb-0">
+                        <li>Realiza la transferencia a la cuenta
+                            <strong>CR21015100010020184452</strong>.</li>
+                        <li>Monto: <strong>₡@Model.Total.ToString("N2")</strong>.</li>
+                        <li>En el concepto escribe tu número de orden.</li>
+                        <li>Toma captura del comprobante bancario.</li>
+                        <li>Haz clic en <strong>Procesar pedido</strong> y
+                            envía el comprobante por WhatsApp.</li>
+                    </ol>`;
+            }
+
+            document.getElementById('btnProcesar')
+                .classList.remove('d-none');
+        }
+
+        function procesarPago() {
+            if (!metodoSeleccionado) {
+                alert('Por favor seleccione un método de pago.');
+                return;
+            }
+            document.getElementById('formPago').submit();
+        }
+    </script>
+}

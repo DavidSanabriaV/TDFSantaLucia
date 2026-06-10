@@ -64,6 +64,17 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 });
 
+
+// Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.AddHttpContextAccessor();
+
 // Registrar Repositories
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
@@ -72,7 +83,8 @@ builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
 builder.Services.AddScoped<IInventarioRepository, InventarioRepository>();
 builder.Services.AddScoped<IExpedienteRepository, ExpedienteRepository>();
 builder.Services.AddScoped<ICitaRepository, CitaRepository>();
-
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
 
 
 // Registrar Services
@@ -84,7 +96,9 @@ builder.Services.AddScoped<IInventarioService, InventarioService>();
 builder.Services.AddScoped<IExpedienteService, ExpedienteService>();
 builder.Services.AddScoped<ICitaService, CitaService>();
 builder.Services.AddScoped<ICuentaService, CuentaService>();
-
+builder.Services.AddScoped<ICarritoService, CarritoService>();
+builder.Services.AddScoped<IPedidoService, PedidoService>();
+builder.Services.AddScoped<IFacturaService, FacturaService>();
 
 // Add services to the container
 
@@ -169,6 +183,8 @@ else
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 
