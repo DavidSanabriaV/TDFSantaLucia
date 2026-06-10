@@ -136,7 +136,7 @@
                 const token = document.querySelector(
             'input[name="__RequestVerificationToken"]').value;
 
-        function cambiarCantidad(productoId, delta) {
+                        function cambiarCantidad(productoId, delta) {
             const cantEl = document.getElementById(`cant-${productoId}`);
             const nuevaCant = parseInt(cantEl.textContent) + delta;
 
@@ -161,6 +161,7 @@
                         .textContent = `₡${d.subtotal.toLocaleString('es-CR', {minimumFractionDigits: 2})}`;
                     actualizarResumen(d.total, d.count);
                 }
+
             });
         }
 
