@@ -63,12 +63,11 @@ namespace TDFSantaLucia.Controllers
             var items = _carritoService.ObtenerCarrito();
             var subtotal = items.FirstOrDefault(i =>
                 i.Producto_Id == productoId)?.Subtotal ?? 0;
-
             return Json(new
             {
                 exito = true,
-                subtotal = subtotal.ToString("N2"),
-                total = _carritoService.ObtenerTotal().ToString("N2"),
+                subtotal = subtotal,          
+                total = _carritoService.ObtenerTotal(), 
                 count = _carritoService.ContarItems()
             });
         }
@@ -80,7 +79,7 @@ namespace TDFSantaLucia.Controllers
             return Json(new
             {
                 exito = true,
-                total = _carritoService.ObtenerTotal().ToString("N2"),
+                total = _carritoService.ObtenerTotal(), 
                 count = _carritoService.ContarItems()
             });
         }
