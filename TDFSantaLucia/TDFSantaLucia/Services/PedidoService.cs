@@ -41,17 +41,16 @@ namespace TDFSantaLucia.Services
         public async Task<(bool exito, string? error, Pedido? pedido)>
             ProcesarPedidoAsync(CheckoutViewModel checkout, int clienteId)
         {
-            // Usar transacción para evitar condiciones de carrera
-            await using var transaction = await _db.Database.BeginTransactionAsync();
+            await using var transaction =
+                await _db.Database.BeginTransactionAsync();
 
             try
             {
                 var detalles = new List<DetallePedido>();
 
+                // Validar stock y descontar
                 foreach (var item in checkout.Items)
                 {
-                    // Bloquear fila de inventario para evitar
-                    // que dos usuarios compren el mismo stock
                     var lotes = await _db.Inventarios
                         .Where(i => i.Producto_Id == item.Producto_Id
                                  && i.Estado
@@ -62,12 +61,15 @@ namespace TDFSantaLucia.Services
                     var stockTotal = lotes.Sum(l => l.Cantidad_Disponible);
 
                     if (stockTotal < item.Cantidad)
+                    {
+                        await transaction.RollbackAsync();
                         return (false,
                             $"Stock insuficiente para '{item.Nombre}'. " +
                             $"Disponible: {stockTotal}, solicitado: {item.Cantidad}",
                             null);
+                    }
 
-                    // Descontar stock del lote más próximo a vencer (FIFO)
+                    // FIFO: descontar del lote más próximo a vencer
                     int pendiente = item.Cantidad;
                     foreach (var lote in lotes)
                     {
@@ -75,6 +77,7 @@ namespace TDFSantaLucia.Services
                         int descontar = Math.Min(lote.Cantidad_Disponible, pendiente);
                         lote.Cantidad_Disponible -= descontar;
                         pendiente -= descontar;
+                        _db.Inventarios.Update(lote);
                     }
 
                     detalles.Add(new DetallePedido
@@ -86,14 +89,13 @@ namespace TDFSantaLucia.Services
                     });
                 }
 
+                // Guardar descuento de stock
                 await _db.SaveChangesAsync();
 
                 var subtotal = checkout.Subtotal;
                 var impuesto = checkout.Impuesto;
                 var total = checkout.Total;
 
-                // Para pedidos a domicilio el estado
-                // empieza en Pendiente hasta que envíen el comprobante
                 var estadoInicial = checkout.Tipo_Entrega == "Tienda"
                     ? PedidoEstados.Aceptado
                     : PedidoEstados.Pendiente;
@@ -113,7 +115,9 @@ namespace TDFSantaLucia.Services
                     DetallesPedido = detalles
                 };
 
+                // Agregar pedido sin SaveChanges (lo hace el repo sin guardar)
                 _pedidoRepo.Agregar(pedido);
+                await _db.SaveChangesAsync();
 
                 // Generar factura
                 var factura = new Factura
@@ -137,8 +141,9 @@ namespace TDFSantaLucia.Services
                 };
 
                 _facturaRepo.Agregar(factura);
+                await _db.SaveChangesAsync();
 
-                // Actualizar estado de productos sin stock
+                // Desactivar productos sin stock
                 foreach (var item in checkout.Items)
                 {
                     var tieneStock = await _db.Inventarios
@@ -149,7 +154,9 @@ namespace TDFSantaLucia.Services
                     if (!tieneStock)
                     {
                         var producto = await _db.Productos
-                            .FirstOrDefaultAsync(p => p.Producto_Id == item.Producto_Id);
+                            .FirstOrDefaultAsync(p =>
+                                p.Producto_Id == item.Producto_Id);
+
                         if (producto != null && producto.Estado)
                         {
                             producto.Estado = false;
@@ -166,7 +173,8 @@ namespace TDFSantaLucia.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return (false, $"Error al procesar el pedido: {ex.Message}", null);
+                return (false,
+                    $"Error al procesar el pedido: {ex.Message}", null);
             }
         }
 
@@ -192,32 +200,41 @@ namespace TDFSantaLucia.Services
             if (!estadosValidos.Contains(nuevoEstado))
                 return (false, "Estado no válido.");
 
-            // Si se rechaza devolver el stock
+            // Si se rechaza o cancela devolver el stock
             if (nuevoEstado == PedidoEstados.Rechazado ||
                 nuevoEstado == PedidoEstados.Cancelado)
             {
-                foreach (var detalle in pedido.DetallesPedido)
+                // Solo devolver si el estado anterior no era ya cancelado/rechazado
+                if (pedido.Estado != PedidoEstados.Cancelado &&
+                    pedido.Estado != PedidoEstados.Rechazado)
                 {
-                    var lote = await _db.Inventarios
-                        .Where(i => i.Producto_Id == detalle.Producto_Id && i.Estado)
-                        .OrderBy(i => i.Fecha_Vencimiento)
-                        .FirstOrDefaultAsync();
-
-                    if (lote != null)
+                    foreach (var detalle in pedido.DetallesPedido)
                     {
-                        lote.Cantidad_Disponible += detalle.Cantidad;
+                        var lote = await _db.Inventarios
+                            .Where(i => i.Producto_Id == detalle.Producto_Id
+                                     && i.Estado)
+                            .OrderBy(i => i.Fecha_Vencimiento)
+                            .FirstOrDefaultAsync();
 
-                        var producto = await _db.Productos
-                            .FirstOrDefaultAsync(p => p.Producto_Id == detalle.Producto_Id);
-                        if (producto != null && !producto.Estado)
+                        if (lote != null)
                         {
-                            producto.Estado = true;
-                            _db.Productos.Update(producto);
+                            lote.Cantidad_Disponible += detalle.Cantidad;
+                            _db.Inventarios.Update(lote);
+
+                            var producto = await _db.Productos
+                                .FirstOrDefaultAsync(p =>
+                                    p.Producto_Id == detalle.Producto_Id);
+
+                            if (producto != null && !producto.Estado)
+                            {
+                                producto.Estado = true;
+                                _db.Productos.Update(producto);
+                            }
                         }
                     }
-                }
 
-                await _db.SaveChangesAsync();
+                    await _db.SaveChangesAsync();
+                }
             }
 
             pedido.Estado = nuevoEstado;
@@ -242,7 +259,8 @@ namespace TDFSantaLucia.Services
             };
 
             if (estadosNoeliminables.Contains(pedido.Estado))
-                return (false, "No se puede eliminar un pedido en este estado.");
+                return (false,
+                    "No se puede eliminar un pedido en este estado.");
 
             _pedidoRepo.Eliminar(pedidoId);
             return (true, null);

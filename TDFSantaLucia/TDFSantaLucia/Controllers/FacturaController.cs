@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TDFSantaLucia.Data;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
 
@@ -12,25 +14,37 @@ namespace TDFSantaLucia.Controllers
     {
         private readonly IFacturaService _facturaService;
         private readonly UserManager<Usuario> _userManager;
+        private readonly AppDbContext _db;
 
         public FacturaController(
             IFacturaService facturaService,
-            UserManager<Usuario> userManager)
+            UserManager<Usuario> userManager,
+            AppDbContext db)
         {
             _facturaService = facturaService;
             _userManager = userManager;
+            _db = db;
+        }
+
+        private async Task<Cliente?> ObtenerClienteAsync()
+        {
+            var usuario = await _userManager.GetUserAsync(User);
+            if (usuario == null) return null;
+
+            return await _db.Clientes
+                .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
         }
 
         [HttpGet("mis-facturas")]
         public async Task<IActionResult> MisFacturas(
             DateTime? desde, DateTime? hasta)
         {
-            var usuario = await _userManager.GetUserAsync(User);
-            if (usuario?.Cliente == null)
+            var cliente = await ObtenerClienteAsync();
+            if (cliente == null)
                 return RedirectToAction("Index", "Producto");
 
             var facturas = _facturaService
-                .ObtenerPorCliente(usuario.Cliente.Cliente_Id);
+                .ObtenerPorCliente(cliente.Cliente_Id);
 
             facturas = _facturaService.FiltrarPorFecha(facturas, desde, hasta);
 
@@ -48,8 +62,8 @@ namespace TDFSantaLucia.Controllers
 
             if (!User.IsInRole("Admin") && !User.IsInRole("Empleado"))
             {
-                var usuario = await _userManager.GetUserAsync(User);
-                if (usuario?.Cliente?.Cliente_Id != factura.Cliente_Id)
+                var cliente = await ObtenerClienteAsync();
+                if (cliente?.Cliente_Id != factura.Cliente_Id)
                     return Forbid();
             }
 
@@ -64,8 +78,8 @@ namespace TDFSantaLucia.Controllers
 
             if (!User.IsInRole("Admin") && !User.IsInRole("Empleado"))
             {
-                var usuario = await _userManager.GetUserAsync(User);
-                if (usuario?.Cliente?.Cliente_Id != factura.Cliente_Id)
+                var cliente = await ObtenerClienteAsync();
+                if (cliente?.Cliente_Id != factura.Cliente_Id)
                     return Forbid();
             }
 

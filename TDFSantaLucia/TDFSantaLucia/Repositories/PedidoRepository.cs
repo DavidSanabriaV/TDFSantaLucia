@@ -35,7 +35,7 @@ namespace TDFSantaLucia.Repositories
         public void Agregar(Pedido pedido)
         {
             _db.Pedidos.Add(pedido);
-            _db.SaveChanges();
+            // NO llamamos SaveChanges aquí, lo maneja el service con transacción
         }
 
         public void Actualizar(Pedido pedido)
