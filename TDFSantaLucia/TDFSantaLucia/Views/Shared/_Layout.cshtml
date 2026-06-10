@@ -89,10 +89,12 @@
                         </a>
                     }
 
-                    <a href="#" class="icon-navbar position-relative">
+                    <a asp-controller="Carrito" asp-action="Index"
+                           class="icon-navbar position-relative" id="btnCarrito">
                         <i class="bi bi-cart"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-info text-dark"
-                              style="font-size:10px;">0</span>
+                        <span class="position-absolute top-0 start-100 translate-middle
+                        badge rounded-pill bg-info text-dark"
+                              style="font-size:10px;" id="carritoCount">0</span>
                     </a>
 
                 </div>
@@ -166,6 +168,34 @@
                                 </a>
                             </li>
                         </ul>
+                    </li>
+                }
+
+                @* En el menú del cliente, después de Citas *@
+                @if (User.IsInRole("Cliente"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link menu-link"
+                               asp-controller="Pedido" asp-action="MisPedidos">
+                            <i class="bi bi-list-ul me-1"></i>Mis Pedidos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link menu-link"
+                               asp-controller="Factura" asp-action="MisFacturas">
+                            <i class="bi bi-receipt me-1"></i>Mis Facturas
+                        </a>
+                    </li>
+                }
+
+                @* Para admin en el menú *@
+                @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link menu-link"
+                               asp-controller="Pedido" asp-action="Admin">
+                            <i class="bi bi-clipboard2-check me-1"></i>Pedidos
+                        </a>
                     </li>
                 }
 
@@ -267,3 +297,17 @@
             @await RenderSectionAsync("Scripts", required: false)
         </body>
     </html>
+
+<script>
+    function actualizarContadorCarrito() {
+        fetch('/carrito/contar')
+            .then(r => r.json())
+            .then(d => {
+                const badge = document.getElementById('carritoCount');
+                if (badge) badge.textContent = d.count;
+            })
+            .catch(() => {});
+    }
+
+    actualizarContadorCarrito();
+</script>

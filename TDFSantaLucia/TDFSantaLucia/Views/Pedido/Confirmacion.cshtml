@@ -1,0 +1,138 @@
+﻿@model TDFSantaLucia.Models.Pedido
+@{
+    ViewData["Title"] = "Pedido Confirmado";
+    var factura = ViewBag.Factura as TDFSantaLucia.Models.Factura;
+    var telefonoWsp = ViewBag.TelefonoWsp?.ToString() ?? "50622373040";
+    var esDomicilio = Model.Tipo_Entrega == "Domicilio";
+    var mensaje = Uri.EscapeDataString(
+        $"Hola, le envío mi comprobante de pago para el pedido {Model.Numero_Orden}. " +
+        $"Total pagado: ₡{Model.Total:N2}. Método: {Model.Metodo_Pago}.");
+}
+
+<div class="container py-4" style="max-width:700px;">
+
+    <div class="text-center mb-4">
+        <i class="bi bi-check-circle-fill display-1 text-success"></i>
+        <h2 class="fw-bold mt-3" style="color:#243C8F;">
+            ¡Pedido realizado con éxito!
+        </h2>
+        <p class="text-muted">
+            Tu número de orden es:
+            <strong class="fs-4 text-primary">@Model.Numero_Orden</strong>
+        </p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-3">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <p class="text-muted small mb-1">TIPO DE ENTREGA</p>
+                <p class="fw-semibold">
+                    @if (Model.Tipo_Entrega == "Tienda")
+                    {
+                        <i class="bi bi-shop me-1"></i>
+                        <text>Recoger en tienda</text>
+                    }
+                    else
+                    {
+                        <i class="bi bi-truck me-1"></i>
+                        <text>Entrega a domicilio</text>
+                    }
+                </p>
+            </div>
+            @if (esDomicilio)
+            {
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">MÉTODO DE PAGO</p>
+                    <p class="fw-semibold">@Model.Metodo_Pago</p>
+                </div>
+                <div class="col-12">
+                    <p class="text-muted small mb-1">DIRECCIÓN</p>
+                    <p class="fw-semibold">@Model.Direccion_Entrega</p>
+                </div>
+            }
+            <div class="col-md-6">
+                <p class="text-muted small mb-1">ESTADO</p>
+                <span class="badge bg-warning text-dark fs-6">
+                    @Model.Estado
+                </span>
+            </div>
+            <div class="col-md-6">
+                <p class="text-muted small mb-1">TOTAL</p>
+                <p class="fw-bold fs-5 text-success">
+                    ₡@Model.Total.ToString("N2")
+                </p>
+            </div>
+        </div>
+    </div>
+
+    @if (esDomicilio)
+    {
+        <div class="alert alert-warning rounded-4 mb-3">
+            <h5 class="fw-bold">
+                <i class="bi bi-whatsapp me-2 text-success"></i>
+                Envía tu comprobante de pago
+            </h5>
+            <p>
+                Tu pedido quedará <strong>pendiente</strong> hasta que
+                un empleado valide tu comprobante de pago.
+                Por favor envíalo por WhatsApp al número de la farmacia.
+            </p>
+            <a href="https://wa.me/@telefonoWsp?text=@mensaje"
+                   target="_blank"
+                   class="btn btn-success rounded-3 fw-bold">
+                <i class="bi bi-whatsapp me-2"></i>
+                Enviar comprobante por WhatsApp
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info rounded-4 mb-3">
+            <h5 class="fw-bold">
+                <i class="bi bi-shop me-2"></i>
+                Tu pedido está listo para recoger
+            </h5>
+            <p class="mb-0">
+                Preséntate en la farmacia con tu número de orden
+                <strong>@Model.Numero_Orden</strong>.
+                Horario: Lun–Sáb 8:00–21:00 / Dom 9:00–20:00.
+            </p>
+        </div>
+    }
+
+    @if (factura != null)
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-3">
+            <h5 class="fw-bold mb-3" style="color:#243C8F;">
+                <i class="bi bi-receipt me-2"></i>Tu Factura
+            </h5>
+            <p>
+                Número de factura:
+                <strong>@factura.Numero_Factura</strong>
+            </p>
+            <div class="d-flex gap-2">
+                <a asp-controller="Factura" asp-action="Detalle"
+                       asp-route-id="@factura.Factura_Id"
+                       class="btn btn-outline-primary rounded-3">
+                    <i class="bi bi-eye me-1"></i>Ver factura
+                </a>
+                <a asp-controller="Factura" asp-action="Descargar"
+                       asp-route-id="@factura.Factura_Id"
+                       class="btn btn-primary rounded-3">
+                    <i class="bi bi-download me-1"></i>Descargar
+                </a>
+            </div>
+        </div>
+    }
+
+    <div class="d-flex gap-2">
+        <a asp-action="MisPedidos"
+               class="btn btn-outline-primary rounded-3 flex-fill">
+            <i class="bi bi-list-ul me-1"></i>Mis pedidos
+        </a>
+        <a asp-controller="Producto" asp-action="Index"
+               class="btn btn-primary rounded-3 flex-fill">
+            <i class="bi bi-bag me-1"></i>Seguir comprando
+        </a>
+    </div>
+</div>
