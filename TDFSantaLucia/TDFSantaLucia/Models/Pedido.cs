@@ -8,11 +8,21 @@ namespace TDFSantaLucia.Models
         [Key]
         public int Pedido_Id { get; set; }
 
+        public string? Numero_Orden { get; set; }
+
         public string? Estado { get; set; }
 
         public decimal Total { get; set; }
 
         public string? Descripcion { get; set; }
+
+        public string? Tipo_Entrega { get; set; }
+
+        public string? Metodo_Pago { get; set; }
+
+        public string? Direccion_Entrega { get; set; }
+
+        public string? Telefono_Contacto { get; set; }
 
         public DateTime Fecha_Creacion { get; set; }
 

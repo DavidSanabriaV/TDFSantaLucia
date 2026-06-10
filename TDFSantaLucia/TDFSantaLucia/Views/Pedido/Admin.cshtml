@@ -1,0 +1,186 @@
+﻿@model List<TDFSantaLucia.Models.Pedido>
+@{
+    ViewData["Title"] = "Gestión de Pedidos";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-clipboard2-check me-2"></i>Gestión de Pedidos
+    </h2>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            ✅ @TempData["Exito"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            ❌ @TempData["Error"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted small">
+                    ESTADO
+                </label>
+                <select name="estado"
+                        class="form-select"
+                        asp-items="ViewBag.Estados">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted small">
+                    DESDE
+                </label>
+                <input type="date" name="desde" class="form-control"
+                       value="@ViewBag.Desde" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted small">
+                    HASTA
+                </label>
+                <input type="date" name="hasta" class="form-control"
+                       value="@ViewBag.Hasta" />
+            </div>
+            <div class="col-md-3">
+                <button type="submit"
+                        class="btn btn-primary w-100 rounded-3">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Orden</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Entrega</th>
+                    <th>Pago</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    var badgeColor = p.Estado switch {
+                        "Pendiente" => "warning text-dark",
+                        "Aceptado"  => "info text-dark",
+                        "EnProceso" => "primary",
+                        "Listo"     => "success",
+                        "EnCamino"  => "primary",
+                        "Entregado" => "success",
+                        "Rechazado" => "danger",
+                        "Cancelado" => "secondary",
+                        _           => "secondary"
+                    };
+                    <tr>
+                        <td class="fw-bold" style="color:#243C8F;">
+                            @p.Numero_Orden
+                        </td>
+                        <td>
+                            @p.Cliente?.Usuario?.Nombre
+                            @p.Cliente?.Usuario?.Primer_Apellido
+                        </td>
+                        <td class="text-muted small">
+                            @p.Fecha_Creacion.ToString("dd/MM/yyyy HH:mm")
+                        </td>
+                        <td>
+                            @if (p.Tipo_Entrega == "Domicilio")
+                            {
+                                <span class="badge bg-info text-dark">
+                                    <i class="bi bi-truck me-1"></i>Domicilio
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-shop me-1"></i>Tienda
+                                </span>
+                            }
+                        </td>
+                        <td>@(p.Metodo_Pago ?? "—")</td>
+                        <td class="text-center fw-bold text-success">
+                            ₡@p.Total.ToString("N2")
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-@badgeColor">
+                                @p.Estado
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center
+                                        flex-wrap">
+                                <a asp-action="Detalle"
+                                   asp-route-id="@p.Pedido_Id"
+                                   class="btn btn-info btn-sm text-white">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                <div class="dropdown">
+                                    <button class="btn btn-warning btn-sm
+                                                   dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                        Estado
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        @foreach (var est in new[]{
+                                            "Pendiente","Aceptado","Rechazado",
+                                            "EnProceso","Listo","EnCamino",
+                                            "Entregado","Cancelado"})
+                                        {
+                                            <li>
+                                                <form asp-action="CambiarEstado"
+                                                      method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden"
+                                                           name="pedidoId"
+                                                           value="@p.Pedido_Id" />
+                                                    <input type="hidden"
+                                                           name="nuevoEstado"
+                                                           value="@est" />
+                                                    <button type="submit"
+                                                            class="dropdown-item @(p.Estado == est ? "fw-bold text-primary" : "")">
+                                                        @est
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form asp-action="Eliminar"
+                                          asp-route-id="@p.Pedido_Id"
+                                          method="post"
+                                          onsubmit="return confirm('¿Eliminar este pedido?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

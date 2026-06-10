@@ -1,0 +1,92 @@
+﻿@model List<TDFSantaLucia.Models.Factura>
+@{
+    ViewData["Title"] = "Mis Facturas";
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-receipt me-2"></i>Mis Facturas
+    </h2>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-muted small">
+                    DESDE
+                </label>
+                <input type="date" name="desde" class="form-control"
+                       value="@ViewBag.Desde" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-muted small">
+                    HASTA
+                </label>
+                <input type="date" name="hasta" class="form-control"
+                       value="@ViewBag.Hasta" />
+            </div>
+            <div class="col-md-4">
+                <button type="submit"
+                        class="btn btn-primary w-100 rounded-3">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-receipt display-3 text-muted"></i>
+            <p class="text-muted mt-3">No tienes facturas registradas.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Número</th>
+                        <th>Pedido</th>
+                        <th>Fecha</th>
+                        <th class="text-center">Total</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold" style="color:#243C8F;">
+                                @f.Numero_Factura
+                            </td>
+                            <td>@f.Pedido?.Numero_Orden</td>
+                            <td class="text-muted small">
+                                @f.Fecha_Emision.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td class="text-center fw-bold text-success">
+                                ₡@f.Total.ToString("N2")
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">@f.Estado</span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Detalle"
+                                       asp-route-id="@f.Factura_Id"
+                                       class="btn btn-info btn-sm text-white">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                                <a asp-action="Descargar"
+                                       asp-route-id="@f.Factura_Id"
+                                       class="btn btn-primary btn-sm">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

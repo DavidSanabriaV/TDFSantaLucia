@@ -8,6 +8,8 @@ namespace TDFSantaLucia.Models
         [Key]
         public int Factura_Id { get; set; }
 
+        public string? Numero_Factura { get; set; }
+
         public decimal Subtotal { get; set; }
 
         public decimal Descuento { get; set; }
