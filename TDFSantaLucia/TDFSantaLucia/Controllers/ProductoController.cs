@@ -11,13 +11,16 @@ namespace TDFSantaLucia.Controllers
     {
         private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
+        private readonly ICarritoService _carritoService;
 
         public ProductoController(
             IProductoService productoService,
-            ICategoriaService categoriaService)
+            ICategoriaService categoriaService,
+            ICarritoService carritoService)
         {
             _productoService = productoService;
             _categoriaService = categoriaService;
+            _carritoService = carritoService;
         }
 
         public IActionResult Index(string? buscar)
@@ -182,18 +185,29 @@ namespace TDFSantaLucia.Controllers
         public IActionResult AgregarAlCarrito(int productoId, int cantidad = 1)
         {
             var producto = _productoService.ObtenerPorId(productoId);
+
             if (producto == null || !producto.Estado)
-                return Json(new { exito = false, mensaje = "Producto no disponible." });
+            {
+                return Json(new
+                {
+                    exito = false,
+                    mensaje = "Producto no disponible."
+                });
+            }
+
+            _carritoService.AgregarItem(new CarritoItem
+            {
+                Producto_Id = producto.Producto_Id,
+                Nombre = producto.Nombre,
+                Precio = producto.Precio,
+                Cantidad = cantidad,
+                Imagen_URL = producto.Imagen_URL
+            });
 
             return Json(new
             {
                 exito = true,
-                mensaje = $"{producto.Nombre} agregado al carrito.",
-                productoId,
-                nombre = producto.Nombre,
-                precio = producto.Precio,
-                imagen = producto.Imagen_URL,
-                cantidad
+                mensaje = $"{producto.Nombre} agregado al carrito."
             });
         }
 
