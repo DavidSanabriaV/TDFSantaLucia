@@ -41,7 +41,7 @@ namespace TDFSantaLucia.Repositories
         public void Agregar(Factura factura)
         {
             _db.Facturas.Add(factura);
-            _db.SaveChanges();
+            // NO llamamos SaveChanges aquí, lo maneja el service con transacción
         }
 
         public string GenerarNumeroFactura()

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using TDFSantaLucia.Data;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -15,31 +17,41 @@ namespace TDFSantaLucia.Controllers
         private readonly ICarritoService _carritoService;
         private readonly IFacturaService _facturaService;
         private readonly UserManager<Usuario> _userManager;
+        private readonly AppDbContext _db;
 
         public PedidoController(
             IPedidoService pedidoService,
             ICarritoService carritoService,
             IFacturaService facturaService,
-            UserManager<Usuario> userManager)
+            UserManager<Usuario> userManager,
+            AppDbContext db)
         {
             _pedidoService = pedidoService;
             _carritoService = carritoService;
             _facturaService = facturaService;
             _userManager = userManager;
+            _db = db;
         }
 
-        // ── Cliente: historial ───────────────────────────────────────────────
+        private async Task<Cliente?> ObtenerClienteAsync()
+        {
+            var usuario = await _userManager.GetUserAsync(User);
+            if (usuario == null) return null;
+
+            return await _db.Clientes
+                .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
+        }
 
         [HttpGet("mis-pedidos")]
         public async Task<IActionResult> MisPedidos(
             DateTime? desde, DateTime? hasta, string? estado)
         {
-            var usuario = await _userManager.GetUserAsync(User);
-            if (usuario?.Cliente == null)
+            var cliente = await ObtenerClienteAsync();
+            if (cliente == null)
                 return RedirectToAction("Index", "Producto");
 
             var pedidos = _pedidoService
-                .ObtenerPorCliente(usuario.Cliente.Cliente_Id);
+                .ObtenerPorCliente(cliente.Cliente_Id);
 
             if (desde.HasValue)
                 pedidos = pedidos
@@ -56,7 +68,6 @@ namespace TDFSantaLucia.Controllers
 
             ViewBag.Desde = desde?.ToString("yyyy-MM-dd");
             ViewBag.Hasta = hasta?.ToString("yyyy-MM-dd");
-           
 
             ViewBag.Estados = new SelectList(new[]
             {
@@ -79,18 +90,15 @@ namespace TDFSantaLucia.Controllers
             var pedido = _pedidoService.ObtenerPorId(id);
             if (pedido == null) return NotFound();
 
-            // Verificar que sea el dueño o admin
             if (!User.IsInRole("Admin") && !User.IsInRole("Empleado"))
             {
-                var usuario = await _userManager.GetUserAsync(User);
-                if (usuario?.Cliente?.Cliente_Id != pedido.Cliente_Id)
+                var cliente = await ObtenerClienteAsync();
+                if (cliente?.Cliente_Id != pedido.Cliente_Id)
                     return Forbid();
             }
 
             return View(pedido);
         }
-
-        // ── Checkout ─────────────────────────────────────────────────────────
 
         [HttpGet("checkout")]
         public async Task<IActionResult> Checkout()
@@ -129,7 +137,6 @@ namespace TDFSantaLucia.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Si es domicilio redirigir a pago
             if (model.Tipo_Entrega == "Domicilio")
             {
                 TempData["CheckoutJson"] = System.Text.Json.JsonSerializer
@@ -137,13 +144,12 @@ namespace TDFSantaLucia.Controllers
                 return RedirectToAction("Pago");
             }
 
-            // Si es tienda procesar de inmediato
-            var usuario = await _userManager.GetUserAsync(User);
-            if (usuario?.Cliente == null)
+            var cliente = await ObtenerClienteAsync();
+            if (cliente == null)
                 return RedirectToAction("Index", "Producto");
 
             var (exito, error, pedido) = await _pedidoService
-                .ProcesarPedidoAsync(model, usuario.Cliente.Cliente_Id);
+                .ProcesarPedidoAsync(model, cliente.Cliente_Id);
 
             if (!exito)
             {
@@ -190,12 +196,12 @@ namespace TDFSantaLucia.Controllers
             if (!model.Items.Any())
                 return RedirectToAction("Index", "Carrito");
 
-            var usuario = await _userManager.GetUserAsync(User);
-            if (usuario?.Cliente == null)
+            var cliente = await ObtenerClienteAsync();
+            if (cliente == null)
                 return RedirectToAction("Index", "Producto");
 
             var (exito, error, pedido) = await _pedidoService
-                .ProcesarPedidoAsync(model, usuario.Cliente.Cliente_Id);
+                .ProcesarPedidoAsync(model, cliente.Cliente_Id);
 
             if (!exito)
             {
@@ -227,8 +233,6 @@ namespace TDFSantaLucia.Controllers
             return View(pedido);
         }
 
-        // ── Admin ─────────────────────────────────────────────────────────────
-
         [HttpGet("admin")]
         [Authorize(Roles = "Admin,Empleado")]
         public IActionResult Admin(string? estado, DateTime? desde, DateTime? hasta)
@@ -251,6 +255,18 @@ namespace TDFSantaLucia.Controllers
             ViewBag.EstadoFiltro = estado;
             ViewBag.Desde = desde?.ToString("yyyy-MM-dd");
             ViewBag.Hasta = hasta?.ToString("yyyy-MM-dd");
+
+            ViewBag.Estados = new SelectList(new[]
+            {
+                PedidoEstados.Pendiente,
+                PedidoEstados.Aceptado,
+                PedidoEstados.Rechazado,
+                PedidoEstados.EnProceso,
+                PedidoEstados.Listo,
+                PedidoEstados.EnCamino,
+                PedidoEstados.Entregado,
+                PedidoEstados.Cancelado
+            }, estado);
 
             return View(pedidos);
         }

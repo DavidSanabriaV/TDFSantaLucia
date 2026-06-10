@@ -8,10 +8,14 @@ namespace TDFSantaLucia.Controllers
     public class AccountController : Controller
     {
         private readonly ICuentaService _cuentaService;
+        private readonly ICarritoService _carritoService;
 
-        public AccountController(ICuentaService cuentaService)
+        public AccountController(
+            ICuentaService cuentaService,
+            ICarritoService carritoService)
         {
             _cuentaService = cuentaService;
+            _carritoService = carritoService;
         }
 
         [HttpGet("Login")]
@@ -26,7 +30,8 @@ namespace TDFSantaLucia.Controllers
 
         [HttpPost("Login")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
+        public async Task<IActionResult> Login(
+            LoginViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
 
@@ -37,7 +42,10 @@ namespace TDFSantaLucia.Controllers
                 model.Correo, model.Password, model.RememberMe);
 
             if (succeeded)
+            {
+                await _carritoService.SincronizarSesionADbAsync();
                 return LocalRedirect(returnUrl ?? "/");
+            }
 
             ModelState.AddModelError(string.Empty, errorMessage!);
             return View(model);
@@ -59,7 +67,8 @@ namespace TDFSantaLucia.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var (succeeded, errorMessage) = await _cuentaService.RegistrarClienteAsync(model);
+            var (succeeded, errorMessage) =
+                await _cuentaService.RegistrarClienteAsync(model);
 
             if (succeeded)
                 return RedirectToAction("Index", "Home");
@@ -72,14 +81,12 @@ namespace TDFSantaLucia.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            HttpContext.Session.Clear();        
             await _cuentaService.LogoutAsync();
             return RedirectToAction("Index", "Home");
         }
 
         [HttpGet("AccesoDenegado")]
-        public IActionResult AccesoDenegado()
-        {
-            return View();
-        }
+        public IActionResult AccesoDenegado() => View();
     }
 }

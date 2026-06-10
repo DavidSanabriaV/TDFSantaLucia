@@ -28,6 +28,8 @@ namespace TDFSantaLucia.Data
         public DbSet<DetalleFactura> DetallesFactura { get; set; }
         public DbSet<Cupon> Cupones { get; set; }
         public DbSet<ClienteCupon> ClientesCupones { get; set; }
+        public DbSet<CarritoItemDb> CarritoItems { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -201,6 +203,14 @@ namespace TDFSantaLucia.Data
                 .WithMany()
                 .HasForeignKey(c => c.Usuario_Id)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // CarritoItemDb -> Cliente
+            modelBuilder.Entity<CarritoItemDb>()
+                .HasOne(c => c.Cliente)
+                .WithMany(c => c.CarritoItems)   
+                .HasForeignKey(c => c.Cliente_Id)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
