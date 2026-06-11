@@ -2,6 +2,49 @@
     ViewData["Title"] = "Home Page";
 }
 
+@{
+    var productos = (ViewBag.Productos as List<TDFSantaLucia.Models.Producto>
+                   ?? new List<TDFSantaLucia.Models.Producto>())
+                   .Where(p => p.Estado)
+                   .ToList();
+}
+
+<div style="position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; width:100vw;" class="bg-light py-2">
+    <div id="carouselProductos" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+
+            @for (int i = 0; i < productos.Count; i += 3)
+            {
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <div class="d-flex justify-content-center gap-3 px-5">
+
+                        @for (int j = i; j < productos.Count && j < i + 3; j++)
+                        {
+                            var p = productos[j];
+                            <a href="/producto/detalle/@p.Producto_Id" class="producto-card">
+                                <img src="@(string.IsNullOrWhiteSpace(p.Imagen_URL) ? Url.Content("~/img/producto-default.png") : p.Imagen_URL)"
+                                     class="producto-img" alt="@p.Nombre">
+                                <p class="producto-nombre">@p.Nombre</p>
+                                <p class="producto-precio">₡@p.Precio.ToString("N2")</p>
+                            </a>
+                        }
+
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselProductos" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon bg-dark rounded-circle p-2"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselProductos" data-bs-slide="next">
+            <span class="carousel-control-next-icon bg-dark rounded-circle p-2"></span>
+        </button>
+    </div>
+</div>
+
+
 <div style="position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; width:100vw;">
     <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-indicators">
@@ -54,46 +97,5 @@
     </div>
 </div>
 
-@{
-    var productos = (ViewBag.Productos as List<TDFSantaLucia.Models.Producto>
-                   ?? new List<TDFSantaLucia.Models.Producto>())
-                   .Where(p => p.Estado)
-                   .ToList();
-}
-
-<div style="position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; width:100vw;" class="bg-light py-2">
-    <div id="carouselProductos" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-
-            @for (int i = 0; i < productos.Count; i += 3)
-            {
-                <div class="carousel-item @(i == 0 ? "active" : "")">
-                    <div class="d-flex justify-content-center gap-3 px-5">
-
-                        @for (int j = i; j < productos.Count && j < i + 3; j++)
-                        {
-                            var p = productos[j];
-                            <a href="/producto/detalle/@p.Producto_Id" class="producto-card">
-                                <img src="@(string.IsNullOrWhiteSpace(p.Imagen_URL) ? Url.Content("~/img/producto-default.png") : p.Imagen_URL)"
-                                     class="producto-img" alt="@p.Nombre">
-                                <p class="producto-nombre">@p.Nombre</p>
-                                <p class="producto-precio">₡@p.Precio.ToString("N2")</p>
-                            </a>
-                        }
-
-                    </div>
-                </div>
-            }
-
-        </div>
-
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselProductos" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon bg-dark rounded-circle p-2"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselProductos" data-bs-slide="next">
-            <span class="carousel-control-next-icon bg-dark rounded-circle p-2"></span>
-        </button>
-    </div>
-</div>
 
 
