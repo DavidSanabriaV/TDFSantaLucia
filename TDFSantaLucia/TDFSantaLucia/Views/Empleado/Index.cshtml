@@ -1,38 +1,214 @@
 ﻿@model List<TDFSantaLucia.Models.Empleado>
+@{
+    ViewData["Title"] = "Empleados";
+}
 
-<h2>Empleados</h2>
-<a asp-action="Crear" class="btn btn-success mb-3">Nuevo</a>
+<div class="container-fluid px-4 py-4">
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Cédula</th>
-            <th>Puesto</th>
-            <th>Teléfono</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var e in Model)
-        {
-            <tr>
-                <td>@e.Usuario?.Nombre @e.Usuario?.Primer_Apellido</td>
-                <td>@e.Cedula</td>
-                <td>@e.Puesto</td>
-                <td>@e.Telefono</td>
-                <td>@e.Usuario?.RolNombre</td>
-                <td>@(e.Estado ? "Activo" : "Inactivo")</td>
-                <td>
-                    <a asp-action="Detalle" asp-route-id="@e.Empleado_Id" class="btn btn-primary btn-sm">Ver</a>
-                    <a asp-action="Editar" asp-route-id="@e.Empleado_Id" class="btn btn-warning btn-sm">Editar</a>
-                    <form asp-action="Eliminar" asp-route-id="@e.Empleado_Id" method="post" style="display:inline;">
-                        <button class="btn btn-danger btn-sm">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#1a3c5e;">
+                <i class="bi bi-person-badge-fill me-2 text-primary"></i>
+                Gestión de Empleados
+            </h2>
+            <p class="text-muted mb-0">Administra el personal de la farmacia</p>
+        </div>
+        <a asp-action="Crear" class="btn btn-success rounded-3 shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Empleado
+        </a>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold text-muted small">BUSCAR</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="buscador"
+                               class="form-control border-start-0 ps-0"
+                               placeholder="Nombre, cédula o puesto..." />
+                        <button class="btn btn-outline-secondary" id="btnLimpiarTexto"
+                                type="button" style="display:none;">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-muted small">ESTADO</label>
+                    <select id="filtroEstado" class="form-select rounded-3">
+                        <option value="">Todos</option>
+                        <option value="true">✅ Activo</option>
+                        <option value="false">❌ Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold text-muted small">ROL</label>
+                    <select id="filtroRol" class="form-select rounded-3">
+                        <option value="">Todos</option>
+                        <option value="admin">Admin</option>
+                        <option value="empleado">Empleado</option>
+                    </select>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button id="btnLimpiarFiltros" class="btn btn-outline-secondary w-100 rounded-3" style="display:none;">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2">
+                <small id="contadorResultados" class="text-muted"></small>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Cédula</th>
+                    <th>Puesto</th>
+                    <th>Teléfono</th>
+                    <th class="text-center">Rol</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaEmpleados">
+                @{
+                    int fila = 1;
+                }
+                @foreach (var e in Model)
+                {
+                    <tr data-nombre="@($"{e.Usuario?.Nombre} {e.Usuario?.Primer_Apellido}".ToLower())"
+                        data-cedula="@e.Cedula?.ToLower()"
+                        data-puesto="@e.Puesto?.ToLower()"
+                        data-estado="@e.Estado.ToString().ToLower()"
+                        data-rol="@e.Usuario?.RolNombre?.ToLower()">
+                        <td class="text-muted small">@fila</td>
+                        <td class="fw-semibold">@e.Usuario?.Nombre @e.Usuario?.Primer_Apellido @e.Usuario?.Segundo_Apellido</td>
+                        <td>@e.Cedula</td>
+                        <td class="text-muted">@(e.Puesto ?? "—")</td>
+                        <td class="text-muted">@(e.Telefono ?? "—")</td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">@(e.Usuario?.RolNombre ?? "—")</span>
+                        </td>
+                        <td class="text-center">
+                            @if (e.Estado)
+                            {
+                                <span class="badge bg-success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Inactivo</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="Detalle" asp-route-id="@e.Empleado_Id"
+                               class="btn btn-info btn-sm text-white">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a asp-action="Editar" asp-route-id="@e.Empleado_Id"
+                               class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <form asp-action="Eliminar" asp-route-id="@e.Empleado_Id"
+                                  method="post" style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar este empleado?')">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    fila++;
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div id="estadoVacio" class="text-center py-5 d-none">
+        <i class="bi bi-inbox display-4 text-muted"></i>
+        <p class="text-muted mt-2">No se encontraron empleados con los filtros aplicados.</p>
+        <button class="btn btn-outline-secondary btn-sm rounded-3" id="btnLimpiarDesdeVacio">
+            Limpiar filtros
+        </button>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        const filas          = Array.from(document.querySelectorAll('#tablaEmpleados tr'));
+        const buscador       = document.getElementById('buscador');
+        const filtroEstado   = document.getElementById('filtroEstado');
+        const filtroRol      = document.getElementById('filtroRol');
+        const btnLimpiarTxt  = document.getElementById('btnLimpiarTexto');
+        const btnLimpiarFil  = document.getElementById('btnLimpiarFiltros');
+        const estadoVacio    = document.getElementById('estadoVacio');
+        const contador       = document.getElementById('contadorResultados');
+
+        function filtrar() {
+            const texto  = buscador.value.trim().toLowerCase();
+            const estado = filtroEstado.value;
+            const rol    = filtroRol.value;
+            const hay    = texto || estado || rol;
+
+            btnLimpiarTxt.style.display = texto ? 'block' : 'none';
+            btnLimpiarFil.style.display = hay   ? 'block' : 'none';
+
+            let visibles = 0;
+            filas.forEach(function (tr) {
+                const nombre = (tr.dataset.nombre || '');
+                const cedula = (tr.dataset.cedula || '');
+                const puesto = (tr.dataset.puesto || '');
+
+                const pasaTexto  = !texto  || nombre.includes(texto) || cedula.includes(texto) || puesto.includes(texto);
+                const pasaEstado = !estado || tr.dataset.estado === estado;
+                const pasaRol    = !rol    || (tr.dataset.rol || '').includes(rol);
+                const visible    = pasaTexto && pasaEstado && pasaRol;
+
+                tr.classList.toggle('d-none', !visible);
+                if (visible) visibles++;
+            });
+
+            estadoVacio.classList.toggle('d-none', visibles > 0);
+            contador.innerHTML = hay
+                ? `<span class="fw-semibold">${visibles}</span> empleado${visibles !== 1 ? 's' : ''} encontrado${visibles !== 1 ? 's' : ''}`
+                : '';
         }
-    </tbody>
-</table>
+
+        function limpiarTodo() {
+            buscador.value     = '';
+            filtroEstado.value = '';
+            filtroRol.value    = '';
+            filtrar();
+        }
+
+        buscador.addEventListener('input', filtrar);
+        filtroEstado.addEventListener('change', filtrar);
+        filtroRol.addEventListener('change', filtrar);
+        btnLimpiarTxt.addEventListener('click', () => { buscador.value = ''; filtrar(); buscador.focus(); });
+        btnLimpiarFil.addEventListener('click', limpiarTodo);
+        document.getElementById('btnLimpiarDesdeVacio').addEventListener('click', limpiarTodo);
+    </script>
+}
