@@ -24,6 +24,9 @@ namespace TDFSantaLucia.Repositories
         {
             return _context.Empleados
                 .Include(e => e.Usuario)
+                .Include(e => e.Citas)
+                .Include(e => e.Horarios)
+                .Include(e => e.Expedientes)
                 .FirstOrDefault(e => e.Empleado_Id == id);
         }
 

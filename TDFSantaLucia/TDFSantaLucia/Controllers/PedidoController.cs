@@ -213,7 +213,7 @@ namespace TDFSantaLucia.Controllers
             _carritoService.LimpiarCarrito();
             TempData["NumeroOrden"] = pedido!.Numero_Orden;
             TempData["MetodoPago"] = metodoPago;
-            TempData["TelefonoWsp"] = "50622373040";
+            TempData["TelefonoWsp"] = "50684659956";
 
             return RedirectToAction("Confirmacion",
                 new { id = pedido.Pedido_Id });
@@ -227,7 +227,7 @@ namespace TDFSantaLucia.Controllers
 
             var factura = _facturaService.ObtenerPorPedido(id);
             ViewBag.Factura = factura;
-            ViewBag.TelefonoWsp = TempData["TelefonoWsp"] ?? "50622373040";
+            ViewBag.TelefonoWsp = TempData["TelefonoWsp"] ?? "50684659956";
             ViewBag.MetodoPago = TempData["MetodoPago"];
 
             return View(pedido);
