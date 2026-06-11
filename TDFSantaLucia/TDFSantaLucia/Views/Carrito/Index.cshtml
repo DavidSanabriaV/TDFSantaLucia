@@ -133,11 +133,11 @@
 
 @section Scripts {
     <script>
-        const token = document.querySelector(
+                const token = document.querySelector(
             'input[name="__RequestVerificationToken"]').value;
 
-        function cambiarCantidad(productoId, delta) {
-            const cantEl  = document.getElementById(`cant-${productoId}`);
+                        function cambiarCantidad(productoId, delta) {
+            const cantEl = document.getElementById(`cant-${productoId}`);
             const nuevaCant = parseInt(cantEl.textContent) + delta;
 
             if (nuevaCant < 1) {
@@ -158,9 +158,10 @@
                 if (d.exito) {
                     cantEl.textContent = nuevaCant;
                     document.getElementById(`sub-${productoId}`)
-                        .textContent = `₡${d.subtotal}`;
+                        .textContent = `₡${d.subtotal.toLocaleString('es-CR', {minimumFractionDigits: 2})}`;
                     actualizarResumen(d.total, d.count);
                 }
+
             });
         }
 
@@ -186,7 +187,7 @@
         }
 
         function actualizarResumen(total, count) {
-            const subtotalNum = parseFloat(total.replace(',', '.'));
+            const subtotalNum = total;
             const impuestoNum = Math.round(subtotalNum * 0.13 * 100) / 100;
             const totalNum    = subtotalNum + impuestoNum;
 

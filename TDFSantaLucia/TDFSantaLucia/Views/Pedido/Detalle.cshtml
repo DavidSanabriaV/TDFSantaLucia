@@ -1,0 +1,126 @@
+﻿@model TDFSantaLucia.Models.Pedido
+@{
+    ViewData["Title"] = "Detalle del Pedido";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">🧾 Detalle del Pedido</h2>
+
+    <div class="card shadow-sm p-4" style="max-width: 800px;">
+        <h5 class="card-title">Orden #@Model.Numero_Orden</h5>
+        <hr />
+
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Cliente:</strong> @Model.Cliente?.Usuario?.UserName</p>
+                <p><strong>Correo:</strong> @Model.Cliente?.Usuario?.Email</p>
+                <p><strong>Teléfono:</strong> @Model.Telefono_Contacto</p>
+                <p><strong>Tipo de entrega:</strong> @Model.Tipo_Entrega</p>
+                @if (Model.Tipo_Entrega == "Domicilio")
+                {
+                    <p><strong>Dirección:</strong> @Model.Direccion_Entrega</p>
+                }
+                <p><strong>Método de pago:</strong> @Model.Metodo_Pago</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Fecha creación:</strong> @Model.Fecha_Creacion.ToString("dd/MM/yyyy HH:mm")</p>
+                <p><strong>Última actualización:</strong> @Model.Fecha_Actualizacion.ToString("dd/MM/yyyy HH:mm")</p>
+                @if (Model.Cupon != null)
+                {
+                    <p><strong>Cupón:</strong> @Model.Cupon.Descripcion</p>
+                    <p>
+                        <strong>Descuento:</strong>
+                        @if (Model.Cupon.Tipo_Descuento == "Porcentaje")
+                        {
+                            <span>@Model.Cupon.Valor_Descuento %</span>
+                        }
+                        else
+                        {
+                            <span>₡@Model.Cupon.Valor_Descuento.ToString("N2")</span>
+                        }
+                    </p>
+                }
+                <p>
+                    <strong>Estado:</strong>
+                    @switch (Model.Estado)
+                    {
+                        case "Pendiente":
+                            <span class="badge bg-warning text-dark">Pendiente</span>
+                            break;
+                        case "Aceptado":
+                            <span class="badge bg-info text-dark">Aceptado</span>
+                            break;
+                        case "EnProceso":
+                            <span class="badge bg-primary">En Proceso</span>
+                            break;
+                        case "Listo":
+                            <span class="badge bg-success">Listo</span>
+                            break;
+                        case "EnCamino":
+                            <span class="badge bg-primary">En Camino</span>
+                            break;
+                        case "Entregado":
+                            <span class="badge bg-success">Entregado</span>
+                            break;
+                        case "Rechazado":
+                            <span class="badge bg-danger">Rechazado</span>
+                            break;
+                        case "Cancelado":
+                            <span class="badge bg-secondary">Cancelado</span>
+                            break;
+                        default:
+                            <span class="badge bg-secondary">@Model.Estado</span>
+                            break;
+                    }
+                </p>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+        {
+            <p><strong>Descripción:</strong> @Model.Descripcion</p>
+        }
+
+        <hr />
+        <h6 class="fw-bold mb-3">Productos</h6>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Producto</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-end">Precio Unit.</th>
+                        <th class="text-end">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detalle in Model.DetallesPedido)
+                    {
+                        <tr>
+                            <td>@detalle.Producto?.Nombre</td>
+                            <td class="text-center">@detalle.Cantidad</td>
+                            <td class="text-end">₡@detalle.Precio_Unitario.ToString("N2")</td>
+                            <td class="text-end">₡@detalle.Subtotal.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold">Total</td>
+                        <td class="text-end fw-bold" style="color:#243C8F;">
+                            ₡@Model.Total.ToString("N2")
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between mt-3">
+            <a asp-action="MisPedidos" class="btn btn-secondary">⬅ Volver</a>
+            @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
+            {
+                <a asp-action="Admin" class="btn btn-outline-primary">📋 Ver todos los pedidos</a>
+            }
+        </div>
+    </div>
+</div>

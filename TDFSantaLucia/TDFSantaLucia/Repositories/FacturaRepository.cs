@@ -19,10 +19,12 @@ namespace TDFSantaLucia.Repositories
                 .ToList();
 
         public List<Factura> ObtenerPorCliente(int clienteId)
-            => _db.Facturas
+    => _db.Facturas
                 .Include(f => f.Pedido)
                 .Include(f => f.DetallesFactura).ThenInclude(d => d.Producto)
-                .Where(f => f.Cliente_Id == clienteId)
+                .Where(f => f.Cliente_Id == clienteId
+                 && f.Pedido != null
+                 && f.Pedido.Estado != PedidoEstados.Pendiente)  
                 .OrderByDescending(f => f.Fecha_Emision)
                 .ToList();
 
@@ -41,7 +43,6 @@ namespace TDFSantaLucia.Repositories
         public void Agregar(Factura factura)
         {
             _db.Facturas.Add(factura);
-            // NO llamamos SaveChanges aquí, lo maneja el service con transacción
         }
 
         public string GenerarNumeroFactura()

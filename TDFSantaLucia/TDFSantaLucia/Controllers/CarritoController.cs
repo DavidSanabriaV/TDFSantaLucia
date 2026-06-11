@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
+using TDFSantaLucia.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace TDFSantaLucia.Controllers
 {
@@ -10,13 +12,16 @@ namespace TDFSantaLucia.Controllers
     {
         private readonly ICarritoService _carritoService;
         private readonly IProductoService _productoService;
+        private readonly AppDbContext _db;
 
         public CarritoController(
             ICarritoService carritoService,
-            IProductoService productoService)
+            IProductoService productoService,
+            AppDbContext db)
         {
             _carritoService = carritoService;
             _productoService = productoService;
+            _db = db;
         }
 
         [HttpGet("")]
@@ -59,6 +64,18 @@ namespace TDFSantaLucia.Controllers
         [HttpPost("actualizar")]
         public IActionResult Actualizar(int productoId, int cantidad)
         {
+            var stockDisponible = _db.Inventarios
+                .Where(i => i.Producto_Id == productoId && i.Estado && i.Cantidad_Disponible > 0)
+                .Sum(i => i.Cantidad_Disponible);
+
+            if (cantidad > stockDisponible)
+                return Json(new
+                {
+                    exito = false,
+                    mensaje = $"Solo hay {stockDisponible} unidades disponibles.",
+                    stockMax = stockDisponible
+                });
+
             _carritoService.ActualizarCantidad(productoId, cantidad);
             var items = _carritoService.ObtenerCarrito();
             var subtotal = items.FirstOrDefault(i =>
@@ -67,8 +84,8 @@ namespace TDFSantaLucia.Controllers
             return Json(new
             {
                 exito = true,
-                subtotal = subtotal.ToString("N2"),
-                total = _carritoService.ObtenerTotal().ToString("N2"),
+                subtotal = subtotal,
+                total = _carritoService.ObtenerTotal(),
                 count = _carritoService.ContarItems()
             });
         }
@@ -80,7 +97,7 @@ namespace TDFSantaLucia.Controllers
             return Json(new
             {
                 exito = true,
-                total = _carritoService.ObtenerTotal().ToString("N2"),
+                total = _carritoService.ObtenerTotal(),
                 count = _carritoService.ContarItems()
             });
         }

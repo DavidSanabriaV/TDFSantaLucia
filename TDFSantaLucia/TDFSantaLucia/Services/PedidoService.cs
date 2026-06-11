@@ -89,16 +89,13 @@ namespace TDFSantaLucia.Services
                     });
                 }
 
-                // Guardar descuento de stock
                 await _db.SaveChangesAsync();
 
                 var subtotal = checkout.Subtotal;
                 var impuesto = checkout.Impuesto;
                 var total = checkout.Total;
 
-                var estadoInicial = checkout.Tipo_Entrega == "Tienda"
-                    ? PedidoEstados.Aceptado
-                    : PedidoEstados.Pendiente;
+                var estadoInicial = PedidoEstados.Pendiente;
 
                 var pedido = new Pedido
                 {
@@ -200,11 +197,9 @@ namespace TDFSantaLucia.Services
             if (!estadosValidos.Contains(nuevoEstado))
                 return (false, "Estado no válido.");
 
-            // Si se rechaza o cancela devolver el stock
             if (nuevoEstado == PedidoEstados.Rechazado ||
                 nuevoEstado == PedidoEstados.Cancelado)
             {
-                // Solo devolver si el estado anterior no era ya cancelado/rechazado
                 if (pedido.Estado != PedidoEstados.Cancelado &&
                     pedido.Estado != PedidoEstados.Rechazado)
                 {

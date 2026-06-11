@@ -430,7 +430,7 @@
             form.submit();
         }
 
-        function mostrarAlerta(tipo, mensaje) {
+                function mostrarAlerta(tipo, mensaje) {
             const div = document.createElement('div');
             div.className = `alert alert-${tipo} alert-dismissible fade show rounded-3 shadow-sm`;
             div.role = 'alert';
@@ -439,6 +439,36 @@
             document.querySelector('.container-fluid').prepend(div);
             setTimeout(() => div.remove(), 4000);
         }
+
+                function agregarAlCarrito(productoId, nombre) {
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                    <text>
+                        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    </text>
+            }
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('/carrito/agregar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: `productoId=${productoId}&cantidad=1`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.exito) {
+                    mostrarAlerta('success', nombre + ' agregado al carrito.');
+                    const badge = document.getElementById('carritoCount');
+                    if (badge) badge.textContent = data.total;
+                } else {
+                    mostrarAlerta('danger', data.mensaje);
+                }
+            });
+        }
+
         const buscarInicial = '@ViewBag.BuscarInicial';
         if (buscarInicial) {
             const input = document.getElementById('searchInput');
