@@ -48,7 +48,6 @@ namespace TDFSantaLucia.Services
             {
                 var detalles = new List<DetallePedido>();
 
-                // Validar stock y descontar
                 foreach (var item in checkout.Items)
                 {
                     var lotes = await _db.Inventarios
@@ -65,16 +64,17 @@ namespace TDFSantaLucia.Services
                         await transaction.RollbackAsync();
                         return (false,
                             $"Stock insuficiente para '{item.Nombre}'. " +
-                            $"Disponible: {stockTotal}, solicitado: {item.Cantidad}",
+                            $"Disponible: {stockTotal}, " +
+                            $"solicitado: {item.Cantidad}",
                             null);
                     }
 
-                    // FIFO: descontar del lote más próximo a vencer
                     int pendiente = item.Cantidad;
                     foreach (var lote in lotes)
                     {
                         if (pendiente <= 0) break;
-                        int descontar = Math.Min(lote.Cantidad_Disponible, pendiente);
+                        int descontar = Math.Min(lote.Cantidad_Disponible,
+                            pendiente);
                         lote.Cantidad_Disponible -= descontar;
                         pendiente -= descontar;
                         _db.Inventarios.Update(lote);
@@ -112,11 +112,9 @@ namespace TDFSantaLucia.Services
                     DetallesPedido = detalles
                 };
 
-                // Agregar pedido sin SaveChanges (lo hace el repo sin guardar)
                 _pedidoRepo.Agregar(pedido);
                 await _db.SaveChangesAsync();
 
-                // Generar factura
                 var factura = new Factura
                 {
                     Numero_Factura = _facturaRepo.GenerarNumeroFactura(),
@@ -140,7 +138,6 @@ namespace TDFSantaLucia.Services
                 _facturaRepo.Agregar(factura);
                 await _db.SaveChangesAsync();
 
-                // Desactivar productos sin stock
                 foreach (var item in checkout.Items)
                 {
                     var tieneStock = await _db.Inventarios
@@ -233,6 +230,34 @@ namespace TDFSantaLucia.Services
             }
 
             pedido.Estado = nuevoEstado;
+            pedido.Fecha_Actualizacion = DateTime.Now;
+            _pedidoRepo.Actualizar(pedido);
+
+            return (true, null);
+        }
+
+        public async Task<(bool exito, string? error)>
+            CobrarPedidoAsync(int pedidoId, string metodoPago)
+        {
+            var pedido = _pedidoRepo.ObtenerPorId(pedidoId);
+            if (pedido == null)
+                return (false, "Pedido no encontrado.");
+
+            var estadosCobrables = new[]
+            {
+                PedidoEstados.Aceptado,
+                PedidoEstados.EnProceso,
+                PedidoEstados.Listo,
+                PedidoEstados.EnCamino
+            };
+
+            if (!estadosCobrables.Contains(pedido.Estado))
+                return (false,
+                    "Solo se puede cobrar un pedido en estado " +
+                    "Aceptado, En Proceso, Listo o En Camino.");
+
+            pedido.Metodo_Pago = metodoPago;
+            pedido.Estado = PedidoEstados.Entregado;
             pedido.Fecha_Actualizacion = DateTime.Now;
             _pedidoRepo.Actualizar(pedido);
 

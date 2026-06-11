@@ -37,7 +37,6 @@ namespace TDFSantaLucia.Controllers
         {
             var usuario = await _userManager.GetUserAsync(User);
             if (usuario == null) return null;
-
             return await _db.Clientes
                 .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
         }
@@ -50,8 +49,7 @@ namespace TDFSantaLucia.Controllers
             if (cliente == null)
                 return RedirectToAction("Index", "Producto");
 
-            var pedidos = _pedidoService
-                .ObtenerPorCliente(cliente.Cliente_Id);
+            var pedidos = _pedidoService.ObtenerPorCliente(cliente.Cliente_Id);
 
             if (desde.HasValue)
                 pedidos = pedidos
@@ -227,7 +225,7 @@ namespace TDFSantaLucia.Controllers
 
             var factura = _facturaService.ObtenerPorPedido(id);
             ViewBag.Factura = factura;
-            ViewBag.TelefonoWsp = TempData["TelefonoWsp"] ?? "50684659956";
+            ViewBag.TelefonoWsp = TempData["TelefonoWsp"] ?? "50684659956 ";
             ViewBag.MetodoPago = TempData["MetodoPago"];
 
             return View(pedido);
@@ -235,12 +233,14 @@ namespace TDFSantaLucia.Controllers
 
         [HttpGet("admin")]
         [Authorize(Roles = "Admin,Empleado")]
-        public IActionResult Admin(string? estado, DateTime? desde, DateTime? hasta)
+        public IActionResult Admin(
+            string? estado, DateTime? desde, DateTime? hasta)
         {
             var pedidos = _pedidoService.ObtenerTodos();
 
             if (!string.IsNullOrWhiteSpace(estado))
-                pedidos = pedidos.Where(p => p.Estado == estado).ToList();
+                pedidos = pedidos
+                    .Where(p => p.Estado == estado).ToList();
 
             if (desde.HasValue)
                 pedidos = pedidos
@@ -288,6 +288,23 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Admin");
         }
 
+        [HttpPost("cobrar/{id:int}")]
+        [Authorize(Roles = "Admin,Empleado")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cobrar(int id, string metodoPago)
+        {
+            var (exito, error) = await _pedidoService
+                .CobrarPedidoAsync(id, metodoPago);
+
+            if (!exito)
+                TempData["Error"] = error;
+            else
+                TempData["Exito"] =
+                    $"Pedido cobrado correctamente con {metodoPago}.";
+
+            return RedirectToAction("Admin");
+        }
+
         [HttpPost("eliminar/{id:int}")]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
@@ -301,7 +318,5 @@ namespace TDFSantaLucia.Controllers
 
             return RedirectToAction("Admin");
         }
-
-        
     }
 }

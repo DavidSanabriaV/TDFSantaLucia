@@ -28,32 +28,24 @@
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label fw-semibold text-muted small">
-                    ESTADO
-                </label>
-                <select name="estado"
-                        class="form-select"
+                <label class="form-label fw-semibold text-muted small">ESTADO</label>
+                <select name="estado" class="form-select"
                         asp-items="ViewBag.Estados">
                     <option value="">Todos</option>
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label fw-semibold text-muted small">
-                    DESDE
-                </label>
+                <label class="form-label fw-semibold text-muted small">DESDE</label>
                 <input type="date" name="desde" class="form-control"
                        value="@ViewBag.Desde" />
             </div>
             <div class="col-md-3">
-                <label class="form-label fw-semibold text-muted small">
-                    HASTA
-                </label>
+                <label class="form-label fw-semibold text-muted small">HASTA</label>
                 <input type="date" name="hasta" class="form-control"
                        value="@ViewBag.Hasta" />
             </div>
             <div class="col-md-3">
-                <button type="submit"
-                        class="btn btn-primary w-100 rounded-3">
+                <button type="submit" class="btn btn-primary w-100 rounded-3">
                     <i class="bi bi-search me-1"></i>Filtrar
                 </button>
             </div>
@@ -77,17 +69,34 @@
             <tbody>
                 @foreach (var p in Model)
                 {
-                    var badgeColor = p.Estado switch {
+                    var esDomicilio = p.Tipo_Entrega == "Domicilio";
+
+                    var badgeColor = p.Estado switch
+                    {
                         "Pendiente" => "warning text-dark",
-                        "Aceptado"  => "info text-dark",
+                        "Aceptado" => "info text-dark",
                         "EnProceso" => "primary",
-                        "Listo"     => "success",
-                        "EnCamino"  => "primary",
+                        "Listo" => "success",
+                        "EnCamino" => "primary",
                         "Entregado" => "success",
                         "Rechazado" => "danger",
                         "Cancelado" => "secondary",
-                        _           => "secondary"
+                        _ => "secondary"
                     };
+
+                    var metodoPagoHtml = p.Metodo_Pago switch
+                    {
+                        "Efectivo" => "<i class='bi bi-cash me-1'></i>Efectivo",
+                        "Tarjeta" => "<i class='bi bi-credit-card me-1'></i>Tarjeta",
+                        "Sinpe" => "<i class='bi bi-phone me-1'></i>Sinpe",
+                        "Transferencia" => "<i class='bi bi-bank me-1'></i>Transferencia",
+                        null or "" => "<span class='text-muted'>—</span>",
+                        var m => m
+                    };
+
+                    var puedeCobrar = !esDomicilio &&
+                        p.Estado == "Aceptado";
+
                     <tr>
                         <td class="fw-bold" style="color:#243C8F;">
                             @p.Numero_Orden
@@ -100,7 +109,7 @@
                             @p.Fecha_Creacion.ToString("dd/MM/yyyy HH:mm")
                         </td>
                         <td>
-                            @if (p.Tipo_Entrega == "Domicilio")
+                            @if (esDomicilio)
                             {
                                 <span class="badge bg-info text-dark">
                                     <i class="bi bi-truck me-1"></i>Domicilio
@@ -113,7 +122,7 @@
                                 </span>
                             }
                         </td>
-                        <td>@(p.Metodo_Pago ?? "—")</td>
+                        <td>@Html.Raw(metodoPagoHtml)</td>
                         <td class="text-center fw-bold text-success">
                             ₡@p.Total.ToString("N2")
                         </td>
@@ -123,45 +132,33 @@
                             </span>
                         </td>
                         <td class="text-center">
-                            <div class="d-flex gap-1 justify-content-center
-                                        flex-wrap">
+                            <div class="d-flex gap-1 justify-content-center flex-wrap">
+
                                 <a asp-action="Detalle"
-                                   asp-route-id="@p.Pedido_Id"
-                                   class="btn btn-info btn-sm text-white">
+                                       asp-route-id="@p.Pedido_Id"
+                                       class="btn btn-info btn-sm text-white"
+                                       title="Ver detalle">
                                     <i class="bi bi-eye"></i>
                                 </a>
 
-                                <div class="dropdown">
-                                    <button class="btn btn-warning btn-sm
-                                                   dropdown-toggle"
-                                            data-bs-toggle="dropdown">
-                                        Estado
+                                <button type="button"
+                                        class="btn btn-warning btn-sm"
+                                        title="Cambiar estado"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEstado-@p.Pedido_Id">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </button>
+
+                                @if (puedeCobrar)
+                                {
+                                    <button type="button"
+                                            class="btn btn-success btn-sm"
+                                            title="Cobrar pedido"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalCobrar-@p.Pedido_Id">
+                                        <i class="bi bi-cash-coin"></i>
                                     </button>
-                                    <ul class="dropdown-menu">
-                                        @foreach (var est in new[]{
-                                            "Pendiente","Aceptado","Rechazado",
-                                            "EnProceso","Listo","EnCamino",
-                                            "Entregado","Cancelado"})
-                                        {
-                                            <li>
-                                                <form asp-action="CambiarEstado"
-                                                      method="post">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden"
-                                                           name="pedidoId"
-                                                           value="@p.Pedido_Id" />
-                                                    <input type="hidden"
-                                                           name="nuevoEstado"
-                                                           value="@est" />
-                                                    <button type="submit"
-                                                            class="dropdown-item @(p.Estado == est ? "fw-bold text-primary" : "")">
-                                                        @est
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        }
-                                    </ul>
-                                </div>
+                                }
 
                                 @if (User.IsInRole("Admin"))
                                 {
@@ -171,11 +168,13 @@
                                           onsubmit="return confirm('¿Eliminar este pedido?')">
                                         @Html.AntiForgeryToken()
                                         <button type="submit"
-                                                class="btn btn-danger btn-sm">
+                                                class="btn btn-danger btn-sm"
+                                                title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 }
+
                             </div>
                         </td>
                     </tr>
@@ -184,3 +183,165 @@
         </table>
     </div>
 </div>
+
+@foreach (var p in Model)
+{
+    var esDomicilio = p.Tipo_Entrega == "Domicilio";
+
+  
+    var estadosTienda = new[]
+{
+    "Aceptado", "Rechazado", "Cancelado"
+};
+
+    var estadosDomicilio = new[]
+    {
+    "EnProceso", "EnCamino", "Entregado", "Cancelado" , "Listo"
+};
+
+    var estadosDisponibles = esDomicilio ? estadosDomicilio : estadosTienda;
+
+    var puedeCobrar = !esDomicilio && p.Estado == "Aceptado";
+
+    <div class="modal fade" id="modalEstado-@p.Pedido_Id"
+         tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header"
+                     style="background:#243C8F; color:white;">
+                    <h5 class="modal-title">
+                        <i class="bi bi-arrow-repeat me-2"></i>
+                        Cambiar estado — @p.Numero_Orden
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Estado actual: <strong>@p.Estado</strong>
+                    </p>
+                    <div class="d-grid gap-2">
+                        @foreach (var est in estadosDisponibles)
+                        {
+                            <form asp-action="CambiarEstado" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="pedidoId"
+                                       value="@p.Pedido_Id" />
+                                <input type="hidden" name="nuevoEstado"
+                                       value="@est" />
+                                <button type="submit"
+                                        class="btn w-100 @(p.Estado == est
+                                                                                                                        ? "btn-primary"
+                                                                                                                        : "btn-outline-secondary")">
+                                    @est
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (puedeCobrar)
+    {
+        <div class="modal fade" id="modalCobrar-@p.Pedido_Id"
+             tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header"
+                         style="background:#198754; color:white;">
+                        <h5 class="modal-title">
+                            <i class="bi bi-cash-coin me-2"></i>
+                            Cobrar — @p.Numero_Orden
+                        </h5>
+                        <button type="button"
+                                class="btn-close btn-close-white"
+                                data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-1">Total a cobrar:</p>
+                        <p class="fw-bold fs-4 text-success mb-4">
+                            ₡@p.Total.ToString("N2")
+                        </p>
+
+                        <div class="card border-0 bg-light rounded-3 p-3 mb-4"
+                             id="calcEfectivo-@p.Pedido_Id">
+                            <p class="fw-semibold mb-2">
+                                <i class="bi bi-calculator me-1"></i>
+                                Calculadora de cambio
+                            </p>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">₡</span>
+                                <input type="number"
+                                       class="form-control"
+                                       id="montoRecibido-@p.Pedido_Id"
+                                       placeholder="Monto recibido"
+                                       min="@p.Total"
+                                       step="500"
+                                       oninput="calcularCambio('@p.Pedido_Id', @p.Total.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))" />
+                            </div>
+                            <div class="d-flex justify-content-between
+                                align-items-center">
+                                <span class="text-muted small">Cambio:</span>
+                                <span class="fw-bold fs-5 text-success"
+                                      id="cambioResultado-@p.Pedido_Id">
+                                    ₡0,00
+                                </span>
+                            </div>
+                        </div>
+
+                        <p class="text-muted small mb-2">
+                            Selecciona el método de pago:
+                        </p>
+                        <div class="d-grid gap-2">
+                            @foreach (var metodo in new[]
+                            {
+                                ("Efectivo",      "bi-cash",        "success"),
+                                ("Tarjeta",       "bi-credit-card", "primary"),
+                                ("Sinpe",         "bi-phone",       "warning"),
+                                ("Transferencia", "bi-bank",        "info")
+                            })
+                            {
+                                <form asp-action="Cobrar"
+                                      asp-route-id="@p.Pedido_Id"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="metodoPago"
+                                           value="@metodo.Item1" />
+                                    <button type="submit"
+                                            class="btn btn-outline-@metodo.Item3 w-100">
+                                        <i class="bi @metodo.Item2 me-2"></i>
+                                        @metodo.Item1
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <script>
+        function calcularCambio(pedidoId, total) {
+            const input = document.getElementById('montoRecibido-' + pedidoId);
+            const resultado = document.getElementById('cambioResultado-' + pedidoId);
+            const monto = parseFloat(input.value) || 0;
+            const cambio = monto - total;
+
+            if (cambio < 0) {
+                resultado.textContent = 'Monto insuficiente';
+                resultado.className = 'fw-bold fs-5 text-danger';
+            } else {
+                resultado.textContent = '₡' + cambio.toLocaleString('es-CR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                resultado.className = 'fw-bold fs-5 text-success';
+            }
+        }
+    </script>
+}
