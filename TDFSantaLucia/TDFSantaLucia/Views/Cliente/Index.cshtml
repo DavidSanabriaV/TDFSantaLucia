@@ -1,59 +1,254 @@
 ﻿@model List<TDFSantaLucia.Models.Cliente>
-
 @{
     ViewData["Title"] = "Clientes";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>👤 Clientes</h2>
-        <a asp-action="Crear" class="btn btn-success">➕ Nuevo Cliente</a>
+<div class="container-fluid px-4 py-4">
+
+    @if (TempData["ExitoCliente"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["ExitoCliente"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorCliente"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorCliente"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#1a3c5e;">
+                <i class="bi bi-people me-2 text-primary"></i>
+                Clientes
+            </h2>
+            <p class="text-muted mb-0">Gestiona y consulta la información de clientes</p>
+        </div>
+        <a asp-action="Crear" class="btn btn-primary rounded-3 shadow-sm">
+            <i class="bi bi-person-plus me-1"></i> Nuevo Cliente
+        </a>
     </div>
 
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>Cédula</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Estado</th>
-                <th>Puntos</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var cliente in Model)
-            {
-                <tr>
-                    <td>@cliente.Usuario.Nombre @cliente.Usuario.Primer_Apellido @cliente.Usuario.Segundo_Apellido</td>
-                    <td>@cliente.Usuario.Cedula</td>
-                    <td>@cliente.Usuario.Email</td>
-                    <td>@cliente.Usuario.Telefono</td>
-                    <td>
-                        @if (cliente.Usuario.Estado)
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold text-muted small">BUSCAR</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input id="searchInput"
+                               class="form-control border-start-0 ps-0"
+                               type="search"
+                               placeholder="Nombre, cédula o correo..." />
+                        <button class="btn btn-outline-secondary" id="btnLimpiarTexto"
+                                type="button" style="display:none;">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold text-muted small">ESTADO</label>
+                    <select id="filtroEstado" class="form-select rounded-3">
+                        <option value="">Todos</option>
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold text-muted small">ORDENAR POR</label>
+                    <select id="ordenar" class="form-select rounded-3">
+                        <option value="">Por defecto</option>
+                        <option value="nombre-asc">Nombre A → Z</option>
+                        <option value="nombre-desc">Nombre Z → A</option>
+                        <option value="puntos-desc">Puntos mayor → menor</option>
+                        <option value="puntos-asc">Puntos menor → mayor</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button id="btnLimpiarFiltros"
+                            class="btn btn-outline-secondary w-100 rounded-3"
+                            style="display:none;">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar filtros
+                    </button>
+                </div>
+
+                <div class="col-md-1 text-end">
+                    <small id="contadorResultados" class="text-muted"></small>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="gridClientes" class="row g-4">
+        @foreach (var c in Model)
+        {
+            var iniciales = "";
+            if (!string.IsNullOrWhiteSpace(c.Usuario?.Nombre))
+                iniciales += c.Usuario.Nombre[0];
+            if (!string.IsNullOrWhiteSpace(c.Usuario?.Primer_Apellido))
+                iniciales += c.Usuario.Primer_Apellido[0];
+
+            var nombreCompleto = $"{c.Usuario?.Nombre} {c.Usuario?.Primer_Apellido} {c.Usuario?.Segundo_Apellido}".Trim();
+
+            <div class="cliente-card col-md-6 col-lg-4 col-xl-3"
+                 data-nombre="@nombreCompleto.ToLower()"
+                 data-cedula="@c.Usuario?.Cedula?.ToLower()"
+                 data-correo="@c.Usuario?.Email?.ToLower()"
+                 data-estado="@c.Usuario?.Estado.ToString().ToLower()"
+                 data-puntos="@c.Puntos_Acumulados">
+
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+
+                    <div class="card-header border-0 bg-light px-4 py-3 d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                             style="width:48px;height:48px;background:#dbeafe;color:#1e40af;font-size:15px;flex-shrink:0;">
+                            @iniciales.ToUpper()
+                        </div>
+                        <div style="overflow:hidden;">
+                            <h6 class="fw-bold mb-0 text-truncate" style="color:#1a3c5e;" title="@nombreCompleto">
+                                @nombreCompleto
+                            </h6>
+                            <small class="text-muted">@c.Usuario?.Cedula</small>
+                        </div>
+                        @if (c.Usuario?.Estado == true)
                         {
-                            <span class="badge bg-success">Activo</span>
+                            <span class="badge rounded-pill bg-success ms-auto">Activo</span>
                         }
                         else
                         {
-                            <span class="badge bg-danger">Inactivo</span>
+                            <span class="badge rounded-pill bg-danger ms-auto">Inactivo</span>
                         }
-                    </td>
-                    <td>@cliente.Puntos_Acumulados</td>
-                    <td>
-                        <a asp-action="Detalle" asp-route-id="@cliente.Cliente_Id"
-                           class="btn btn-primary btn-sm">Ver</a>
-                        <a asp-action="Editar" asp-route-id="@cliente.Cliente_Id"
-                           class="btn btn-warning btn-sm">Editar</a>
-                        <form asp-action="Eliminar" asp-route-id="@cliente.Cliente_Id"
-                              method="post" style="display:inline"
-                              onsubmit="return confirm('¿Desea eliminar este cliente?')">
-                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    </div>
+
+                    <div class="card-body px-4 py-3 d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-envelope text-muted"></i>
+                            <small class="text-muted text-truncate">@c.Usuario?.Email</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-telephone text-muted"></i>
+                            <small class="text-muted">@c.Usuario?.Telefono</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-star text-warning"></i>
+                            <small class="text-muted">
+                                Puntos acumulados:
+                                <strong class="text-dark">@c.Puntos_Acumulados</strong>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="card-footer border-0 bg-white px-4 pb-3">
+                        <div class="d-grid gap-2">
+                            <a asp-action="Detalle" asp-route-id="@c.Cliente_Id"
+                               class="btn rounded-3 text-white"
+                               style="background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));">
+                                <i class="bi bi-eye me-1"></i>Ver Detalle
+                            </a>
+                            <a asp-action="Editar" asp-route-id="@c.Cliente_Id"
+                               class="btn btn-warning rounded-3 text-white">
+                                <i class="bi bi-pencil-square me-1"></i>Editar
+                            </a>
+                            <form asp-action="Eliminar" asp-route-id="@c.Cliente_Id"
+                                  method="post"
+                                  onsubmit="return confirm('¿Desea eliminar a @nombreCompleto?')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger rounded-3 w-100">
+                                    <i class="bi bi-trash me-1"></i>Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        }
+    </div>
+
+    <div id="estadoVacio" class="text-center py-5 d-none">
+        <i class="bi bi-inbox display-4 text-muted"></i>
+        <p class="text-muted mt-2">No se encontraron clientes con los filtros aplicados.</p>
+        <button class="btn btn-outline-secondary btn-sm rounded-3" id="btnLimpiarDesdeVacio">
+            Limpiar filtros
+        </button>
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        const cards = Array.from(document.querySelectorAll('.cliente-card'));
+
+        function filtrar() {
+            const texto  = document.getElementById('searchInput').value.trim().toLowerCase();
+            const estado = document.getElementById('filtroEstado').value;
+            const orden  = document.getElementById('ordenar').value;
+            const hayFiltros = texto || estado || orden;
+
+            document.getElementById('btnLimpiarFiltros').style.display = hayFiltros ? 'block' : 'none';
+
+            let visibles = cards.filter(c => {
+                const pasaTexto  = !texto  || (c.dataset.nombre  || '').includes(texto)
+                                           || (c.dataset.cedula  || '').includes(texto)
+                                           || (c.dataset.correo  || '').includes(texto);
+                const pasaEstado = !estado || c.dataset.estado === estado;
+                const visible = pasaTexto && pasaEstado;
+                c.classList.toggle('d-none', !visible);
+                return visible;
+            });
+
+            if (orden) {
+                const grid = document.getElementById('gridClientes');
+                visibles.sort((a, b) => {
+                    if (orden === 'nombre-asc')  return a.dataset.nombre.localeCompare(b.dataset.nombre);
+                    if (orden === 'nombre-desc') return b.dataset.nombre.localeCompare(a.dataset.nombre);
+                    if (orden === 'puntos-asc')  return parseFloat(a.dataset.puntos) - parseFloat(b.dataset.puntos);
+                    if (orden === 'puntos-desc') return parseFloat(b.dataset.puntos) - parseFloat(a.dataset.puntos);
+                });
+                visibles.forEach(c => grid.appendChild(c));
+            }
+
+            const total = visibles.length;
+            document.getElementById('contadorResultados').innerHTML =
+                total > 0 ? `<span class="fw-semibold">${total}</span> cliente${total !== 1 ? 's' : ''}` : '';
+            document.getElementById('estadoVacio').classList.toggle('d-none', total > 0);
+        }
+
+        function limpiarTodo() {
+            document.getElementById('searchInput').value  = '';
+            document.getElementById('filtroEstado').value = '';
+            document.getElementById('ordenar').value      = '';
+            cards.forEach(c => c.classList.remove('d-none'));
+            document.getElementById('btnLimpiarFiltros').style.display = 'none';
+            document.getElementById('estadoVacio').classList.add('d-none');
+            document.getElementById('contadorResultados').textContent = '';
+            document.getElementById('btnLimpiarTexto').style.display  = 'none';
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function () {
+            document.getElementById('btnLimpiarTexto').style.display = this.value ? 'block' : 'none';
+            filtrar();
+        });
+        document.getElementById('filtroEstado').addEventListener('change', filtrar);
+        document.getElementById('ordenar').addEventListener('change', filtrar);
+        document.getElementById('btnLimpiarTexto').addEventListener('click', function () {
+            document.getElementById('searchInput').value = '';
+            this.style.display = 'none';
+            filtrar();
+        });
+        document.getElementById('btnLimpiarFiltros').addEventListener('click', limpiarTodo);
+        document.getElementById('btnLimpiarDesdeVacio').addEventListener('click', limpiarTodo);
+    </script>
+}
