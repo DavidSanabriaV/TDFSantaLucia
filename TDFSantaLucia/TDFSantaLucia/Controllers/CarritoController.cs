@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TDFSantaLucia.Data;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
-using TDFSantaLucia.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace TDFSantaLucia.Controllers
 {
@@ -12,22 +13,45 @@ namespace TDFSantaLucia.Controllers
     {
         private readonly ICarritoService _carritoService;
         private readonly IProductoService _productoService;
+        private readonly IPuntosService _puntosService;
+        private readonly UserManager<Usuario> _userManager;
         private readonly AppDbContext _db;
 
         public CarritoController(
             ICarritoService carritoService,
             IProductoService productoService,
+            IPuntosService puntosService,
+            UserManager<Usuario> userManager,
             AppDbContext db)
         {
             _carritoService = carritoService;
             _productoService = productoService;
+            _puntosService = puntosService;
+            _userManager = userManager;
             _db = db;
         }
 
         [HttpGet("")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var items = _carritoService.ObtenerCarrito();
+
+            // Pasar puntos disponibles si está autenticado
+            int puntosDisponibles = 0;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var usuario = await _userManager.GetUserAsync(User);
+                if (usuario != null)
+                {
+                    var cliente = await _db.Clientes
+                        .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
+                    if (cliente != null)
+                        puntosDisponibles = _puntosService
+                            .ObtenerPuntosDisponibles(cliente.Cliente_Id);
+                }
+            }
+
+            ViewBag.PuntosDisponibles = puntosDisponibles;
             return View(items);
         }
 
@@ -65,7 +89,8 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Actualizar(int productoId, int cantidad)
         {
             var stockDisponible = _db.Inventarios
-                .Where(i => i.Producto_Id == productoId && i.Estado && i.Cantidad_Disponible > 0)
+                .Where(i => i.Producto_Id == productoId
+                         && i.Estado && i.Cantidad_Disponible > 0)
                 .Sum(i => i.Cantidad_Disponible);
 
             if (cantidad > stockDisponible)
@@ -106,6 +131,23 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Contar()
         {
             return Json(new { count = _carritoService.ContarItems() });
+        }
+
+        [HttpGet("puntos-disponibles")]
+        [Authorize]
+        public async Task<IActionResult> PuntosDisponibles()
+        {
+            var usuario = await _userManager.GetUserAsync(User);
+            if (usuario == null) return Json(new { puntos = 0 });
+
+            var cliente = await _db.Clientes
+                .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
+            if (cliente == null) return Json(new { puntos = 0 });
+
+            var puntos = _puntosService
+                .ObtenerPuntosDisponibles(cliente.Cliente_Id);
+
+            return Json(new { puntos });
         }
     }
 }

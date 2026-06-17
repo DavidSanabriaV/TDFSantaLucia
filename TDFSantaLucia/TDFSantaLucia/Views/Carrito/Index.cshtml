@@ -4,6 +4,8 @@
     var subtotal = Model.Sum(i => i.Subtotal);
     var impuesto = Math.Round(subtotal * 0.13m, 2);
     var total = subtotal + impuesto;
+    var requiereReceta = Model.Any(i => i.Receta);
+    var itemsConReceta = Model.Where(i => i.Receta).ToList();
 }
 
 <div class="container py-4">
@@ -17,7 +19,7 @@
             <i class="bi bi-cart-x display-3 text-muted"></i>
             <p class="text-muted mt-3">Tu carrito está vacío.</p>
             <a asp-controller="Producto" asp-action="Index"
-                   class="btn btn-primary mt-2">
+               class="btn btn-primary mt-2">
                 <i class="bi bi-bag me-1"></i>Ver productos
             </a>
         </div>
@@ -44,7 +46,7 @@
                                     @if (item.Receta)
                                     {
                                         <span class="badge bg-warning text-dark ms-1">
-                                            <i class="bi bi-file-medical me-1"></i>Receta
+                                            <i class="bi bi-file-medical me-1"></i>Requiere receta
                                         </span>
                                     }
                                     <div class="text-primary fw-bold mt-1">
@@ -57,8 +59,7 @@
                                             onclick="cambiarCantidad(@item.Producto_Id, -1)">
                                         <i class="bi bi-dash"></i>
                                     </button>
-                                    <span class="fw-bold px-2"
-                                          id="cant-@item.Producto_Id">
+                                    <span class="fw-bold px-2" id="cant-@item.Producto_Id">
                                         @item.Cantidad
                                     </span>
                                     <button class="btn btn-outline-secondary btn-sm"
@@ -80,6 +81,26 @@
                         }
                     </div>
                 </div>
+
+
+                @if (requiereReceta)
+                {
+                    <div class="alert alert-warning rounded-4 mt-3 mb-0">
+                        <h6 class="fw-bold mb-1">
+                            <i class="bi bi-file-medical me-2"></i>Receta médica requerida
+                        </h6>
+                        <p class="small mb-2">
+                            Tu carrito contiene productos que requieren receta médica.
+                            Se te pedirá adjuntarla en el siguiente paso.
+                        </p>
+                        <ul class="small mb-0 ps-3">
+                            @foreach (var item in itemsConReceta)
+                            {
+                                <li><strong>@item.Nombre</strong></li>
+                            }
+                        </ul>
+                    </div>
+                }
             </div>
 
             <div class="col-lg-4">
@@ -103,24 +124,42 @@
                         </span>
                     </div>
 
+                    @if (User.Identity?.IsAuthenticated == true && ViewBag.PuntosDisponibles > 0)
+                    {
+                        <div class="card border-warning rounded-3 p-3 mb-3">
+                            <h6 class="fw-bold mb-2" style="color:#243C8F;">
+                                <i class="bi bi-star-fill text-warning me-1"></i>Tus Puntos
+                            </h6>
+                            <p class="mb-2 small text-muted">
+                                Tienes <strong class="text-success">
+                                    @ViewBag.PuntosDisponibles puntos
+                                </strong>
+                                = ₡@ViewBag.PuntosDisponibles disponibles para canjear.
+                            </p>
+                            <p class="mb-0 small text-muted">
+                                Puedes canjear tus puntos en el paso siguiente al confirmar tu pedido.
+                            </p>
+                        </div>
+                    }
+
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <a asp-controller="Pedido" asp-action="Checkout"
-                               class="btn btn-success w-100 rounded-3 fw-bold">
+                           class="btn btn-success w-100 rounded-3 fw-bold">
                             <i class="bi bi-bag-check me-1"></i>Proceder al pago
                         </a>
                     }
                     else
                     {
                         <a asp-controller="Account" asp-action="Login"
-                               class="btn btn-primary w-100 rounded-3 fw-bold">
+                           class="btn btn-primary w-100 rounded-3 fw-bold">
                             <i class="bi bi-person me-1"></i>
                             Inicia sesión para continuar
                         </a>
                     }
 
                     <a asp-controller="Producto" asp-action="Index"
-                           class="btn btn-outline-secondary w-100 rounded-3 mt-2">
+                       class="btn btn-outline-secondary w-100 rounded-3 mt-2">
                         <i class="bi bi-arrow-left me-1"></i>Seguir comprando
                     </a>
                 </div>
@@ -133,11 +172,11 @@
 
 @section Scripts {
     <script>
-                const token = document.querySelector(
+        const token = document.querySelector(
             'input[name="__RequestVerificationToken"]').value;
 
-                        function cambiarCantidad(productoId, delta) {
-            const cantEl = document.getElementById(`cant-${productoId}`);
+        function cambiarCantidad(productoId, delta) {
+            const cantEl    = document.getElementById(`cant-${productoId}`);
             const nuevaCant = parseInt(cantEl.textContent) + delta;
 
             if (nuevaCant < 1) {
@@ -158,10 +197,10 @@
                 if (d.exito) {
                     cantEl.textContent = nuevaCant;
                     document.getElementById(`sub-${productoId}`)
-                        .textContent = `₡${d.subtotal.toLocaleString('es-CR', {minimumFractionDigits: 2})}`;
+                        .textContent = `₡${d.subtotal.toLocaleString('es-CR',
+                            { minimumFractionDigits: 2 })}`;
                     actualizarResumen(d.total, d.count);
                 }
-
             });
         }
 
@@ -192,11 +231,11 @@
             const totalNum    = subtotalNum + impuestoNum;
 
             document.getElementById('resumenSubtotal').textContent =
-                `₡${subtotalNum.toLocaleString('es-CR', {minimumFractionDigits: 2})}`;
+                `₡${subtotalNum.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
             document.getElementById('resumenImpuesto').textContent =
-                `₡${impuestoNum.toLocaleString('es-CR', {minimumFractionDigits: 2})}`;
+                `₡${impuestoNum.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
             document.getElementById('resumenTotal').textContent =
-                `₡${totalNum.toLocaleString('es-CR', {minimumFractionDigits: 2})}`;
+                `₡${totalNum.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
 
             const badge = document.querySelector('.badge.rounded-pill');
             if (badge) badge.textContent = count;

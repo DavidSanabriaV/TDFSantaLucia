@@ -29,6 +29,10 @@ namespace TDFSantaLucia.Data
         public DbSet<Cupon> Cupones { get; set; }
         public DbSet<ClienteCupon> ClientesCupones { get; set; }
         public DbSet<CarritoItemDb> CarritoItems { get; set; }
+        public DbSet<MovimientoPuntos> MovimientosPuntos { get; set; }
+        public DbSet<ArticuloSalud> ArticulosSalud { get; set; }
+        public DbSet<ComentarioSalud> ComentariosSalud { get; set; }
+        public DbSet<LikeArticulo> LikesArticulos { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -211,6 +215,45 @@ namespace TDFSantaLucia.Data
                 .HasForeignKey(c => c.Cliente_Id)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+            // ArticuloSalud -> Usuario
+            modelBuilder.Entity<ArticuloSalud>()
+                .HasOne(a => a.Usuario)
+                .WithMany()
+                .HasForeignKey(a => a.Usuario_Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ComentarioSalud -> ArticuloSalud
+            modelBuilder.Entity<ComentarioSalud>()
+                .HasOne(c => c.Articulo)
+                .WithMany(a => a.Comentarios)
+                .HasForeignKey(c => c.Articulo_Id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ComentarioSalud -> Usuario
+            modelBuilder.Entity<ComentarioSalud>()
+                .HasOne(c => c.Usuario)
+                .WithMany()
+                .HasForeignKey(c => c.Usuario_Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // LikeArticulo -> ArticuloSalud
+            modelBuilder.Entity<LikeArticulo>()
+                .HasOne(l => l.Articulo)
+                .WithMany(a => a.Likes)
+                .HasForeignKey(l => l.Articulo_Id)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // LikeArticulo -> Usuario
+            modelBuilder.Entity<LikeArticulo>()
+                .HasOne(l => l.Usuario)
+                .WithMany()
+                .HasForeignKey(l => l.Usuario_Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Un usuario solo puede dar un like por artículo
+            modelBuilder.Entity<LikeArticulo>()
+                .HasIndex(l => new { l.Articulo_Id, l.Usuario_Id })
+                .IsUnique();
         }
     }
 }

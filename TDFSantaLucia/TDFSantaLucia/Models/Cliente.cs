@@ -24,6 +24,6 @@ namespace TDFSantaLucia.Models
         public List<Tratamiento> Tratamientos { get; set; } = new();
         public List<ClienteCupon> ClienteCupones { get; set; } = new();
         public List<CarritoItemDb> CarritoItems { get; set; } = new();
-
+        public List<MovimientoPuntos> MovimientosPuntos { get; set; } = new();
     }
 }
