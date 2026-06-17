@@ -93,6 +93,73 @@
                         Horario: Lun–Sáb 8:00–21:00 / Dom 9:00–20:00
                     </p>
                 </div>
+
+                @if (Model.Puntos_Disponibles > 0)
+                {
+                    <div class="card border-warning rounded-4 p-4 mb-3">
+                        <h5 class="fw-bold mb-3" style="color:#243C8F;">
+                            <i class="bi bi-star-fill text-warning me-2"></i>
+                            Canjear Puntos
+                        </h5>
+                        <p class="text-muted small mb-2">
+                            Tienes <strong class="text-success">
+                            @Model.Puntos_Disponibles puntos
+                        </strong>
+                        disponibles (equivale a ₡@Model.Puntos_Disponibles).
+                    </p>
+                    <div class="alert alert-info small rounded-3 mb-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Importante:</strong> Si canjeás puntos, no acumularás
+                        puntos nuevos en esta compra.
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox"
+                               id="togglePuntos" name="Canjear_Puntos"
+                               value="true"
+                               onchange="toggleCanjePuntos(this.checked)" />
+                        <label class="form-check-label fw-semibold" for="togglePuntos">
+                            Quiero canjear mis puntos
+                        </label>
+                    </div>
+
+                    <div id="campoPuntos" style="display:none;">
+                        <label class="form-label fw-semibold">
+                            ¿Cuántos puntos querés canjear?
+                        </label>
+                        <div class="input-group">
+                            <input type="number"
+                                   id="inputPuntos"
+                                   name="Puntos_A_Canjear"
+                                   class="form-control"
+                                   min="1"
+                                   max="@Model.Puntos_Disponibles"
+                                   value="0"
+                                   oninput="calcularDescuento(this.value)" />
+                            <button type="button" class="btn btn-outline-warning"
+                                    onclick="usarTodosPuntos()">
+                                Usar todos
+                            </button>
+                        </div>
+                        <small class="text-muted">
+                            Máximo: @Model.Puntos_Disponibles puntos
+                            (₡@Model.Puntos_Disponibles)
+                        </small>
+                        <div id="descuentoPuntos"
+                             class="alert alert-success rounded-3 mt-2 d-none">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Descuento de <strong id="montoDescuento">₡0</strong>
+                            aplicado.
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" name="Canjear_Puntos" value="false" />
+                <input type="hidden" name="Puntos_A_Canjear" value="0" />
+            }
+
             </div>
 
             <div class="col-md-5">
@@ -155,4 +222,38 @@
         }
     </script>
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const puntosMaximos = @Model.Puntos_Disponibles;
+
+        function toggleCanjePuntos(activo) {
+            const campo = document.getElementById('campoPuntos');
+            campo.style.display = activo ? 'block' : 'none';
+            if (!activo) {
+                document.getElementById('inputPuntos').value = 0;
+                document.getElementById('descuentoPuntos')
+                    .classList.add('d-none');
+            }
+        }
+
+        function calcularDescuento(valor) {
+            const puntos = Math.min(parseInt(valor) || 0, puntosMaximos);
+            document.getElementById('inputPuntos').value = puntos;
+
+            if (puntos > 0) {
+                document.getElementById('montoDescuento')
+                    .textContent = `₡${puntos.toLocaleString('es-CR')}`;
+                document.getElementById('descuentoPuntos')
+                    .classList.remove('d-none');
+            } else {
+                document.getElementById('descuentoPuntos')
+                    .classList.add('d-none');
+            }
+        }
+
+        function usarTodosPuntos() {
+            document.getElementById('inputPuntos').value = puntosMaximos;
+            calcularDescuento(puntosMaximos);
+        }
+    </script>
 }

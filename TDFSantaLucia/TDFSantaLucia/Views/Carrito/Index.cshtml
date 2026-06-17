@@ -103,6 +103,26 @@
                         </span>
                     </div>
 
+
+                    @if (User.Identity?.IsAuthenticated == true && ViewBag.PuntosDisponibles > 0)
+                    {
+                        <div class="card border-warning rounded-3 p-3 mb-3">
+                            <h6 class="fw-bold mb-2" style="color:#243C8F;">
+                                <i class="bi bi-star-fill text-warning me-1"></i>
+                                Tus Puntos
+                            </h6>
+                            <p class="mb-2 small text-muted">
+                                Tienes <strong class="text-success">
+                                @ViewBag.PuntosDisponibles puntos
+                            </strong>
+                            = ₡@ViewBag.PuntosDisponibles disponibles para canjear.
+                        </p>
+                        <p class="mb-0 small text-muted">
+                            Puedes canjear tus puntos en el paso siguiente al confirmar tu pedido.
+                        </p>
+                    </div>
+                }
+
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <a asp-controller="Pedido" asp-action="Checkout"
