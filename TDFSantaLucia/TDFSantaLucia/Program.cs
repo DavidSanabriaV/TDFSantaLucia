@@ -89,7 +89,6 @@ builder.Services.AddScoped<IMovimientoPuntosRepository,MovimientoPuntosRepositor
 builder.Services.AddScoped<IArticuloRepository, ArticuloRepository>();
 builder.Services.AddScoped<ICuponRepository, CuponRepository>();
 
-
 // Registrar Services
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();

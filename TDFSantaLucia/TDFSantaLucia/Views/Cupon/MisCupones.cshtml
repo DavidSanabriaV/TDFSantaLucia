@@ -4,7 +4,7 @@
 }
 
 <div class="container py-4">
-    <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
         <i class="bi bi-ticket-perforated-fill me-2"></i>Mis Cupones
     </h2>
 
@@ -13,6 +13,9 @@
         <div class="text-center py-5">
             <i class="bi bi-ticket-perforated display-3 text-muted"></i>
             <p class="text-muted mt-3">No tienes cupones disponibles.</p>
+            <a asp-controller="Producto" asp-action="Index" class="btn btn-primary mt-2">
+                <i class="bi bi-bag me-1"></i>Ver productos
+            </a>
         </div>
     }
     else
@@ -20,27 +23,51 @@
         <div class="row g-3">
             @foreach (var cc in Model)
             {
+                var diasRestantes = (cc.Cupon!.Fecha_Expiracion.Date - DateTime.Today).Days;
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                <span class="badge bg-info text-dark">@cc.Cupon?.Tipo_Descuento</span>
+                                <span class="badge @(cc.Cupon.Tipo_Descuento == "Porcentaje" ? "bg-info text-dark" : "bg-primary")">
+                                    @cc.Cupon.Tipo_Descuento
+                                </span>
                                 <span class="badge bg-success fs-6">
-                                    @if (cc.Cupon?.Tipo_Descuento == "Porcentaje")
+                                    @if (cc.Cupon.Tipo_Descuento == "Porcentaje")
                                     {
                                         @($"{cc.Cupon.Valor_Descuento:G29}% OFF")
                                     }
                                     else
                                     {
-                                        @($"₡{cc.Cupon?.Valor_Descuento:N2} OFF")
+                                        @($"₡{cc.Cupon.Valor_Descuento:N2} OFF")
                                     }
                                 </span>
                             </div>
-                            <h5 class="fw-bold mb-2" style="color:#1a3c5e;">@cc.Cupon?.Descripcion</h5>
-                            <p class="text-muted small mb-0">
+
+                            <h5 class="fw-bold mb-2" style="color:#1a3c5e;">@cc.Cupon.Descripcion</h5>
+
+                            <p class="text-muted small mb-1">
                                 <i class="bi bi-calendar-x me-1"></i>
-                                Vence: @cc.Cupon?.Fecha_Expiracion.ToString("dd/MM/yyyy")
+                                Vence: <strong>@cc.Cupon.Fecha_Expiracion.ToString("dd/MM/yyyy")</strong>
                             </p>
+
+                            @if (diasRestantes <= 7)
+                            {
+                                <div class="alert alert-warning rounded-3 py-1 px-2 small mb-2">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    ¡Vence en @diasRestantes día(s)!
+                                </div>
+                            }
+
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Asignado el @cc.Fecha_Asignacion.ToString("dd/MM/yyyy")
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 pb-3 px-4">
+                            <a asp-controller="Carrito" asp-action="Index"
+                               class="btn btn-outline-primary btn-sm rounded-3 w-100">
+                                <i class="bi bi-cart me-1"></i>Usar en el carrito
+                            </a>
                         </div>
                     </div>
                 </div>

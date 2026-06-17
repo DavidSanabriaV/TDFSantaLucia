@@ -13,9 +13,7 @@ namespace TDFSantaLucia.Models
         public string Telefono_Contacto { get; set; } = string.Empty;
 
         public string? Metodo_Pago { get; set; }
-
         public string? Receta_URL { get; set; }
-
         public IFormFile? ArchivoReceta { get; set; }
         public bool RequiereReceta { get; set; }
 
@@ -23,14 +21,28 @@ namespace TDFSantaLucia.Models
         public int Puntos_Disponibles { get; set; }
         public int Puntos_A_Canjear { get; set; }
         public decimal Descuento_Puntos => Canjear_Puntos && Puntos_A_Canjear > 0
-            ? Puntos_A_Canjear
-            : 0;
+            ? Puntos_A_Canjear : 0;
 
-        // ── Cupón ─────────────────────────────────────────────────────────
+        // ── Cupón ──────────────────────────────────────────────────────────
         public int? Cupon_Id { get; set; }
-        public string? CuponCodigo { get; set; }
-        public decimal Descuento_Cupon { get; set; } = 0;
-        public int ClienteCuponId { get; set; }
+        public int ClienteCupon_Id { get; set; }
+
+        // Recibe el string del form con punto decimal (InvariantCulture)
+        public string? Descuento_Cupon_Raw { get; set; }
+
+        public decimal Descuento_Cupon
+        {
+            get
+            {
+                if (decimal.TryParse(
+                        Descuento_Cupon_Raw,
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out decimal val))
+                    return val;
+                return 0;
+            }
+        }
 
         public List<CarritoItem> Items { get; set; } = new();
 

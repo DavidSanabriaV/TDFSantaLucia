@@ -14,6 +14,8 @@ namespace TDFSantaLucia.Repositories
             => _db.Cupones
                 .Include(c => c.Usuario)
                 .Include(c => c.ClienteCupones)
+                    .ThenInclude(cc => cc.Cliente)
+                        .ThenInclude(cl => cl.Usuario)
                 .OrderByDescending(c => c.Fecha_Creacion)
                 .ToList();
 
@@ -45,7 +47,8 @@ namespace TDFSantaLucia.Repositories
             => _db.ClientesCupones
                 .Include(cc => cc.Cupon)
                 .FirstOrDefault(cc => cc.Cliente_Id == clienteId
-                                   && cc.Cupon_Id == cuponId);
+                                   && cc.Cupon_Id == cuponId
+                                   && !cc.Utilizado);
 
         public void Agregar(Cupon cupon)
         {

@@ -12,16 +12,14 @@
     {
         <div class="alert alert-success alert-dismissible fade show">
             ✅ @TempData["Exito"]
-            <button type="button" class="btn-close"
-                    data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show">
             ❌ @TempData["Error"]
-            <button type="button" class="btn-close"
-                    data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
@@ -29,20 +27,17 @@
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted small">ESTADO</label>
-                <select name="estado" class="form-select"
-                        asp-items="ViewBag.Estados">
+                <select name="estado" class="form-select" asp-items="ViewBag.Estados">
                     <option value="">Todos</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted small">DESDE</label>
-                <input type="date" name="desde" class="form-control"
-                       value="@ViewBag.Desde" />
+                <input type="date" name="desde" class="form-control" value="@ViewBag.Desde" />
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted small">HASTA</label>
-                <input type="date" name="hasta" class="form-control"
-                       value="@ViewBag.Hasta" />
+                <input type="date" name="hasta" class="form-control" value="@ViewBag.Hasta" />
             </div>
             <div class="col-md-3">
                 <button type="submit" class="btn btn-primary w-100 rounded-3">
@@ -62,6 +57,7 @@
                     <th>Entrega</th>
                     <th>Pago</th>
                     <th class="text-center">Total</th>
+                    <th class="text-center">Descuentos</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Acciones</th>
                 </tr>
@@ -94,20 +90,17 @@
                         var m => m
                     };
 
-                    var puedeCobrar = !esDomicilio &&
-                        p.Estado == "Aceptado";
+                    var puedeCobrar = !esDomicilio && p.Estado == "Aceptado";
+
+                    var subtotal = p.DetallesPedido.Sum(d => d.Subtotal);
+                    var impuesto = Math.Round(subtotal * 0.13m, 2);
+                    var descCupon = Math.Max(0, subtotal + impuesto - p.Descuento_Puntos - p.Total);
+                    var tieneDesc = p.Uso_Puntos || p.Cupon_Id.HasValue;
 
                     <tr>
-                        <td class="fw-bold" style="color:#243C8F;">
-                            @p.Numero_Orden
-                        </td>
-                        <td>
-                            @p.Cliente?.Usuario?.Nombre
-                            @p.Cliente?.Usuario?.Primer_Apellido
-                        </td>
-                        <td class="text-muted small">
-                            @p.Fecha_Creacion.ToString("dd/MM/yyyy HH:mm")
-                        </td>
+                        <td class="fw-bold" style="color:#243C8F;">@p.Numero_Orden</td>
+                        <td>@p.Cliente?.Usuario?.Nombre @p.Cliente?.Usuario?.Primer_Apellido</td>
+                        <td class="text-muted small">@p.Fecha_Creacion.ToString("dd/MM/yyyy HH:mm")</td>
                         <td>
                             @if (esDomicilio)
                             {
@@ -127,22 +120,41 @@
                             ₡@p.Total.ToString("N2")
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-@badgeColor">
-                                @p.Estado
-                            </span>
+                            @if (!tieneDesc)
+                            {
+                                <span class="text-muted small">—</span>
+                            }
+                            else
+                            {
+                                <div class="d-flex flex-column gap-1 align-items-center">
+                                    @if (p.Uso_Puntos && p.Puntos_Canjeados > 0)
+                                    {
+                                        <span class="badge bg-warning text-dark" style="font-size:0.7rem;">
+                                            <i class="bi bi-star-fill me-1"></i>
+                                            @p.Puntos_Canjeados pts
+                                        </span>
+                                    }
+                                    @if (p.Cupon_Id.HasValue && descCupon > 0)
+                                    {
+                                        <span class="badge bg-success" style="font-size:0.7rem;">
+                                            <i class="bi bi-ticket-perforated-fill me-1"></i>
+                                            -₡@descCupon.ToString("N2")
+                                        </span>
+                                    }
+                                </div>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-@badgeColor">@p.Estado</span>
                         </td>
                         <td class="text-center">
                             <div class="d-flex gap-1 justify-content-center flex-wrap">
-
-                                <a asp-action="Detalle"
-                                       asp-route-id="@p.Pedido_Id"
-                                       class="btn btn-info btn-sm text-white"
-                                       title="Ver detalle">
+                                <a asp-action="Detalle" asp-route-id="@p.Pedido_Id"
+                                   class="btn btn-info btn-sm text-white" title="Ver detalle">
                                     <i class="bi bi-eye"></i>
                                 </a>
 
-                                <button type="button"
-                                        class="btn btn-warning btn-sm"
+                                <button type="button" class="btn btn-warning btn-sm"
                                         title="Cambiar estado"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalEstado-@p.Pedido_Id">
@@ -151,8 +163,7 @@
 
                                 @if (puedeCobrar)
                                 {
-                                    <button type="button"
-                                            class="btn btn-success btn-sm"
+                                    <button type="button" class="btn btn-success btn-sm"
                                             title="Cobrar pedido"
                                             data-bs-toggle="modal"
                                             data-bs-target="#modalCobrar-@p.Pedido_Id">
@@ -162,19 +173,15 @@
 
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <form asp-action="Eliminar"
-                                          asp-route-id="@p.Pedido_Id"
+                                    <form asp-action="Eliminar" asp-route-id="@p.Pedido_Id"
                                           method="post"
                                           onsubmit="return confirm('¿Eliminar este pedido?')">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit"
-                                                class="btn btn-danger btn-sm"
-                                                title="Eliminar">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 }
-
                             </div>
                         </td>
                     </tr>
@@ -188,30 +195,17 @@
 {
     var esDomicilio = p.Tipo_Entrega == "Domicilio";
 
-  
-    var estadosTienda = new[]
-{
-    "Aceptado", "Rechazado", "Cancelado"
-};
-
-    var estadosDomicilio = new[]
-    {
-    "EnProceso", "EnCamino", "Entregado", "Cancelado" , "Listo"
-};
-
+    var estadosTienda = new[] { "Aceptado", "Rechazado", "Cancelado" };
+    var estadosDomicilio = new[] { "EnProceso", "EnCamino", "Entregado", "Cancelado", "Listo" };
     var estadosDisponibles = esDomicilio ? estadosDomicilio : estadosTienda;
-
     var puedeCobrar = !esDomicilio && p.Estado == "Aceptado";
 
-    <div class="modal fade" id="modalEstado-@p.Pedido_Id"
-         tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="modalEstado-@p.Pedido_Id" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header"
-                     style="background:#243C8F; color:white;">
+                <div class="modal-header" style="background:#243C8F; color:white;">
                     <h5 class="modal-title">
-                        <i class="bi bi-arrow-repeat me-2"></i>
-                        Cambiar estado — @p.Numero_Orden
+                        <i class="bi bi-arrow-repeat me-2"></i>Cambiar estado — @p.Numero_Orden
                     </h5>
                     <button type="button" class="btn-close btn-close-white"
                             data-bs-dismiss="modal"></button>
@@ -220,19 +214,58 @@
                     <p class="text-muted small mb-3">
                         Estado actual: <strong>@p.Estado</strong>
                     </p>
+
+                    <!-- Descuentos aplicados al pedido -->
+                    @{
+                        var subtotal = p.DetallesPedido.Sum(d => d.Subtotal);
+                        var impuesto = Math.Round(subtotal * 0.13m, 2);
+                        var descCupon = Math.Max(0, subtotal + impuesto - p.Descuento_Puntos - p.Total);
+                    }
+                    @if (p.Uso_Puntos || p.Cupon_Id.HasValue)
+                    {
+                        <div class="card border-0 bg-light rounded-3 p-3 mb-3">
+                            <p class="fw-semibold small mb-2 text-muted">DESCUENTOS APLICADOS</p>
+                            @if (p.Uso_Puntos && p.Puntos_Canjeados > 0)
+                            {
+                                <div class="d-flex justify-content-between small mb-1">
+                                    <span>
+                                        <i class="bi bi-star-fill text-warning me-1"></i>
+                                        Puntos (@p.Puntos_Canjeados pts)
+                                    </span>
+                                    <span class="text-danger fw-semibold">
+                                        -₡@p.Descuento_Puntos.ToString("N2")
+                                    </span>
+                                </div>
+                            }
+                            @if (p.Cupon_Id.HasValue && descCupon > 0)
+                            {
+                                <div class="d-flex justify-content-between small mb-1">
+                                    <span>
+                                        <i class="bi bi-ticket-perforated-fill text-success me-1"></i>
+                                        Cupón@(p.Cupon != null ? $": {p.Cupon.Descripcion}" : "")
+                                    </span>
+                                    <span class="text-success fw-semibold">
+                                        -₡@descCupon.ToString("N2")
+                                    </span>
+                                </div>
+                            }
+                            <hr class="my-2" />
+                            <div class="d-flex justify-content-between small fw-bold">
+                                <span>Total pagado</span>
+                                <span style="color:#243C8F;">₡@p.Total.ToString("N2")</span>
+                            </div>
+                        </div>
+                    }
+
                     <div class="d-grid gap-2">
                         @foreach (var est in estadosDisponibles)
                         {
                             <form asp-action="CambiarEstado" method="post">
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="pedidoId"
-                                       value="@p.Pedido_Id" />
-                                <input type="hidden" name="nuevoEstado"
-                                       value="@est" />
+                                <input type="hidden" name="pedidoId" value="@p.Pedido_Id" />
+                                <input type="hidden" name="nuevoEstado" value="@est" />
                                 <button type="submit"
-                                        class="btn w-100 @(p.Estado == est
-                                                                                                                        ? "btn-primary"
-                                                                                                                        : "btn-outline-secondary")">
+                                        class="btn w-100 @(p.Estado == est ? "btn-primary" : "btn-outline-secondary")">
                                     @est
                                 </button>
                             </form>
@@ -245,55 +278,69 @@
 
     @if (puedeCobrar)
     {
-        <div class="modal fade" id="modalCobrar-@p.Pedido_Id"
-             tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="modalCobrar-@p.Pedido_Id" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header"
-                         style="background:#198754; color:white;">
+                    <div class="modal-header" style="background:#198754; color:white;">
                         <h5 class="modal-title">
-                            <i class="bi bi-cash-coin me-2"></i>
-                            Cobrar — @p.Numero_Orden
+                            <i class="bi bi-cash-coin me-2"></i>Cobrar — @p.Numero_Orden
                         </h5>
-                        <button type="button"
-                                class="btn-close btn-close-white"
+                        <button type="button" class="btn-close btn-close-white"
                                 data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <p class="text-muted small mb-1">Total a cobrar:</p>
-                        <p class="fw-bold fs-4 text-success mb-4">
+                        <p class="fw-bold fs-4 text-success mb-1">
                             ₡@p.Total.ToString("N2")
                         </p>
 
-                        <div class="card border-0 bg-light rounded-3 p-3 mb-4"
-                             id="calcEfectivo-@p.Pedido_Id">
+                        @{
+                            var subT = p.DetallesPedido.Sum(d => d.Subtotal);
+                            var impT = Math.Round(subT * 0.13m, 2);
+                            var dcT = Math.Max(0, subT + impT - p.Descuento_Puntos - p.Total);
+                        }
+                        @if (p.Uso_Puntos || p.Cupon_Id.HasValue)
+                        {
+                            <div class="mb-3">
+                                @if (p.Uso_Puntos && p.Puntos_Canjeados > 0)
+                                {
+                                    <span class="badge bg-warning text-dark me-1">
+                                        <i class="bi bi-star-fill me-1"></i>
+                                        @p.Puntos_Canjeados pts canjeados
+                                    </span>
+                                }
+                                @if (p.Cupon_Id.HasValue && dcT > 0)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-ticket-perforated-fill me-1"></i>
+                                        Cupón -₡@dcT.ToString("N2")
+                                    </span>
+                                }
+                            </div>
+                        }
+
+                        <div class="card border-0 bg-light rounded-3 p-3 mb-4">
                             <p class="fw-semibold mb-2">
-                                <i class="bi bi-calculator me-1"></i>
-                                Calculadora de cambio
+                                <i class="bi bi-calculator me-1"></i>Calculadora de cambio
                             </p>
                             <div class="input-group mb-2">
                                 <span class="input-group-text">₡</span>
-                                <input type="number"
-                                       class="form-control"
+                                <input type="number" class="form-control"
                                        id="montoRecibido-@p.Pedido_Id"
                                        placeholder="Monto recibido"
                                        min="@p.Total"
                                        step="500"
                                        oninput="calcularCambio('@p.Pedido_Id', @p.Total.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))" />
                             </div>
-                            <div class="d-flex justify-content-between
-                                align-items-center">
+                            <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted small">Cambio:</span>
-                                <span class="fw-bold fs-5 text-success"
-                                      id="cambioResultado-@p.Pedido_Id">
+                                <span class="fw-bold fs-5 text-success" id="cambioResultado-@p.Pedido_Id">
                                     ₡0,00
                                 </span>
                             </div>
                         </div>
 
-                        <p class="text-muted small mb-2">
-                            Selecciona el método de pago:
-                        </p>
+                        <p class="text-muted small mb-2">Selecciona el método de pago:</p>
                         <div class="d-grid gap-2">
                             @foreach (var metodo in new[]
                             {
@@ -303,16 +350,11 @@
                                 ("Transferencia", "bi-bank",        "info")
                             })
                             {
-                                <form asp-action="Cobrar"
-                                      asp-route-id="@p.Pedido_Id"
-                                      method="post">
+                                <form asp-action="Cobrar" asp-route-id="@p.Pedido_Id" method="post">
                                     @Html.AntiForgeryToken()
-                                    <input type="hidden" name="metodoPago"
-                                           value="@metodo.Item1" />
-                                    <button type="submit"
-                                            class="btn btn-outline-@metodo.Item3 w-100">
-                                        <i class="bi @metodo.Item2 me-2"></i>
-                                        @metodo.Item1
+                                    <input type="hidden" name="metodoPago" value="@metodo.Item1" />
+                                    <button type="submit" class="btn btn-outline-@metodo.Item3 w-100">
+                                        <i class="bi @metodo.Item2 me-2"></i>@metodo.Item1
                                     </button>
                                 </form>
                             }
@@ -327,14 +369,14 @@
 @section Scripts {
     <script>
         function calcularCambio(pedidoId, total) {
-            const input = document.getElementById('montoRecibido-' + pedidoId);
+            const input     = document.getElementById('montoRecibido-' + pedidoId);
             const resultado = document.getElementById('cambioResultado-' + pedidoId);
-            const monto = parseFloat(input.value) || 0;
-            const cambio = monto - total;
+            const monto     = parseFloat(input.value) || 0;
+            const cambio    = monto - total;
 
             if (cambio < 0) {
                 resultado.textContent = 'Monto insuficiente';
-                resultado.className = 'fw-bold fs-5 text-danger';
+                resultado.className   = 'fw-bold fs-5 text-danger';
             } else {
                 resultado.textContent = '₡' + cambio.toLocaleString('es-CR', {
                     minimumFractionDigits: 2,

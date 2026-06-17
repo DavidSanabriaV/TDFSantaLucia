@@ -26,11 +26,13 @@ namespace TDFSantaLucia.Repositories
                 .ToList();
 
         public Pedido? ObtenerPorId(int id)
-            => _db.Pedidos
+             => _db.Pedidos
                 .Include(p => p.Cliente).ThenInclude(c => c.Usuario)
                 .Include(p => p.DetallesPedido).ThenInclude(d => d.Producto)
                 .Include(p => p.Facturas).ThenInclude(f => f.DetallesFactura)
+                .Include(p => p.Cupon)   // ← esto faltaba
                 .FirstOrDefault(p => p.Pedido_Id == id);
+
 
         public void Agregar(Pedido pedido)
         {

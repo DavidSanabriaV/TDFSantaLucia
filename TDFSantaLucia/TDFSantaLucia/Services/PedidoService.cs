@@ -31,27 +31,19 @@ namespace TDFSantaLucia.Services
             _db = db;
         }
 
-        public List<Pedido> ObtenerTodos()
-            => _pedidoRepo.ObtenerTodos();
-
-        public List<Pedido> ObtenerPorCliente(int clienteId)
-            => _pedidoRepo.ObtenerPorCliente(clienteId);
-
-        public Pedido? ObtenerPorId(int id)
-            => _pedidoRepo.ObtenerPorId(id);
-
-        public void ActualizarPedido(Pedido pedido)
-            => _pedidoRepo.Actualizar(pedido);
+        public List<Pedido> ObtenerTodos() => _pedidoRepo.ObtenerTodos();
+        public List<Pedido> ObtenerPorCliente(int clienteId) => _pedidoRepo.ObtenerPorCliente(clienteId);
+        public Pedido? ObtenerPorId(int id) => _pedidoRepo.ObtenerPorId(id);
+        public void ActualizarPedido(Pedido pedido) => _pedidoRepo.Actualizar(pedido);
 
         public async Task<(bool exito, string? error, Pedido? pedido)>
             ProcesarPedidoAsync(CheckoutViewModel checkout, int clienteId)
         {
-            await using var transaction =
-                await _db.Database.BeginTransactionAsync();
+            await using var transaction = await _db.Database.BeginTransactionAsync();
 
             try
             {
-                // ── Validar canje de puntos ───────────────────────────────
+                // ── Validar puntos ────────────────────────────────────────
                 if (checkout.Canjear_Puntos && checkout.Puntos_A_Canjear > 0)
                 {
                     var puntosActuales = await _db.MovimientosPuntos
@@ -60,31 +52,47 @@ namespace TDFSantaLucia.Services
 
                     if (checkout.Puntos_A_Canjear > puntosActuales)
                         return (false,
-                            $"No tienes suficientes puntos. " +
-                            $"Disponibles: {puntosActuales}.", null);
+                            $"No tienes suficientes puntos. Disponibles: {puntosActuales}.", null);
                 }
 
-                // ── Validar y descontar stock ─────────────────────────────
+                // ── Validar cupón ─────────────────────────────────────────
+                // Si el cupón no es válido, limpiamos solo los campos de referencia
+                // (Descuento_Cupon es calculado desde Descuento_Cupon_Raw, no se asigna)
+                if (checkout.Cupon_Id.HasValue && checkout.ClienteCupon_Id > 0)
+                {
+                    var cc = await _db.ClientesCupones
+                        .Include(x => x.Cupon)
+                        .FirstOrDefaultAsync(x => x.Cupon_Cliente_Id == checkout.ClienteCupon_Id
+                                                && x.Cliente_Id == clienteId
+                                                && !x.Utilizado);
+
+                    if (cc == null || cc.Cupon == null || !cc.Cupon.Estado
+                        || cc.Cupon.Fecha_Expiracion.Date < DateTime.Today)
+                    {
+                        checkout.Cupon_Id = null;
+                        checkout.ClienteCupon_Id = 0;
+                        checkout.Descuento_Cupon_Raw = "0";  // ← limpia el raw en lugar del calculado
+                    }
+                }
+
+                // ── Stock ─────────────────────────────────────────────────
                 var detalles = new List<DetallePedido>();
 
                 foreach (var item in checkout.Items)
                 {
                     var lotes = await _db.Inventarios
                         .Where(i => i.Producto_Id == item.Producto_Id
-                                 && i.Estado
-                                 && i.Cantidad_Disponible > 0)
+                                 && i.Estado && i.Cantidad_Disponible > 0)
                         .OrderBy(i => i.Fecha_Vencimiento)
                         .ToListAsync();
 
                     var stockTotal = lotes.Sum(l => l.Cantidad_Disponible);
-
                     if (stockTotal < item.Cantidad)
                     {
                         await transaction.RollbackAsync();
                         return (false,
                             $"Stock insuficiente para '{item.Nombre}'. " +
-                            $"Disponible: {stockTotal}, " +
-                            $"solicitado: {item.Cantidad}", null);
+                            $"Disponible: {stockTotal}, solicitado: {item.Cantidad}", null);
                     }
 
                     int pendiente = item.Cantidad;
@@ -108,28 +116,13 @@ namespace TDFSantaLucia.Services
 
                 await _db.SaveChangesAsync();
 
-                // ── Marcar cupón como utilizado si aplica ─────────────────
-                if (checkout.Cupon_Id.HasValue && checkout.ClienteCuponId > 0)
-                {
-                    var cc = await _db.ClientesCupones
-                        .FirstOrDefaultAsync(x =>
-                            x.Cupon_Cliente_Id == checkout.ClienteCuponId);
-                    if (cc != null)
-                    {
-                        cc.Utilizado = true;
-                        cc.Fecha_Uso = DateTime.Now;
-                        await _db.SaveChangesAsync();
-                    }
-                }
-
                 var subtotal = checkout.Subtotal;
                 var impuesto = checkout.Impuesto;
                 var descuentoPuntos = checkout.Canjear_Puntos ? checkout.Descuento_Puntos : 0;
-                var descuentoCupon = checkout.Descuento_Cupon;
+                var descuentoCupon = checkout.Descuento_Cupon;   // ← lee la propiedad calculada
                 var descuentoTotal = descuentoPuntos + descuentoCupon;
                 var total = checkout.Total;
 
-                // ── Calcular puntos ganados ───────────────────────────────
                 int puntosGanados = 0;
                 if (!checkout.Canjear_Puntos)
                     puntosGanados = (int)Math.Floor(subtotal / ColonesPorPunto);
@@ -152,17 +145,30 @@ namespace TDFSantaLucia.Services
                     Requiere_Receta = requiereReceta,
                     Estado_Receta = requiereReceta ? "Pendiente" : null,
                     Receta_URL = checkout.Receta_URL,
-                    Puntos_Canjeados = checkout.Canjear_Puntos
-                        ? checkout.Puntos_A_Canjear : 0,
+                    Puntos_Canjeados = checkout.Canjear_Puntos ? checkout.Puntos_A_Canjear : 0,
                     Descuento_Puntos = descuentoPuntos,
                     Puntos_Ganados = puntosGanados,
-                    Uso_Puntos = checkout.Canjear_Puntos
+                    Uso_Puntos = checkout.Canjear_Puntos,
+                    Cupon_Id = checkout.Cupon_Id
                 };
 
                 _pedidoRepo.Agregar(pedido);
                 await _db.SaveChangesAsync();
 
-                // ── Registrar movimiento de puntos canjeados ──────────────
+                // ── Marcar cupón como utilizado ───────────────────────────
+                if (checkout.Cupon_Id.HasValue && checkout.ClienteCupon_Id > 0)
+                {
+                    var cc = await _db.ClientesCupones
+                        .FirstOrDefaultAsync(x => x.Cupon_Cliente_Id == checkout.ClienteCupon_Id);
+                    if (cc != null)
+                    {
+                        cc.Utilizado = true;
+                        cc.Fecha_Uso = DateTime.Now;
+                        await _db.SaveChangesAsync();
+                    }
+                }
+
+                // ── Puntos canjeados ──────────────────────────────────────
                 if (checkout.Canjear_Puntos && checkout.Puntos_A_Canjear > 0)
                 {
                     await _db.MovimientosPuntos.AddAsync(new MovimientoPuntos
@@ -178,7 +184,7 @@ namespace TDFSantaLucia.Services
                     });
                 }
 
-                // ── Registrar puntos ganados ──────────────────────────────
+                // ── Puntos ganados ────────────────────────────────────────
                 if (puntosGanados > 0)
                 {
                     await _db.MovimientosPuntos.AddAsync(new MovimientoPuntos
@@ -196,7 +202,7 @@ namespace TDFSantaLucia.Services
 
                 await _db.SaveChangesAsync();
 
-                // ── Generar factura ───────────────────────────────────────
+                // ── Factura ───────────────────────────────────────────────
                 var factura = new Factura
                 {
                     Numero_Factura = _facturaRepo.GenerarNumeroFactura(),
@@ -225,15 +231,12 @@ namespace TDFSantaLucia.Services
                 {
                     var tieneStock = await _db.Inventarios
                         .AnyAsync(i => i.Producto_Id == item.Producto_Id
-                                    && i.Estado
-                                    && i.Cantidad_Disponible > 0);
+                                    && i.Estado && i.Cantidad_Disponible > 0);
 
                     if (!tieneStock)
                     {
                         var producto = await _db.Productos
-                            .FirstOrDefaultAsync(p =>
-                                p.Producto_Id == item.Producto_Id);
-
+                            .FirstOrDefaultAsync(p => p.Producto_Id == item.Producto_Id);
                         if (producto != null && producto.Estado)
                         {
                             producto.Estado = false;
@@ -250,8 +253,7 @@ namespace TDFSantaLucia.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return (false,
-                    $"Error al procesar el pedido: {ex.Message}", null);
+                return (false, $"Error al procesar el pedido: {ex.Message}", null);
             }
         }
 
@@ -259,31 +261,24 @@ namespace TDFSantaLucia.Services
             CambiarEstadoAsync(int pedidoId, string nuevoEstado)
         {
             var pedido = _pedidoRepo.ObtenerPorId(pedidoId);
-            if (pedido == null)
-                return (false, "Pedido no encontrado.");
+            if (pedido == null) return (false, "Pedido no encontrado.");
 
             var estadosValidos = new[]
             {
-                PedidoEstados.Pendiente,
-                PedidoEstados.Aceptado,
-                PedidoEstados.Rechazado,
-                PedidoEstados.EnProceso,
-                PedidoEstados.Listo,
-                PedidoEstados.EnCamino,
-                PedidoEstados.Entregado,
-                PedidoEstados.Cancelado
+                PedidoEstados.Pendiente, PedidoEstados.Aceptado,
+                PedidoEstados.Rechazado, PedidoEstados.EnProceso,
+                PedidoEstados.Listo,     PedidoEstados.EnCamino,
+                PedidoEstados.Entregado, PedidoEstados.Cancelado
             };
 
             if (!estadosValidos.Contains(nuevoEstado))
                 return (false, "Estado no válido.");
 
-            // ── Al aceptar: activar puntos ganados ────────────────────────
+            // ── Al aceptar: activar puntos ────────────────────────────────
             if (nuevoEstado == PedidoEstados.Aceptado)
             {
                 var movPendiente = await _db.MovimientosPuntos
-                    .FirstOrDefaultAsync(m => m.Pedido_Id == pedidoId
-                                           && m.Tipo == "Pendiente");
-
+                    .FirstOrDefaultAsync(m => m.Pedido_Id == pedidoId && m.Tipo == "Pendiente");
                 if (movPendiente != null)
                 {
                     movPendiente.Tipo = "Ganado";
@@ -292,7 +287,7 @@ namespace TDFSantaLucia.Services
                 }
             }
 
-            // ── Al rechazar o cancelar: devolver stock y puntos ───────────
+            // ── Al rechazar/cancelar: devolver stock, puntos y cupón ──────
             if (nuevoEstado == PedidoEstados.Rechazado ||
                 nuevoEstado == PedidoEstados.Cancelado)
             {
@@ -302,8 +297,7 @@ namespace TDFSantaLucia.Services
                     foreach (var detalle in pedido.DetallesPedido)
                     {
                         var lote = await _db.Inventarios
-                            .Where(i => i.Producto_Id == detalle.Producto_Id
-                                     && i.Estado)
+                            .Where(i => i.Producto_Id == detalle.Producto_Id && i.Estado)
                             .OrderBy(i => i.Fecha_Vencimiento)
                             .FirstOrDefaultAsync();
 
@@ -313,9 +307,7 @@ namespace TDFSantaLucia.Services
                             _db.Inventarios.Update(lote);
 
                             var prod = await _db.Productos
-                                .FirstOrDefaultAsync(p =>
-                                    p.Producto_Id == detalle.Producto_Id);
-
+                                .FirstOrDefaultAsync(p => p.Producto_Id == detalle.Producto_Id);
                             if (prod != null && !prod.Estado)
                             {
                                 prod.Estado = true;
@@ -342,16 +334,28 @@ namespace TDFSantaLucia.Services
                         {
                             Puntos = pedido.Puntos_Canjeados,
                             Tipo = "Devuelto",
-                            Descripcion =
-                                $"Devolución de puntos por " +
-                                $"pedido {pedido.Numero_Orden} rechazado",
+                            Descripcion = $"Devolución por pedido {pedido.Numero_Orden} rechazado",
                             Fecha = DateTime.Now,
-                            Fecha_Vencimiento =
-                                DateTime.Now.AddMonths(MesesVencimiento),
+                            Fecha_Vencimiento = DateTime.Now.AddMonths(MesesVencimiento),
                             Vencido = false,
                             Cliente_Id = pedido.Cliente_Id,
                             Pedido_Id = pedido.Pedido_Id
                         });
+                    }
+
+                    // ── Devolver cupón ────────────────────────────────────
+                    if (pedido.Cupon_Id.HasValue)
+                    {
+                        var cc = await _db.ClientesCupones
+                            .FirstOrDefaultAsync(x => x.Cupon_Id == pedido.Cupon_Id
+                                                    && x.Cliente_Id == pedido.Cliente_Id
+                                                    && x.Utilizado);
+                        if (cc != null)
+                        {
+                            cc.Utilizado = false;
+                            cc.Fecha_Uso = null;
+                            _db.ClientesCupones.Update(cc);
+                        }
                     }
 
                     await _db.SaveChangesAsync();
@@ -368,20 +372,16 @@ namespace TDFSantaLucia.Services
         public (bool exito, string? error) EliminarPedido(int pedidoId)
         {
             var pedido = _pedidoRepo.ObtenerPorId(pedidoId);
-            if (pedido == null)
-                return (false, "Pedido no encontrado.");
+            if (pedido == null) return (false, "Pedido no encontrado.");
 
             var estadosNoeliminables = new[]
             {
-                PedidoEstados.EnProceso,
-                PedidoEstados.Listo,
-                PedidoEstados.EnCamino,
-                PedidoEstados.Entregado
+                PedidoEstados.EnProceso, PedidoEstados.Listo,
+                PedidoEstados.EnCamino,  PedidoEstados.Entregado
             };
 
             if (estadosNoeliminables.Contains(pedido.Estado))
-                return (false,
-                    "No se puede eliminar un pedido en este estado.");
+                return (false, "No se puede eliminar un pedido en este estado.");
 
             _pedidoRepo.Eliminar(pedidoId);
             return (true, null);

@@ -1,6 +1,4 @@
-﻿using TDFSantaLucia.Models;
-
-namespace TDFSantaLucia.Models
+﻿namespace TDFSantaLucia.Models
 {
     public class CheckoutSerializable
     {
@@ -12,6 +10,9 @@ namespace TDFSantaLucia.Models
         public bool Canjear_Puntos { get; set; }
         public int Puntos_Disponibles { get; set; }
         public int Puntos_A_Canjear { get; set; }
+        public int? Cupon_Id { get; set; }
+        public int ClienteCupon_Id { get; set; }
+        public string? Descuento_Cupon_Raw { get; set; }
 
         public CheckoutSerializable() { }
 
@@ -25,6 +26,9 @@ namespace TDFSantaLucia.Models
             Canjear_Puntos = vm.Canjear_Puntos;
             Puntos_Disponibles = vm.Puntos_Disponibles;
             Puntos_A_Canjear = vm.Puntos_A_Canjear;
+            Cupon_Id = vm.Cupon_Id;
+            ClienteCupon_Id = vm.ClienteCupon_Id;
+            Descuento_Cupon_Raw = vm.Descuento_Cupon_Raw;
         }
 
         public CheckoutViewModel ToViewModel() => new()
@@ -36,7 +40,10 @@ namespace TDFSantaLucia.Models
             RequiereReceta = RequiereReceta,
             Canjear_Puntos = Canjear_Puntos,
             Puntos_Disponibles = Puntos_Disponibles,
-            Puntos_A_Canjear = Puntos_A_Canjear
+            Puntos_A_Canjear = Puntos_A_Canjear,
+            Cupon_Id = Cupon_Id,
+            ClienteCupon_Id = ClienteCupon_Id,
+            Descuento_Cupon_Raw = Descuento_Cupon_Raw
         };
     }
 }

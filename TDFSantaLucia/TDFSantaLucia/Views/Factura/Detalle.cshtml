@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = $"Factura {Model.Numero_Factura}";
     var cliente = Model.Cliente?.Usuario;
+    var pedido = Model.Pedido;
+    var descuentoTotal = Model.Descuento;
+    var descuentoPuntos = pedido?.Descuento_Puntos ?? 0;
+    var descuentoCupon = descuentoTotal - descuentoPuntos;
 }
 
 <div class="container py-4" style="max-width:800px;">
@@ -11,7 +15,7 @@
             <i class="bi bi-receipt me-2"></i>@Model.Numero_Factura
         </h2>
         <a asp-action="Descargar" asp-route-id="@Model.Factura_Id"
-               class="btn btn-primary rounded-3">
+           class="btn btn-primary rounded-3">
             <i class="bi bi-download me-1"></i>Descargar
         </a>
     </div>
@@ -19,9 +23,7 @@
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
         <div class="row g-3">
             <div class="col-md-6">
-                <div class="fw-bold fs-5" style="color:#243C8F;">
-                    Farmacia Santa Lucía
-                </div>
+                <div class="fw-bold fs-5" style="color:#243C8F;">Farmacia Santa Lucía</div>
                 <div class="text-muted small">
                     Santa Lucía de Barva, Heredia, Costa Rica<br>
                     Tel: 2237-3040<br>
@@ -30,8 +32,7 @@
             </div>
             <div class="col-md-6 text-md-end">
                 <div class="text-muted small">
-                    Pedido:
-                    <strong>@Model.Pedido?.Numero_Orden</strong>
+                    Pedido: <strong>@pedido?.Numero_Orden</strong>
                 </div>
                 <div class="text-muted small">
                     Emitida: @Model.Fecha_Emision.ToString("dd/MM/yyyy HH:mm")
@@ -42,15 +43,12 @@
     </div>
 
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-        <h5 class="fw-bold mb-3" style="color:#243C8F;">
-            Datos del cliente
-        </h5>
+        <h5 class="fw-bold mb-3" style="color:#243C8F;">Datos del cliente</h5>
         <div class="row g-2">
             <div class="col-md-6">
                 <small class="text-muted">Nombre</small>
                 <div class="fw-semibold">
-                    @cliente?.Nombre @cliente?.Primer_Apellido
-                    @cliente?.Segundo_Apellido
+                    @cliente?.Nombre @cliente?.Primer_Apellido @cliente?.Segundo_Apellido
                 </div>
             </div>
             <div class="col-md-6">
@@ -101,17 +99,46 @@
             <span class="text-muted">IVA (13%)</span>
             <span>₡@Model.Impuesto.ToString("N2")</span>
         </div>
-        @if (Model.Pedido?.Uso_Puntos == true)
+
+        @if (pedido?.Uso_Puntos == true && descuentoPuntos > 0)
         {
-            <div class="alert alert-warning rounded-3 mb-3">
-                <i class="bi bi-star-fill me-1"></i>
-                Se utilizaron
-                <strong>
-                    @Model.Pedido.Puntos_Canjeados puntos
-                </strong>
-                en esta compra.
+            <div class="d-flex justify-content-between mb-2 text-danger">
+                <span>
+                    <i class="bi bi-star-fill me-1"></i>
+                    Descuento por puntos (@pedido.Puntos_Canjeados pts)
+                </span>
+                <span class="fw-bold">-₡@descuentoPuntos.ToString("N2")</span>
             </div>
         }
+
+        @if (pedido?.Cupon != null && descuentoCupon > 0)
+        {
+            <div class="d-flex justify-content-between mb-2 text-success">
+                <span>
+                    <i class="bi bi-ticket-perforated-fill me-1"></i>
+                    Cupón: @pedido.Cupon.Descripcion
+                    @if (pedido.Cupon.Tipo_Descuento == "Porcentaje")
+                    {
+                        <span class="badge bg-info text-dark ms-1">@pedido.Cupon.Valor_Descuento:G29}%</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-primary ms-1">Monto fijo</span>
+                    }
+                </span>
+                <span class="fw-bold">-₡@descuentoCupon.ToString("N2")</span>
+            </div>
+        }
+
+        @if (descuentoTotal > 0)
+        {
+            <hr />
+            <div class="d-flex justify-content-between mb-2 fw-semibold">
+                <span class="text-muted">Total descuentos</span>
+                <span class="text-danger">-₡@descuentoTotal.ToString("N2")</span>
+            </div>
+        }
+
         <hr />
         <div class="d-flex justify-content-between fw-bold fs-4">
             <span>Total</span>
@@ -121,11 +148,11 @@
 
     <div class="d-flex gap-2 mt-4">
         <a asp-controller="Pedido" asp-action="MisPedidos"
-               class="btn btn-outline-secondary rounded-3">
+           class="btn btn-outline-secondary rounded-3">
             <i class="bi bi-arrow-left me-1"></i>Volver
         </a>
         <a asp-action="Descargar" asp-route-id="@Model.Factura_Id"
-               class="btn btn-primary rounded-3">
+           class="btn btn-primary rounded-3">
             <i class="bi bi-download me-1"></i>Descargar factura
         </a>
     </div>

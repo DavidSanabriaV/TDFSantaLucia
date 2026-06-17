@@ -11,7 +11,7 @@
                 <i class="bi bi-ticket-perforated-fill me-2 text-primary"></i>
                 Gestión de Cupones
             </h2>
-            <p class="text-muted mb-0">Administra los cupones de descuento</p>
+            <p class="text-muted mb-0">Crea y administra cupones de descuento</p>
         </div>
         <a asp-action="Crear" class="btn btn-success rounded-3 shadow-sm">
             <i class="bi bi-plus-circle me-1"></i> Nuevo Cupón
@@ -43,6 +43,7 @@
                     <th class="text-center">Valor</th>
                     <th class="text-center">Vence</th>
                     <th class="text-center">Asignados</th>
+                    <th class="text-center">Utilizados</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Acciones</th>
                 </tr>
@@ -53,12 +54,15 @@
                 }
                 @foreach (var c in Model)
                 {
-                    var vencido = c.Fecha_Expiracion < DateTime.Today;
+                    var vencido = c.Fecha_Expiracion.Date < DateTime.Today;
+                    var utilizados = c.ClienteCupones.Count(cc => cc.Utilizado);
                     <tr>
                         <td class="text-muted small">@fila</td>
                         <td class="fw-semibold">@c.Descripcion</td>
                         <td class="text-center">
-                            <span class="badge bg-info text-dark">@c.Tipo_Descuento</span>
+                            <span class="badge @(c.Tipo_Descuento == "Porcentaje" ? "bg-info text-dark" : "bg-primary")">
+                                @c.Tipo_Descuento
+                            </span>
                         </td>
                         <td class="text-center fw-bold text-success">
                             @if (c.Tipo_Descuento == "Porcentaje")
@@ -84,30 +88,33 @@
                             <span class="badge bg-secondary">@c.ClienteCupones.Count</span>
                         </td>
                         <td class="text-center">
+                            <span class="badge bg-warning text-dark">@utilizados</span>
+                        </td>
+                        <td class="text-center">
                             @if (c.Estado && !vencido)
                             {
                                 <span class="badge bg-success">Activo</span>
                             }
                             else
                             {
-                                <span class="badge bg-danger">Inactivo</span>
+                                <span class="badge bg-danger">@(vencido ? "Vencido" : "Inactivo")</span>
                             }
                         </td>
                         <td class="text-center">
                             <a asp-action="Detalle" asp-route-id="@c.Cupon_Id"
                                class="btn btn-info btn-sm text-white">
-                                <i class="bi bi-eye"></i> Ver
+                                <i class="bi bi-eye"></i>
                             </a>
                             <a asp-action="Editar" asp-route-id="@c.Cupon_Id"
                                class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil"></i> Editar
+                                <i class="bi bi-pencil"></i>
                             </a>
                             <form asp-action="Eliminar" asp-route-id="@c.Cupon_Id"
                                   method="post" style="display:inline"
                                   onsubmit="return confirm('¿Eliminar este cupón?')">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash"></i> Eliminar
+                                    <i class="bi bi-trash"></i>
                                 </button>
                             </form>
                         </td>

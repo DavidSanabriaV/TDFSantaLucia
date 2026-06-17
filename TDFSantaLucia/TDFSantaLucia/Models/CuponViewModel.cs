@@ -21,6 +21,8 @@ namespace TDFSantaLucia.Models
 
         public bool Estado { get; set; } = true;
 
-        public string? CodigoUsuario { get; set; }
+        // Para asignación masiva
+        public string? FiltroRol { get; set; }
+        public List<int> ClientesSeleccionados { get; set; } = new();
     }
 }

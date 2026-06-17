@@ -33,7 +33,7 @@ namespace TDFSantaLucia.Controllers
                 .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
         }
 
-        // ── ADMIN CRUD ─────────────────────────────────────────────────────
+        // ── ADMIN CRUD ──────────────────────────────────────────────────────
 
         [HttpGet("")]
         [Authorize(Roles = "Admin,Empleado")]
@@ -51,12 +51,12 @@ namespace TDFSantaLucia.Controllers
             if (cupon == null) return NotFound();
 
             var yaAsignados = cupon.ClienteCupones
-                .Select(cc => cc.Cliente_Id)
-                .ToHashSet();
+                .Select(cc => cc.Cliente_Id).ToHashSet();
 
             ViewBag.ClientesDisponibles = _db.Clientes
                 .Include(c => c.Usuario)
                 .Where(c => !yaAsignados.Contains(c.Cliente_Id))
+                .OrderBy(c => c.Usuario!.Primer_Apellido)
                 .ToList();
 
             return View(cupon);
@@ -78,8 +78,7 @@ namespace TDFSantaLucia.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear(CuponViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            if (!ModelState.IsValid) return View(model);
 
             var usuario = await _userManager.GetUserAsync(User);
             var (exito, error) = _cuponService.CrearCupon(model, usuario!.Id);
@@ -101,7 +100,7 @@ namespace TDFSantaLucia.Controllers
             var cupon = _cuponService.ObtenerPorId(id);
             if (cupon == null) return NotFound();
 
-            var model = new CuponViewModel
+            return View(new CuponViewModel
             {
                 Cupon_Id = cupon.Cupon_Id,
                 Descripcion = cupon.Descripcion!,
@@ -109,9 +108,7 @@ namespace TDFSantaLucia.Controllers
                 Valor_Descuento = cupon.Valor_Descuento,
                 Fecha_Expiracion = cupon.Fecha_Expiracion,
                 Estado = cupon.Estado
-            };
-
-            return View(model);
+            });
         }
 
         [HttpPost("editar/{id:int}")]
@@ -119,8 +116,7 @@ namespace TDFSantaLucia.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Editar(CuponViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            if (!ModelState.IsValid) return View(model);
 
             var (exito, error) = _cuponService.ActualizarCupon(model);
             if (!exito)
@@ -139,11 +135,8 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Eliminar(int id)
         {
             var (exito, error) = _cuponService.EliminarCupon(id);
-            if (!exito)
-                TempData["ErrorCupon"] = error;
-            else
-                TempData["ExitoCupon"] = "Cupón eliminado correctamente.";
-
+            TempData[exito ? "ExitoCupon" : "ErrorCupon"] =
+                exito ? "Cupón eliminado." : error;
             return RedirectToAction("Index");
         }
 
@@ -153,60 +146,86 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Asignar(int cuponId, int clienteId)
         {
             var (exito, error) = _cuponService.AsignarCuponACliente(cuponId, clienteId);
-            if (!exito)
-                TempData["ErrorCupon"] = error;
-            else
-                TempData["ExitoCupon"] = "Cupón asignado correctamente.";
-
+            TempData[exito ? "ExitoCupon" : "ErrorCupon"] =
+                exito ? "Cupón asignado correctamente." : error;
             return RedirectToAction("Detalle", new { id = cuponId });
         }
 
-        // ── CLIENTE: aplicar cupón desde carrito ───────────────────────────
-
-        [HttpPost("aplicar")]
-        [Authorize]
-        public async Task<IActionResult> Aplicar(int cuponId)
+        [HttpPost("asignar-todos")]
+        [Authorize(Roles = "Admin,Empleado")]
+        [ValidateAntiForgeryToken]
+        public IActionResult AsignarATodos(int cuponId, string? filtroRol)
         {
-            var cliente = await ObtenerClienteAsync();
-            if (cliente == null)
-                return Json(new { exito = false, mensaje = "Cliente no encontrado." });
-
-            var carritoItems = _db.CarritoItems
-                .Where(c => c.Cliente_Id == cliente.Cliente_Id)
-                .ToList();
-
-            var subtotal = carritoItems.Sum(i => i.Precio * i.Cantidad);
-            var impuesto = Math.Round(subtotal * 0.13m, 2);
-            var total = subtotal + impuesto;
-
-            var (exito, descuento, clienteCuponId) =
-                _cuponService.AplicarCupon(cuponId, cliente.Cliente_Id, total);
-
-            if (!exito)
-                return Json(new { exito = false, mensaje = "Cupón no válido o ya utilizado." });
-
-            var totalFinal = Math.Max(0, total - descuento);
-
-            return Json(new
-            {
-                exito,
-                descuento = descuento.ToString("N2"),
-                totalFinal = totalFinal.ToString("N2"),
-                clienteCuponId,
-                mensaje = "Cupón aplicado correctamente."
-            });
+            var (exito, mensaje) = _cuponService.AsignarCuponATodos(cuponId, filtroRol);
+            TempData[exito ? "ExitoCupon" : "ErrorCupon"] = mensaje;
+            return RedirectToAction("Detalle", new { id = cuponId });
         }
+
+        // ── CLIENTE ─────────────────────────────────────────────────────────
 
         [HttpGet("mis-cupones")]
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> MisCupones()
         {
             var cliente = await ObtenerClienteAsync();
-            if (cliente == null)
-                return RedirectToAction("Index", "Home");
+            if (cliente == null) return RedirectToAction("Index", "Home");
 
             var cupones = _cuponService.ObtenerCuponesCliente(cliente.Cliente_Id);
             return View(cupones);
+        }
+
+        [HttpPost("validar")]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> Validar(int cuponId, string totalActual)
+        {
+            var cliente = await ObtenerClienteAsync();
+            if (cliente == null)
+                return Json(new { exito = false, mensaje = "Cliente no encontrado." });
+
+            // Parsear con cultura invariante para que "2712.00" funcione siempre
+            if (!decimal.TryParse(
+                    totalActual,
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out decimal total) || total <= 0)
+                return Json(new { exito = false, mensaje = "Total inválido." });
+
+            var (exito, descuento, clienteCuponId) =
+                _cuponService.ValidarYCalcularDescuento(cuponId, cliente.Cliente_Id, total);
+
+            if (!exito)
+                return Json(new { exito = false, mensaje = "Cupón no válido, ya utilizado o vencido." });
+
+            var totalFinal = Math.Max(0, total - descuento);
+
+            return Json(new
+            {
+                exito,
+                descuento = descuento,
+                totalFinal = totalFinal,
+                clienteCuponId,
+                mensaje = "Cupón aplicado correctamente."
+            });
+        }
+
+        [HttpGet("disponibles")]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> Disponibles()
+        {
+            var cliente = await ObtenerClienteAsync();
+            if (cliente == null) return Json(new List<object>());
+
+            var cupones = _cuponService.ObtenerCuponesCliente(cliente.Cliente_Id)
+                .Select(cc => new
+                {
+                    cuponId = cc.Cupon_Id,
+                    descripcion = cc.Cupon!.Descripcion,
+                    tipo = cc.Cupon.Tipo_Descuento,
+                    valor = cc.Cupon.Valor_Descuento,
+                    vence = cc.Cupon.Fecha_Expiracion.ToString("dd/MM/yyyy")
+                });
+
+            return Json(cupones);
         }
     }
 }

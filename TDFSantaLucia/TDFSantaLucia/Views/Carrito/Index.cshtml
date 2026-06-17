@@ -18,8 +18,7 @@
         <div class="text-center py-5">
             <i class="bi bi-cart-x display-3 text-muted"></i>
             <p class="text-muted mt-3">Tu carrito está vacío.</p>
-            <a asp-controller="Producto" asp-action="Index"
-               class="btn btn-primary mt-2">
+            <a asp-controller="Producto" asp-action="Index" class="btn btn-primary mt-2">
                 <i class="bi bi-bag me-1"></i>Ver productos
             </a>
         </div>
@@ -39,9 +38,7 @@
                                      onerror="this.src='/img/producto-default.png'" />
 
                                 <div class="flex-grow-1">
-                                    <div class="fw-semibold" style="color:#243C8F;">
-                                        @item.Nombre
-                                    </div>
+                                    <div class="fw-semibold" style="color:#243C8F;">@item.Nombre</div>
                                     <small class="text-muted">@(item.Marca ?? "")</small>
                                     @if (item.Receta)
                                     {
@@ -104,9 +101,8 @@
 
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm rounded-4 p-4">
-                    <h5 class="fw-bold mb-3" style="color:#243C8F;">
-                        Resumen del pedido
-                    </h5>
+                    <h5 class="fw-bold mb-3" style="color:#243C8F;">Resumen del pedido</h5>
+
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Subtotal</span>
                         <span id="resumenSubtotal">₡@subtotal.ToString("N2")</span>
@@ -115,35 +111,20 @@
                         <span class="text-muted">IVA (13%)</span>
                         <span id="resumenImpuesto">₡@impuesto.ToString("N2")</span>
                     </div>
+
+                    <!-- Fila descuento cupón -->
+                    <div class="d-flex justify-content-between mb-2 d-none" id="filaCupon">
+                        <span class="text-success small">Descuento cupón</span>
+                        <span class="text-success fw-bold" id="montoCuponCarrito">-₡0.00</span>
+                    </div>
+
                     <hr />
-                    <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+                    <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
                         <span>Total</span>
                         <span id="resumenTotal" style="color:#243C8F;">
                             ₡@total.ToString("N2")
                         </span>
                     </div>
-
-                    <!-- Cupón -->
-                    @if (User.IsInRole("Cliente"))
-                    {
-                        <div id="seccionCupon" class="mb-3">
-                            <p class="fw-semibold text-muted small mb-2">¿TIENES UN CUPÓN?</p>
-                            <div id="listaCupones"></div>
-                            <div id="cuponAplicado"
-                                 class="alert alert-success rounded-3 small d-none">
-                                <i class="bi bi-check-circle me-1"></i>
-                                Cupón aplicado: <strong id="descuentoTexto"></strong> de descuento
-                                <button type="button" class="btn-close float-end"
-                                        onclick="quitarCupon()"></button>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2 d-none"
-                             id="filaDescuento">
-                            <span class="text-success">Descuento cupón</span>
-                            <span class="text-success fw-bold"
-                                  id="resumenDescuento">-₡0.00</span>
-                        </div>
-                    }
 
                     @if (User.Identity?.IsAuthenticated == true && ViewBag.PuntosDisponibles > 0)
                     {
@@ -153,58 +134,77 @@
                             </h6>
                             <p class="mb-2 small text-muted">
                                 Tienes <strong class="text-success">
-                                    @ViewBag.PuntosDisponibles puntos
-                                </strong>
-                                = ₡@ViewBag.PuntosDisponibles disponibles para canjear.
-                            </p>
-                            <p class="mb-0 small text-muted">
-                                Puedes canjear tus puntos en el paso siguiente
-                                al confirmar tu pedido.
-                            </p>
+                                @ViewBag.PuntosDisponibles puntos
+                            </strong> = ₡@ViewBag.PuntosDisponibles disponibles para canjear.
+                        </p>
+                        <p class="mb-0 small text-muted">
+                            Puedes canjear tus puntos en el paso siguiente.
+                        </p>
+                    </div>
+                }
+
+                <!-- Sección cupón (solo clientes) -->
+                @if (User.IsInRole("Cliente"))
+                {
+                    <div class="mb-3">
+                        <p class="fw-semibold text-muted small mb-2">
+                            <i class="bi bi-ticket-perforated me-1"></i>¿TIENES UN CUPÓN?
+                        </p>
+                        <div id="seccionSeleccionCupon">
+                            <div id="listaCupones" class="mb-2">
+                                <small class="text-muted">Cargando cupones...</small>
+                            </div>
                         </div>
-                    }
+                        <div id="cuponAplicado" class="alert alert-success rounded-3 small py-2 d-none">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Descuento: <strong id="textoCuponAplicado"></strong>
+                            <button type="button" class="btn-close float-end btn-sm"
+                                    onclick="quitarCupon()"></button>
+                        </div>
+                    </div>
+                }
 
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <a asp-controller="Pedido" asp-action="Checkout"
-                           class="btn btn-success w-100 rounded-3 fw-bold">
-                            <i class="bi bi-bag-check me-1"></i>Proceder al pago
-                        </a>
-                    }
-                    else
-                    {
-                        <a asp-controller="Account" asp-action="Login"
-                           class="btn btn-primary w-100 rounded-3 fw-bold">
-                            <i class="bi bi-person me-1"></i>
-                            Inicia sesión para continuar
-                        </a>
-                    }
-
-                    <a asp-controller="Producto" asp-action="Index"
-                       class="btn btn-outline-secondary w-100 rounded-3 mt-2">
-                        <i class="bi bi-arrow-left me-1"></i>Seguir comprando
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Pedido" asp-action="Checkout"
+                       class="btn btn-success w-100 rounded-3 fw-bold">
+                        <i class="bi bi-bag-check me-1"></i>Proceder al pago
                     </a>
-                </div>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login"
+                       class="btn btn-primary w-100 rounded-3 fw-bold">
+                        <i class="bi bi-person me-1"></i>Inicia sesión para continuar
+                    </a>
+                }
+
+                <a asp-controller="Producto" asp-action="Index"
+                   class="btn btn-outline-secondary w-100 rounded-3 mt-2">
+                    <i class="bi bi-arrow-left me-1"></i>Seguir comprando
+                </a>
             </div>
         </div>
-    }
+    </div>
+}
 </div>
 
 @Html.AntiForgeryToken()
 
 @section Scripts {
     <script>
-        const token = document.querySelector(
-            'input[name="__RequestVerificationToken"]').value;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        // Limpiar cupón al entrar al carrito (se aplica solo desde aquí)
+        sessionStorage.removeItem('cuponId');
+        sessionStorage.removeItem('clienteCuponId');
+        sessionStorage.removeItem('descuentoCupon');
 
         function cambiarCantidad(productoId, delta) {
             const cantEl    = document.getElementById(`cant-${productoId}`);
             const nuevaCant = parseInt(cantEl.textContent) + delta;
 
-            if (nuevaCant < 1) {
-                eliminarItem(productoId);
-                return;
-            }
+            if (nuevaCant < 1) { eliminarItem(productoId); return; }
 
             fetch('/carrito/actualizar', {
                 method: 'POST',
@@ -222,6 +222,8 @@
                         .textContent = `₡${d.subtotal.toLocaleString('es-CR',
                             { minimumFractionDigits: 2 })}`;
                     actualizarResumen(d.total, d.count);
+                } else {
+                    alert(d.mensaje);
                 }
             });
         }
@@ -264,82 +266,108 @@
         }
 
         // ── Cupones ────────────────────────────────────────────────────────
-        let cuponSeleccionadoId  = 0;
-        let clienteCuponIdActual = 0;
-        let descuentoActual      = 0;
+        let cuponActivoId      = 0;
+        let clienteCuponActivo = 0;
+        let descuentoCupon     = 0;
 
         async function cargarCupones() {
-            const res  = await fetch('/carrito/cupones-disponibles');
-            const data = await res.json();
-            const div  = document.getElementById('listaCupones');
+            const div = document.getElementById('listaCupones');
             if (!div) return;
 
-            if (!data.length) {
-                div.innerHTML =
-                    '<small class="text-muted">No tienes cupones disponibles.</small>';
-                return;
-            }
+            try {
+                const res  = await fetch('/cupon/disponibles');
+                const data = await res.json();
 
-            let html = '<select id="selectCupon" class="form-select form-select-sm rounded-3 mb-2">';
-            html += '<option value="">Selecciona un cupón...</option>';
-            data.forEach(c => {
-                const valor = c.tipo === 'Porcentaje'
-                    ? `${c.valor}% OFF` : `₡${c.valor} OFF`;
-                html += `<option value="${c.cuponId}">${c.descripcion} — ${valor}</option>`;
-            });
-            html += '</select>';
-            html += `<button class="btn btn-outline-primary btn-sm rounded-3 w-100"
-                             onclick="aplicarCupon()">
-                        <i class="bi bi-ticket-perforated me-1"></i>Aplicar cupón
-                     </button>`;
-            div.innerHTML = html;
+                if (!data.length) {
+                    div.innerHTML = '<small class="text-muted">No tienes cupones disponibles.</small>';
+                    return;
+                }
+
+                let html = '<select id="selectCupon" class="form-select form-select-sm rounded-3 mb-2">';
+                html += '<option value="">Selecciona un cupón...</option>';
+                data.forEach(c => {
+                    const valor = c.tipo === 'Porcentaje'
+                        ? `${c.valor}% OFF`
+                        : `₡${parseFloat(c.valor).toLocaleString('es-CR')} OFF`;
+                    html += `<option value="${c.cuponId}">${c.descripcion} — ${valor} (vence ${c.vence})</option>`;
+                });
+                html += '</select>';
+                html += `<button class="btn btn-outline-primary btn-sm rounded-3 w-100"
+                                 onclick="aplicarCupon()">
+                            <i class="bi bi-ticket-perforated me-1"></i>Aplicar cupón
+                         </button>`;
+                div.innerHTML = html;
+            } catch {
+                div.innerHTML = '<small class="text-muted">No se pudieron cargar los cupones.</small>';
+            }
         }
 
         async function aplicarCupon() {
             const sel = document.getElementById('selectCupon');
-            if (!sel || !sel.value) return;
+            if (!sel?.value) { alert('Selecciona un cupón primero.'); return; }
 
-            const res  = await fetch('/cupon/aplicar', {
+            // Leer subtotal limpiando formato costarricense (₡2 400,00)
+            const subtotalRaw = document.getElementById('resumenSubtotal').textContent
+                .trim()
+                .replace(/[₡\s\u00A0]/g, '') // ₡, espacios y non-breaking space
+                .replace(/\./g, '')           // puntos de miles
+                .replace(',', '.');           // coma decimal → punto
+
+            const subtotal    = parseFloat(subtotalRaw) || 0;
+            const impuesto    = Math.round(subtotal * 0.13 * 100) / 100;
+            const totalActual = subtotal + impuesto;
+
+            if (totalActual <= 0) {
+                alert('No se pudo calcular el total. Refresca la página.');
+                return;
+            }
+
+            const res  = await fetch('/cupon/validar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'RequestVerificationToken': token
                 },
-                body: `cuponId=${sel.value}`
+                body: `cuponId=${sel.value}&totalActual=${totalActual.toFixed(2)}`
             });
             const data = await res.json();
 
             if (!data.exito) { alert(data.mensaje); return; }
 
-            cuponSeleccionadoId  = parseInt(sel.value);
-            clienteCuponIdActual = data.clienteCuponId;
-            descuentoActual      = parseFloat(data.descuento.replace(',', '.'));
+            cuponActivoId      = parseInt(sel.value);
+            clienteCuponActivo = data.clienteCuponId;
+            descuentoCupon     = data.descuento;
+
+            const descFmt  = parseFloat(data.descuento)
+                .toLocaleString('es-CR', { minimumFractionDigits: 2 });
+            const totalFmt = parseFloat(data.totalFinal)
+                .toLocaleString('es-CR', { minimumFractionDigits: 2 });
 
             document.getElementById('cuponAplicado').classList.remove('d-none');
-            document.getElementById('descuentoTexto').textContent = `₡${data.descuento}`;
-            document.getElementById('listaCupones').classList.add('d-none');
-            document.getElementById('filaDescuento').classList.remove('d-none');
-            document.getElementById('resumenDescuento').textContent = `-₡${data.descuento}`;
-            document.getElementById('resumenTotal').textContent = `₡${data.totalFinal}`;
+            document.getElementById('textoCuponAplicado').textContent = `₡${descFmt} de descuento`;
+            document.getElementById('seccionSeleccionCupon').classList.add('d-none');
+            document.getElementById('filaCupon').classList.remove('d-none');
+            document.getElementById('montoCuponCarrito').textContent = `-₡${descFmt}`;
+            document.getElementById('resumenTotal').textContent = `₡${totalFmt}`;
 
-            sessionStorage.setItem('cuponId', cuponSeleccionadoId);
-            sessionStorage.setItem('clienteCuponId', clienteCuponIdActual);
-            sessionStorage.setItem('descuento', descuentoActual);
+            sessionStorage.setItem('cuponId',        cuponActivoId);
+            sessionStorage.setItem('clienteCuponId', clienteCuponActivo);
+            sessionStorage.setItem('descuentoCupon', descuentoCupon);
         }
 
         function quitarCupon() {
-            cuponSeleccionadoId  = 0;
-            clienteCuponIdActual = 0;
-            descuentoActual      = 0;
-
-            document.getElementById('cuponAplicado').classList.add('d-none');
-            document.getElementById('listaCupones').classList.remove('d-none');
-            document.getElementById('filaDescuento').classList.add('d-none');
-            document.getElementById('resumenDescuento').textContent = '-₡0.00';
+            cuponActivoId      = 0;
+            clienteCuponActivo = 0;
+            descuentoCupon     = 0;
 
             sessionStorage.removeItem('cuponId');
             sessionStorage.removeItem('clienteCuponId');
-            sessionStorage.removeItem('descuento');
+            sessionStorage.removeItem('descuentoCupon');
+
+            document.getElementById('cuponAplicado').classList.add('d-none');
+            document.getElementById('seccionSeleccionCupon').classList.remove('d-none');
+            document.getElementById('filaCupon').classList.add('d-none');
+            document.getElementById('montoCuponCarrito').textContent = '-₡0.00';
             location.reload();
         }
 

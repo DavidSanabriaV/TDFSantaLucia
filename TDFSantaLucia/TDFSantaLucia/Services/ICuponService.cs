@@ -11,7 +11,9 @@ namespace TDFSantaLucia.Services
         (bool exito, string? error) ActualizarCupon(CuponViewModel model);
         (bool exito, string? error) EliminarCupon(int id);
         (bool exito, string? error) AsignarCuponACliente(int cuponId, int clienteId);
-        (bool exito, decimal descuento, int clienteCuponId) AplicarCupon(int cuponId, int clienteId, decimal total);
+        (bool exito, string? error) AsignarCuponATodos(int cuponId, string? filtroRol);
+        (bool exito, decimal descuento, int clienteCuponId) ValidarYCalcularDescuento(int cuponId, int clienteId, decimal total);
         void MarcarComoUtilizado(int clienteCuponId);
+        (bool exito, string? error) DevolverCupon(int clienteCuponId);
     }
 }
