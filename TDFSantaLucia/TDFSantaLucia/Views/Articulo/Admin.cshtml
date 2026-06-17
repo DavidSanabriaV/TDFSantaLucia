@@ -1,0 +1,119 @@
+﻿@model List<TDFSantaLucia.Models.ArticuloSalud>
+@{
+    ViewData["Title"] = "Gestión de Artículos";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0" style="color:#243C8F;">
+            <i class="bi bi-journal-richtext me-2"></i>Artículos de Salud
+        </h2>
+        <a asp-action="Crear" class="btn btn-primary rounded-3 px-4">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo artículo
+        </a>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            ✅ @TempData["Exito"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            ❌ @TempData["Error"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Título</th>
+                    <th>Categoría</th>
+                    <th>Autor</th>
+                    <th class="text-center">Likes</th>
+                    <th class="text-center">Comentarios</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@a.Titulo</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(a.Categoria))
+                            {
+                                <span class="badge rounded-pill"
+                                      style="background:#243C8F;">
+                                    @a.Categoria
+                                </span>
+                            }
+                        </td>
+                        <td class="small text-muted">
+                            @a.Usuario?.Nombre @a.Usuario?.Primer_Apellido
+                        </td>
+                        <td class="text-center">
+                            <i class="bi bi-heart-fill text-danger me-1"></i>
+                            @a.Likes.Count
+                        </td>
+                        <td class="text-center">
+                            <i class="bi bi-chat me-1"></i>
+                            @a.Comentarios.Count
+                        </td>
+                        <td class="text-center">
+                            <form asp-action="TogglePublicado"
+                                  asp-route-id="@a.Articulo_Id"
+                                  method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn btn-sm @(a.Publicado
+                                                                                                                        ? "btn-success"
+                                                                                                                        : "btn-outline-secondary") rounded-pill">
+                                    @(a.Publicado ? "Publicado" : "Borrador")
+                                </button>
+                            </form>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-action="Detalle"
+                                       asp-route-id="@a.Articulo_Id"
+                                       class="btn btn-info btn-sm text-white"
+                                       title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Editar"
+                                       asp-route-id="@a.Articulo_Id"
+                                       class="btn btn-warning btn-sm"
+                                       title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form asp-action="Eliminar"
+                                          asp-route-id="@a.Articulo_Id"
+                                          method="post"
+                                          onsubmit="return confirm('¿Eliminar artículo?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm"
+                                                title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

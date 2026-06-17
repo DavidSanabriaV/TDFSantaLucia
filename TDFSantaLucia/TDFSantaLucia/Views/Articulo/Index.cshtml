@@ -1,0 +1,112 @@
+﻿@model List<TDFSantaLucia.Models.ArticuloSalud>
+@{
+    ViewData["Title"] = "Salud & Bienestar";
+    var userId = ViewBag.UserId as string;
+}
+
+<div class="container py-5">
+
+    <div class="text-center mb-5">
+        <h1 class="fw-bold" style="color:#243C8F;">
+            <i class="bi bi-heart-pulse-fill me-2"></i>Salud & Bienestar
+        </h1>
+        <p class="text-muted">
+            Noticias, consejos y recomendaciones de nuestros especialistas
+        </p>
+    </div>
+
+    @if (ViewBag.Categorias is List<string> cats && cats.Any())
+    {
+        <div class="d-flex gap-2 flex-wrap justify-content-center mb-5">
+            <a asp-action="Index"
+                   class="btn btn-sm @(ViewBag.Categoria == null
+                                                  ? "btn-primary" : "btn-outline-primary") rounded-pill">
+                Todos
+            </a>
+            @foreach (var cat in cats)
+            {
+                <a asp-action="Index" asp-route-categoria="@cat"
+                       class="btn btn-sm @(ViewBag.Categoria == cat
+                                                              ? "btn-primary" : "btn-outline-primary") rounded-pill">
+                    @cat
+                </a>
+            }
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-journal-x fs-1 d-block mb-3"></i>
+            No hay artículos publicados aún.
+        </div>
+    }
+
+    <div class="row g-4">
+        @foreach (var a in Model)
+        {
+            var dioLike = userId != null &&
+                a.Likes.Any(l => l.Usuario_Id == userId);
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4
+                    overflow-hidden articulo-card">
+                    @if (!string.IsNullOrEmpty(a.Imagen_URL))
+                    {
+                        <img src="@a.Imagen_URL"
+                             class="card-img-top"
+                             style="height:200px; object-fit:cover;"
+                             alt="@a.Titulo">
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center
+                            justify-content-center bg-light"
+                             style="height:200px;">
+                            <i class="bi bi-heart-pulse text-muted"
+                               style="font-size:3rem;"></i>
+                        </div>
+                    }
+                    <div class="card-body d-flex flex-column">
+                        @if (!string.IsNullOrEmpty(a.Categoria))
+                        {
+                            <span class="badge rounded-pill mb-2"
+                                  style="background:#243C8F;
+                                width:fit-content;">
+                                @a.Categoria
+                            </span>
+                        }
+                        <h5 class="card-title fw-bold">@a.Titulo</h5>
+                        <p class="card-text text-muted small flex-grow-1">
+                            @(a.Resumen ?? (a.Contenido.Length > 120
+                                ? a.Contenido[..120] + "..."
+                                : a.Contenido))
+                        </p>
+                        <div class="d-flex align-items-center
+                            justify-content-between mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-person-fill me-1"></i>
+                                @a.Usuario?.Nombre
+                                — @a.Fecha_Creacion.ToString("dd MMM yyyy")
+                            </small>
+                            <div class="d-flex gap-2 align-items-center">
+                                <span class="text-muted small">
+                                    <i class="bi bi-heart@(dioLike
+                                                                                                                   ? "-fill text-danger" : "") me-1"></i>
+                                    @a.Likes.Count
+                                </span>
+                                <span class="text-muted small">
+                                    <i class="bi bi-chat me-1"></i>
+                                    @a.Comentarios.Count
+                                </span>
+                            </div>
+                        </div>
+                        <a asp-action="Detalle" asp-route-id="@a.Articulo_Id"
+                               class="btn btn-outline-primary rounded-3 mt-3 w-100">
+                            Leer más
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
