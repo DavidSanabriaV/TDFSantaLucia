@@ -1,0 +1,135 @@
+﻿@model List<TDFSantaLucia.Models.MovimientoPuntos>
+@{
+    ViewData["Title"] = "Mis Puntos";
+    var puntosDisponibles = ViewBag.PuntosDisponibles as int? ?? 0;
+}
+
+<div class="container py-4" style="max-width:800px;">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-star-fill text-warning me-2"></i>Mis Puntos
+    </h2>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <div class="display-4 fw-bold text-success">
+                    @puntosDisponibles
+                </div>
+                <div class="text-muted">Puntos disponibles</div>
+                <div class="text-success small mt-1">
+                    = ₡@puntosDisponibles
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold mb-2" style="color:#243C8F;">
+                    ¿Cómo funcionan?
+                </h6>
+                <ul class="small text-muted mb-0">
+                    <li>Ganás 1 punto por cada ₡100 en compras.</li>
+                    <li>Cada punto vale ₡1 de descuento.</li>
+                    <li>Los puntos vencen a los 24 meses.</li>
+                    <li>No se acumulan si canjeás puntos.</li>
+                    <li>No son transferibles.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <h5 class="fw-bold p-4 pb-2" style="color:#243C8F;">
+                Historial de movimientos
+            </h5>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-star display-4"></i>
+                    <p class="mt-2">
+                        Aún no tienes movimientos de puntos.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th class="text-center">Puntos</th>
+                                <th class="text-center">Vence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model)
+                            {
+                                var color = m.Tipo switch
+                                {
+                                    "Ganado" => "success",
+                                    "Canjeado" => "warning text-dark",
+                                    "Devuelto" => "info text-dark",
+                                    "Vencido" => "secondary",
+                                    "Pendiente" => "primary",
+                                    _ => "secondary"
+                                };
+
+                                <tr class="@(m.Vencido ? "text-muted" : "")">
+                                    <td class="small">
+                                        @m.Fecha.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@color">
+                                            @m.Tipo
+                                        </span>
+                                    </td>
+                                    <td class="small">@m.Descripcion</td>
+                                    <td class="text-center fw-bold">
+                                        @if (m.Puntos > 0)
+                                        {
+                                            <span class="text-success">
+                                                +@m.Puntos
+                                            </span>
+                                        }
+                                        else if (m.Puntos < 0)
+                                        {
+                                            <span class="text-danger">
+                                                @m.Puntos
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">0</span>
+                                        }
+                                    </td>
+                                    <td class="text-center small text-muted">
+                                        @if (m.Tipo == "Ganado" ||
+                                             m.Tipo == "Pendiente")
+                                        {
+                                                @m.Fecha_Vencimiento.ToString("dd/MM/yyyy")
+                                        }
+                                        else
+                                        {
+                                            <text>—</text>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-controller="Producto" asp-action="Index"
+           class="btn btn-primary rounded-3">
+            <i class="bi bi-bag me-1"></i>Ir a comprar
+        </a>
+    </div>
+</div>

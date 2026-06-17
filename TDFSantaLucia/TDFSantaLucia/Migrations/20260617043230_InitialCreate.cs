@@ -320,15 +320,15 @@ namespace TDFSantaLucia.Migrations
                     Producto_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Categoria_Id = table.Column<int>(type: "int", nullable: false),
-                    Nombre = table.Column<string>(type: "longtext", nullable: false)
+                    Nombre = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Descripcion = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Precio = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
-                    Marca = table.Column<string>(type: "longtext", nullable: true)
+                    Precio = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    Marca = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Estado = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    Imagen_URL = table.Column<string>(type: "longtext", nullable: true)
+                    Imagen_URL = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Receta = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
@@ -341,6 +341,37 @@ namespace TDFSantaLucia.Migrations
                         principalTable: "Categorias",
                         principalColumn: "Categoria_Id",
                         onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "CarritoItems",
+                columns: table => new
+                {
+                    CarritoItem_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Cliente_Id = table.Column<int>(type: "int", nullable: false),
+                    Producto_Id = table.Column<int>(type: "int", nullable: false),
+                    Nombre = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Imagen_URL = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Marca = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Precio = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    Cantidad = table.Column<int>(type: "int", nullable: false),
+                    Receta = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Fecha_Agregado = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CarritoItems", x => x.CarritoItem_Id);
+                    table.ForeignKey(
+                        name: "FK_CarritoItems_Clientes_Cliente_Id",
+                        column: x => x.Cliente_Id,
+                        principalTable: "Clientes",
+                        principalColumn: "Cliente_Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -409,13 +440,32 @@ namespace TDFSantaLucia.Migrations
                 {
                     Pedido_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Numero_Orden = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Estado = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Total = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     Descripcion = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    Tipo_Entrega = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Metodo_Pago = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Direccion_Entrega = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Telefono_Contacto = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Fecha_Creacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Fecha_Actualizacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Receta_URL = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Requiere_Receta = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Estado_Receta = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Puntos_Canjeados = table.Column<int>(type: "int", nullable: false),
+                    Descuento_Puntos = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    Puntos_Ganados = table.Column<int>(type: "int", nullable: false),
+                    Uso_Puntos = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Cliente_Id = table.Column<int>(type: "int", nullable: false),
                     Cupon_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -451,7 +501,7 @@ namespace TDFSantaLucia.Migrations
                     Observaciones = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Cliente_Id = table.Column<int>(type: "int", nullable: false),
-                    Empleado_Id = table.Column<int>(type: "int", nullable: false)
+                    Empleado_Id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -614,6 +664,8 @@ namespace TDFSantaLucia.Migrations
                 {
                     Factura_Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Numero_Factura = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Subtotal = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     Descuento = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     Impuesto = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
@@ -639,6 +691,40 @@ namespace TDFSantaLucia.Migrations
                         principalTable: "Pedidos",
                         principalColumn: "Pedido_Id",
                         onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "MovimientosPuntos",
+                columns: table => new
+                {
+                    Movimiento_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Puntos = table.Column<int>(type: "int", nullable: false),
+                    Tipo = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Descripcion = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fecha = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Fecha_Vencimiento = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Vencido = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Cliente_Id = table.Column<int>(type: "int", nullable: false),
+                    Pedido_Id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MovimientosPuntos", x => x.Movimiento_Id);
+                    table.ForeignKey(
+                        name: "FK_MovimientosPuntos_Clientes_Cliente_Id",
+                        column: x => x.Cliente_Id,
+                        principalTable: "Clientes",
+                        principalColumn: "Cliente_Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MovimientosPuntos_Pedidos_Pedido_Id",
+                        column: x => x.Pedido_Id,
+                        principalTable: "Pedidos",
+                        principalColumn: "Pedido_Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -741,6 +827,11 @@ namespace TDFSantaLucia.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_CarritoItems_Cliente_Id",
+                table: "CarritoItems",
+                column: "Cliente_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Citas_Cliente_Id",
                 table: "Citas",
                 column: "Cliente_Id");
@@ -828,6 +919,16 @@ namespace TDFSantaLucia.Migrations
                 column: "Producto_Id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MovimientosPuntos_Cliente_Id",
+                table: "MovimientosPuntos",
+                column: "Cliente_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MovimientosPuntos_Pedido_Id",
+                table: "MovimientosPuntos",
+                column: "Pedido_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Pedidos_Cliente_Id",
                 table: "Pedidos",
                 column: "Cliente_Id");
@@ -882,6 +983,9 @@ namespace TDFSantaLucia.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CarritoItems");
+
+            migrationBuilder.DropTable(
                 name: "Citas");
 
             migrationBuilder.DropTable(
@@ -898,6 +1002,9 @@ namespace TDFSantaLucia.Migrations
 
             migrationBuilder.DropTable(
                 name: "Inventarios");
+
+            migrationBuilder.DropTable(
+                name: "MovimientosPuntos");
 
             migrationBuilder.DropTable(
                 name: "RecetasMedicas");

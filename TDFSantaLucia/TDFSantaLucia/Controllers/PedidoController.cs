@@ -108,11 +108,23 @@ namespace TDFSantaLucia.Controllers
                 return RedirectToAction("Index", "Carrito");
 
             var usuario = await _userManager.GetUserAsync(User);
+            var cliente = await _db.Clientes
+                .FirstOrDefaultAsync(c => c.Usuario_ID == usuario!.Id);
+
+            int puntosDisponibles = 0;
+            if (cliente != null)
+            {
+                var puntosService = HttpContext.RequestServices
+                    .GetRequiredService<IPuntosService>();
+                puntosDisponibles = puntosService
+                    .ObtenerPuntosDisponibles(cliente.Cliente_Id);
+            }
 
             var model = new CheckoutViewModel
             {
                 Items = items,
-                Telefono_Contacto = usuario?.Telefono ?? ""
+                Telefono_Contacto = usuario?.Telefono ?? "",
+                Puntos_Disponibles = puntosDisponibles
             };
 
             return View(model);
@@ -302,6 +314,22 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Admin");
         }
 
-        
+        [HttpGet("mis-puntos")]
+        public async Task<IActionResult> MisPuntos()
+        {
+            var cliente = await ObtenerClienteAsync();
+            if (cliente == null)
+                return RedirectToAction("Index", "Producto");
+
+            var puntosService = HttpContext.RequestServices
+                .GetRequiredService<IPuntosService>();
+
+            var historial = puntosService.ObtenerHistorial(cliente.Cliente_Id);
+            var disponibles = puntosService
+                .ObtenerPuntosDisponibles(cliente.Cliente_Id);
+
+            ViewBag.PuntosDisponibles = disponibles;
+            return View(historial);
+        }
     }
 }

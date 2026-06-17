@@ -12,5 +12,6 @@ namespace TDFSantaLucia.Services
         Task<(bool exito, string? error)> CambiarEstadoAsync(
             int pedidoId, string nuevoEstado);
         (bool exito, string? error) EliminarPedido(int pedidoId);
+        void ActualizarPedido(Pedido pedido);
     }
 }
