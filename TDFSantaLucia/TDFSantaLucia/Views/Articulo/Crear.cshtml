@@ -1,0 +1,66 @@
+﻿@model TDFSantaLucia.Models.ArticuloSalud
+@{
+    ViewData["Title"] = "Nuevo Artículo";
+}
+
+<div class="container py-4 form-articulo-wrapper">
+    <h2 class="fw-bold mb-4">
+        <i class="bi bi-journal-plus me-2"></i>Nuevo Artículo
+    </h2>
+
+    <form asp-action="Crear" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label asp-for="Titulo" class="form-label fw-semibold">Título</label>
+            <input asp-for="Titulo" class="form-control" placeholder="Título del artículo" />
+            <span asp-validation-for="Titulo" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Resumen" class="form-label fw-semibold">Resumen</label>
+            <input asp-for="Resumen" class="form-control" placeholder="Breve descripción (opcional)" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Contenido" class="form-label fw-semibold">Contenido</label>
+            <textarea asp-for="Contenido" class="form-control" rows="10"
+                      placeholder="Contenido del artículo..."></textarea>
+            <span asp-validation-for="Contenido" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Imagen_URL" class="form-label fw-semibold">URL de imagen</label>
+            <input asp-for="Imagen_URL" class="form-control" placeholder="https://..." />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Categoria" class="form-label fw-semibold">Categoría</label>
+            <input asp-for="Categoria" class="form-control" placeholder="Ej: Nutrición, Ejercicio..." />
+        </div>
+
+        <div class="mb-3 form-check">
+            <input asp-for="Publicado" class="form-check-input" type="checkbox" />
+            <label asp-for="Publicado" class="form-check-label fw-semibold">Publicado</label>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var kvp in ViewData.ModelState)
+                {
+                    foreach (var error in kvp.Value.Errors)
+                    {
+                        <p><strong>@kvp.Key:</strong> @error.ErrorMessage</p>
+                    }
+                }
+            </div>
+        }
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary rounded-3 px-4">
+                <i class="bi bi-save me-1"></i>Guardar
+            </button>
+            <a asp-action="Admin" class="btn btn-outline-secondary rounded-3">Cancelar</a>
+        </div>
+    </form>
+</div>
