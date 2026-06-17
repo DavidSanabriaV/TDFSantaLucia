@@ -1,35 +1,102 @@
 ﻿@model TDFSantaLucia.Models.Pedido
 @{
     ViewData["Title"] = "Detalle del Pedido";
+    var recetaUrl = Model.Receta_URL ?? "";
+    var ext = recetaUrl.Length > 0 && recetaUrl.Contains('.')
+        ? recetaUrl.Substring(recetaUrl.LastIndexOf('.')).ToLower()
+        : "";
+    var esImagen = ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".webp";
+    var esPdf = ext == ".pdf";
 }
 
 <div class="container mt-4">
-    <h2 class="mb-4">🧾 Detalle del Pedido</h2>
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-receipt me-2"></i>Detalle del Pedido
+    </h2>
 
-    <div class="card shadow-sm p-4" style="max-width: 800px;">
-        <h5 class="card-title">Orden #@Model.Numero_Orden</h5>
+    <div class="card shadow-sm rounded-4 border-0 p-4" style="max-width:860px;">
+        <h5 class="card-title fw-bold" style="color:#243C8F;">
+            Orden #@Model.Numero_Orden
+        </h5>
         <hr />
 
-        <div class="row">
+        <div class="row g-3">
             <div class="col-md-6">
-                <p><strong>Cliente:</strong> @Model.Cliente?.Usuario?.UserName</p>
-                <p><strong>Correo:</strong> @Model.Cliente?.Usuario?.Email</p>
-                <p><strong>Teléfono:</strong> @Model.Telefono_Contacto</p>
-                <p><strong>Tipo de entrega:</strong> @Model.Tipo_Entrega</p>
+                <p class="mb-1">
+                    <span class="text-muted small">CLIENTE</span><br />
+                    <strong>@Model.Cliente?.Usuario?.UserName</strong>
+                </p>
+                <p class="mb-1 mt-2">
+                    <span class="text-muted small">CORREO</span><br />
+                    @Model.Cliente?.Usuario?.Email
+                </p>
+                <p class="mb-1 mt-2">
+                    <span class="text-muted small">TELÉFONO</span><br />
+                    @Model.Telefono_Contacto
+                </p>
+                <p class="mb-1 mt-2">
+                    <span class="text-muted small">TIPO DE ENTREGA</span><br />
+                    @if (Model.Tipo_Entrega == "Domicilio")
+                    {
+                        <span class="badge bg-info text-dark">
+                            <i class="bi bi-truck me-1"></i>Domicilio
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-shop me-1"></i>Tienda
+                        </span>
+                    }
+                </p>
                 @if (Model.Tipo_Entrega == "Domicilio")
                 {
-                    <p><strong>Dirección:</strong> @Model.Direccion_Entrega</p>
+                    <p class="mb-1 mt-2">
+                        <span class="text-muted small">DIRECCIÓN</span><br />
+                        @Model.Direccion_Entrega
+                    </p>
                 }
-                <p><strong>Método de pago:</strong> @Model.Metodo_Pago</p>
+                <p class="mb-1 mt-2">
+                    <span class="text-muted small">MÉTODO DE PAGO</span><br />
+                    @switch (Model.Metodo_Pago)
+                    {
+                        case "Efectivo":
+                            <span><i class="bi bi-cash me-1"></i>Efectivo</span>
+                            break;
+                        case "Tarjeta":
+                            <span><i class="bi bi-credit-card me-1"></i>Tarjeta</span>
+                            break;
+                        case "Sinpe":
+                            <span><i class="bi bi-phone me-1"></i>Sinpe</span>
+                            break;
+                        case "Transferencia":
+                            <span><i class="bi bi-bank me-1"></i>Transferencia</span>
+                            break;
+                        default:
+                            <span class="text-muted">—</span>
+                            break;
+                    }
+                </p>
             </div>
+
             <div class="col-md-6">
-                <p><strong>Fecha creación:</strong> @Model.Fecha_Creacion.ToString("dd/MM/yyyy HH:mm")</p>
-                <p><strong>Última actualización:</strong> @Model.Fecha_Actualizacion.ToString("dd/MM/yyyy HH:mm")</p>
+                <p class="mb-1">
+                    <span class="text-muted small">FECHA CREACIÓN</span><br />
+                    @Model.Fecha_Creacion.ToString("dd/MM/yyyy HH:mm")
+                </p>
+                <p class="mb-1 mt-2">
+                    <span class="text-muted small">ÚLTIMA ACTUALIZACIÓN</span><br />
+                    @Model.Fecha_Actualizacion.ToString("dd/MM/yyyy HH:mm")
+                </p>
+
                 @if (Model.Cupon != null)
                 {
-                    <p><strong>Cupón:</strong> @Model.Cupon.Descripcion</p>
-                    <p>
-                        <strong>Descuento:</strong>
+                    <p class="mb-1 mt-2">
+                        <span class="text-muted small">CUPÓN</span><br />
+                        @Model.Cupon.Descripcion
+                    </p>
+                    <p class="mb-1 mt-2">
+                        <span class="text-muted small">DESCUENTO</span><br />
                         @if (Model.Cupon.Tipo_Descuento == "Porcentaje")
                         {
                             <span>@Model.Cupon.Valor_Descuento %</span>
@@ -40,8 +107,9 @@
                         }
                     </p>
                 }
-                <p>
-                    <strong>Estado:</strong>
+
+                <p class="mb-1 mt-2">
+                    <span class="text-muted small">ESTADO</span><br />
                     @switch (Model.Estado)
                     {
                         case "Pendiente":
@@ -78,11 +146,62 @@
 
         @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
         {
-            <p><strong>Descripción:</strong> @Model.Descripcion</p>
+            <p class="mt-3"><strong>Descripción:</strong> @Model.Descripcion</p>
+        }
+
+        @* Receta médica visible para Admin / Empleado *@
+        @if (!string.IsNullOrEmpty(Model.Receta_URL) &&
+                (User.IsInRole("Admin") || User.IsInRole("Empleado")))
+        {
+            <hr />
+            <h6 class="fw-bold mb-3" style="color:#243C8F;">
+                <i class="bi bi-file-medical me-2 text-warning"></i>Receta médica adjunta
+            </h6>
+
+            @if (esPdf)
+            {
+                <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-light">
+                    <i class="bi bi-file-pdf text-danger" style="font-size:2.5rem;"></i>
+                    <div>
+                        <p class="mb-1 fw-semibold">Documento PDF</p>
+                        <a href="@Model.Receta_URL" target="_blank"
+                           class="btn btn-outline-danger btn-sm rounded-3">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Ver PDF
+                        </a>
+                        <a href="@Model.Receta_URL" download
+                           class="btn btn-outline-secondary btn-sm rounded-3 ms-2">
+                            <i class="bi bi-download me-1"></i>Descargar
+                        </a>
+                    </div>
+                </div>
+            }
+            else if (esImagen)
+            {
+                <div>
+                    <img src="@Model.Receta_URL" alt="Receta médica"
+                         class="img-fluid rounded-3 shadow-sm"
+                         style="max-width:460px; max-height:580px;
+                                        object-fit:contain; border:1px solid #dee2e6;" />
+                    <div class="mt-2 d-flex gap-2">
+                        <a href="@Model.Receta_URL" target="_blank"
+                           class="btn btn-outline-primary btn-sm rounded-3">
+                            <i class="bi bi-arrows-fullscreen me-1"></i>Ver tamaño completo
+                        </a>
+                        <a href="@Model.Receta_URL" download
+                           class="btn btn-outline-secondary btn-sm rounded-3">
+                            <i class="bi bi-download me-1"></i>Descargar
+                        </a>
+                    </div>
+                </div>
+            }
         }
 
         <hr />
-        <h6 class="fw-bold mb-3">Productos</h6>
+
+        @* Tabla productos *@
+        <h6 class="fw-bold mb-3" style="color:#243C8F;">
+            <i class="bi bi-bag me-1"></i>Productos
+        </h6>
         <div class="table-responsive">
             <table class="table table-bordered table-sm align-middle">
                 <thead class="table-light">
@@ -97,7 +216,16 @@
                     @foreach (var detalle in Model.DetallesPedido)
                     {
                         <tr>
-                            <td>@detalle.Producto?.Nombre</td>
+                            <td>
+                                @detalle.Producto?.Nombre
+                                @if (detalle.Producto?.Receta == true)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1"
+                                          style="font-size:0.65rem;">
+                                        <i class="bi bi-file-medical"></i> Receta
+                                    </span>
+                                }
+                            </td>
                             <td class="text-center">@detalle.Cantidad</td>
                             <td class="text-end">₡@detalle.Precio_Unitario.ToString("N2")</td>
                             <td class="text-end">₡@detalle.Subtotal.ToString("N2")</td>
@@ -105,12 +233,10 @@
                     }
                 </tbody>
                 <tfoot>
-
                     @if (Model.Uso_Puntos)
                     {
                         <tr>
-                            <td colspan="3"
-                                class="text-end fw-bold text-danger">
+                            <td colspan="3" class="text-end fw-bold text-danger">
                                 Descuento por puntos
                             </td>
                             <td class="text-end fw-bold text-danger">
@@ -118,25 +244,25 @@
                             </td>
                         </tr>
                     }
-
                     <tr>
-                        <td colspan="3" class="text-end fw-bold">
-                            Total
-                        </td>
+                        <td colspan="3" class="text-end fw-bold">Total</td>
                         <td class="text-end fw-bold" style="color:#243C8F;">
                             ₡@Model.Total.ToString("N2")
                         </td>
                     </tr>
-
                 </tfoot>
             </table>
         </div>
 
         <div class="d-flex justify-content-between mt-3">
-            <a asp-action="MisPedidos" class="btn btn-secondary">⬅ Volver</a>
+            <a asp-action="MisPedidos" class="btn btn-outline-secondary rounded-3">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
             @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
             {
-                <a asp-action="Admin" class="btn btn-outline-primary">📋 Ver todos los pedidos</a>
+                <a asp-action="Admin" class="btn btn-outline-primary rounded-3">
+                    <i class="bi bi-clipboard2-check me-1"></i>Ver todos los pedidos
+                </a>
             }
         </div>
     </div>

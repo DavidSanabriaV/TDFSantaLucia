@@ -1,7 +1,8 @@
 ﻿@model TDFSantaLucia.Models.CheckoutViewModel
-
 @{
     ViewData["Title"] = "Finalizar Pedido";
+    var requiereReceta = Model.RequiereReceta;
+    var itemsConReceta = Model.Items.Where(i => i.Receta).ToList();
 }
 
 <div class="container py-4" style="max-width:900px;">
@@ -11,20 +12,26 @@
 
     @if (!ViewData.ModelState.IsValid)
     {
-        <div class="alert alert-danger">
-            @foreach (var e in ViewData.ModelState.Values
-                    .SelectMany(v => v.Errors))
+        <div class="alert alert-danger rounded-4">
+            @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
             {
-                <div>@e.ErrorMessage</div>
+                <div><i class="bi bi-exclamation-circle me-1"></i>@e.ErrorMessage</div>
             }
         </div>
     }
 
-    <form asp-action="Checkout" method="post">
+    <form asp-action="Checkout"
+          method="post"
+          enctype="multipart/form-data"
+          id="formCheckout">
         @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="RequiereReceta" />
+
         <div class="row g-4">
 
             <div class="col-md-7">
+
+
                 <div class="card border-0 shadow-sm rounded-4 p-4 mb-3">
                     <h5 class="fw-bold mb-3" style="color:#243C8F;">
                         Tipo de entrega
@@ -35,10 +42,8 @@
                                    name="Tipo_Entrega" id="tienda"
                                    value="Tienda" checked
                                    onchange="toggleDomicilio(this.value)" />
-                            <label class="form-check-label fw-semibold"
-                                   for="tienda">
-                                <i class="bi bi-shop me-1"></i>
-                                Recoger en tienda
+                            <label class="form-check-label fw-semibold" for="tienda">
+                                <i class="bi bi-shop me-1"></i>Recoger en tienda
                             </label>
                         </div>
                         <div class="form-check flex-fill">
@@ -46,10 +51,8 @@
                                    name="Tipo_Entrega" id="domicilio"
                                    value="Domicilio"
                                    onchange="toggleDomicilio(this.value)" />
-                            <label class="form-check-label fw-semibold"
-                                   for="domicilio">
-                                <i class="bi bi-truck me-1"></i>
-                                Entrega a domicilio
+                            <label class="form-check-label fw-semibold" for="domicilio">
+                                <i class="bi bi-truck me-1"></i>Entrega a domicilio
                             </label>
                         </div>
                     </div>
@@ -60,9 +63,7 @@
                         Datos de contacto
                     </h5>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            Teléfono de contacto
-                        </label>
+                        <label class="form-label fw-semibold">Teléfono de contacto</label>
                         <input asp-for="Telefono_Contacto"
                                class="form-control"
                                placeholder="Ej: 8888-8888" />
@@ -71,234 +72,275 @@
                     </div>
 
                     <div id="campoDireccion" style="display:none;">
-                        <label class="form-label fw-semibold">
-                            Dirección de entrega
-                        </label>
+                        <label class="form-label fw-semibold">Dirección de entrega</label>
                         <textarea asp-for="Direccion_Entrega"
                                   class="form-control" rows="3"
-                                  placeholder="Provincia, cantón, distrito, señas...">
-                        </textarea>
+                                  placeholder="Provincia, cantón, distrito, señas..."></textarea>
                         <span asp-validation-for="Direccion_Entrega"
                               class="text-danger small"></span>
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-4 p-4
-                        bg-light" id="infoTienda">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-light mb-3" id="infoTienda">
                     <h6 class="fw-bold mb-2" style="color:#243C8F;">
-                        <i class="bi bi-geo-alt-fill me-1"></i>
-                        Dirección de la farmacia
+                        <i class="bi bi-geo-alt-fill me-1"></i>Dirección de la farmacia
                     </h6>
                     <p class="mb-0 text-muted">
-                        Santa Lucía de Barva, Heredia, Costa Rica.<br>
+                        Santa Lucía de Barva, Heredia, Costa Rica.<br />
                         Horario: Lun–Sáb 8:00–21:00 / Dom 9:00–20:00
                     </p>
                 </div>
+
 
                 @if (Model.Puntos_Disponibles > 0)
                 {
                     <div class="card border-warning rounded-4 p-4 mb-3">
                         <h5 class="fw-bold mb-3" style="color:#243C8F;">
-                            <i class="bi bi-star-fill text-warning me-2"></i>
-                            Canjear Puntos
+                            <i class="bi bi-star-fill text-warning me-2"></i>Canjear Puntos
                         </h5>
                         <p class="text-muted small mb-2">
                             Tienes <strong class="text-success">
-                            @Model.Puntos_Disponibles puntos
-                        </strong>
-                        disponibles (equivale a ₡@Model.Puntos_Disponibles).
-                    </p>
-                    <div class="alert alert-info small rounded-3 mb-3">
-                        <i class="bi bi-info-circle me-1"></i>
-                        <strong>Importante:</strong> Si canjeás puntos, no acumularás
-                        puntos nuevos en esta compra.
-                    </div>
+                                @Model.Puntos_Disponibles puntos
+                            </strong>
+                            disponibles (equivale a ₡@Model.Puntos_Disponibles).
+                        </p>
+                        <div class="alert alert-info small rounded-3 mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Importante:</strong> Si canjeás puntos, no acumularás
+                            puntos nuevos en esta compra.
+                        </div>
 
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox"
-                               id="togglePuntos" name="Canjear_Puntos"
-                               value="true"
-                               onchange="toggleCanjePuntos(this.checked)" />
-                        <label class="form-check-label fw-semibold" for="togglePuntos">
-                            Quiero canjear mis puntos
-                        </label>
-                    </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox"
+                                   id="togglePuntos" name="Canjear_Puntos"
+                                   value="true"
+                                   onchange="toggleCanjePuntos(this.checked)" />
+                            <label class="form-check-label fw-semibold" for="togglePuntos">
+                                Quiero canjear mis puntos
+                            </label>
+                        </div>
 
-                    <div id="campoPuntos" style="display:none;">
+                        <div id="campoPuntos" style="display:none;">
+                            <label class="form-label fw-semibold">
+                                ¿Cuántos puntos querés canjear?
+                            </label>
+                            <div class="input-group">
+                                <input type="number"
+                                       id="inputPuntos"
+                                       name="Puntos_A_Canjear"
+                                       class="form-control"
+                                       min="1"
+                                       max="@Model.Puntos_Disponibles"
+                                       value="0"
+                                       oninput="calcularDescuento(this.value)" />
+                                <button type="button" class="btn btn-outline-warning"
+                                        onclick="usarTodosPuntos()">
+                                    Usar todos
+                                </button>
+                            </div>
+                            <small class="text-muted">
+                                Máximo: @Model.Puntos_Disponibles puntos
+                                (₡@Model.Puntos_Disponibles)
+                            </small>
+                            <div id="descuentoPuntos"
+                                 class="alert alert-success rounded-3 mt-2 d-none">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Descuento de <strong id="montoDescuento">₡0</strong> aplicado.
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <input type="hidden" name="Canjear_Puntos" value="false" />
+                    <input type="hidden" name="Puntos_A_Canjear" value="0" />
+                }
+
+                @if (requiereReceta)
+                {
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mt-3"
+                         style="border: 2px solid #ffc107 !important;"
+                         id="seccionReceta">
+                        <h5 class="fw-bold mb-1" style="color:#243C8F;">
+                            <i class="bi bi-file-medical me-2 text-warning"></i>
+                            Receta médica requerida
+                        </h5>
+                        <p class="text-muted small mb-3">
+                            Los siguientes productos necesitan receta médica válida.
+                            Sin ella no podrás confirmar el pedido.
+                        </p>
+
+                        <ul class="small mb-3 ps-3">
+                            @foreach (var item in itemsConReceta)
+                            {
+                                <li class="mb-1">
+                                    <i class="bi bi-capsule me-1 text-warning"></i>
+                                    <strong>@item.Nombre</strong>
+                                </li>
+                            }
+                        </ul>
+
                         <label class="form-label fw-semibold">
-                            ¿Cuántos puntos querés canjear?
+                            Adjuntar receta <span class="text-danger">*</span>
                         </label>
-                        <div class="input-group">
-                            <input type="number"
-                                   id="inputPuntos"
-                                   name="Puntos_A_Canjear"
-                                   class="form-control"
-                                   min="1"
-                                   max="@Model.Puntos_Disponibles"
-                                   value="0"
-                                   oninput="calcularDescuento(this.value)" />
-
-                            <div id="debug" class="text-danger fw-bold"></div>
-                            <button type="button" class="btn btn-outline-warning"
-                                    onclick="usarTodosPuntos()">
-                                Usar todos
-                            </button>
+                        <input type="file"
+                               name="ArchivoReceta"
+                               id="ArchivoReceta"
+                               class="form-control"
+                               accept=".pdf,.jpg,.jpeg,.png,.webp"
+                               onchange="validarReceta(this)" />
+                        <div class="form-text">
+                            Formatos: PDF, JPG, PNG · Máximo 5 MB.
                         </div>
-                        <small class="text-muted">
-                            Máximo: @Model.Puntos_Disponibles puntos
-                            (₡@Model.Puntos_Disponibles)
-                        </small>
-                        <div id="descuentoPuntos"
-                             class="alert alert-success rounded-3 mt-2 d-none">
+
+                        <div id="recetaError" class="text-danger small mt-1" style="display:none;">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            Debes adjuntar la receta médica para confirmar el pedido.
+                        </div>
+                        <div id="recetaOk" class="text-success small mt-1" style="display:none;">
                             <i class="bi bi-check-circle me-1"></i>
-                            Descuento de <strong id="montoDescuento">₡0</strong>
-                            aplicado.
+                            Archivo cargado correctamente.
+                        </div>
+
+
+                        <div id="previewImgContainer" class="mt-3" style="display:none;">
+                            <p class="small text-muted mb-1">Vista previa:</p>
+                            <img id="previewImg" src="#" alt="Vista previa"
+                                 style="max-height:200px; border-radius:10px;
+                                            object-fit:contain; border:1px solid #dee2e6;" />
+                        </div>
+
+
+                        <div id="previewPdfContainer" class="mt-3" style="display:none;">
+                            <span class="badge bg-danger fs-6 px-3 py-2">
+                                <i class="bi bi-file-pdf me-2"></i>PDF adjunto
+                            </span>
+                            <span id="pdfNombre" class="text-muted small ms-2"></span>
                         </div>
                     </div>
-                </div>
-            }
-            else
-            {
-                <input type="hidden" name="Canjear_Puntos" value="false" />
-                <input type="hidden" name="Puntos_A_Canjear" value="0" />
-            }
+                }
 
             </div>
 
+
             <div class="col-md-5">
                 <div class="card border-0 shadow-sm rounded-4 p-4">
-                    <h5 class="fw-bold mb-3" style="color:#243C8F;">
-                        Resumen
-                    </h5>
+                    <h5 class="fw-bold mb-3" style="color:#243C8F;">Resumen</h5>
+
                     @foreach (var item in Model.Items)
                     {
-                        <div class="d-flex justify-content-between
-                                    align-items-center mb-2">
-                            <div class="fw-semibold small">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="small fw-semibold">
                                 @item.Nombre
+                                @if (item.Receta)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1"
+                                          style="font-size:0.65rem;">
+                                        <i class="bi bi-file-medical"></i>
+                                    </span>
+                                }
                             </div>
-                            <div class="fw-semibold">
+                            <div class="fw-semibold small">
                                 ₡@item.Subtotal.ToString("N2")
                             </div>
                         </div>
                     }
+
                     <hr />
-                <div class="d-flex justify-content-between mb-1">
-                    <span class="text-muted">Subtotal</span>
-                    <span>₡@Model.Subtotal.ToString("N2")</span>
-                </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Subtotal</span>
+                        <span>₡@Model.Subtotal.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">IVA (13%)</span>
+                        <span>₡@Model.Impuesto.ToString("N2")</span>
+                    </div>
 
-                <div class="d-flex justify-content-between mb-1">
-                    <span class="text-muted">IVA (13%)</span>
-                    <span>₡@Model.Impuesto.ToString("N2")</span>
-                </div>
+                    <div id="filaDescuento"
+                         class="d-flex justify-content-between mb-2 text-danger d-none">
+                        <span>Descuento por puntos</span>
+                        <span id="montoPuntos">-₡0.00</span>
+                    </div>
 
-                <div id="filaDescuento"
-                     class="d-flex justify-content-between mb-2 text-danger d-none">
-                    <span>Descuento por puntos</span>
-                    <span id="montoPuntos">-₡0.00</span>
-                </div>
-
-                <hr />
-
-                <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
-                    <span>Total</span>
-                    <span id="totalPedido" style="color:#243C8F;">
-                        ₡@Model.TotalSinDescuento.ToString("N2")
-                    </span>
-                </div>
+                    <hr />
+                    <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+                        <span>Total</span>
+                        <span id="totalPedido" style="color:#243C8F;">
+                            ₡@Model.TotalSinDescuento.ToString("N2")
+                        </span>
+                    </div>
 
                     <button type="submit"
                             class="btn btn-success w-100 rounded-3 fw-bold">
-                        <i class="bi bi-check-circle me-1"></i>
-                        Confirmar pedido
+                        <i class="bi bi-check-circle me-1"></i>Confirmar pedido
                     </button>
                     <a asp-controller="Carrito" asp-action="Index"
                        class="btn btn-outline-secondary w-100 rounded-3 mt-2">
-                        <i class="bi bi-arrow-left me-1"></i>
-                        Volver al carrito
+                        <i class="bi bi-arrow-left me-1"></i>Volver al carrito
                     </a>
+
+                    @if (requiereReceta)
+                    {
+                        <div class="alert alert-warning rounded-3 mt-3 mb-0 small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Este pedido requiere receta médica.
+                            Adjúntala en el formulario de la izquierda.
+                        </div>
+                    }
                 </div>
             </div>
+
         </div>
 
-    <input type="hidden" name="Puntos_Disponibles"
-           value="@Model.Puntos_Disponibles" />
+        <input type="hidden" name="Puntos_Disponibles" value="@Model.Puntos_Disponibles" />
     </form>
 </div>
 
 @section Scripts {
-
     <script>
         const totalOriginal = @(Model.TotalSinDescuento.ToString(System.Globalization.CultureInfo.InvariantCulture));
         const puntosMaximos = @Model.Puntos_Disponibles;
 
         function toggleDomicilio(valor) {
             const campo = document.getElementById('campoDireccion');
-            const info = document.getElementById('infoTienda');
-
+            const info  = document.getElementById('infoTienda');
             campo.style.display = valor === 'Domicilio' ? 'block' : 'none';
-            info.style.display = valor === 'Domicilio' ? 'none' : 'block';
+            info.style.display  = valor === 'Domicilio' ? 'none'  : 'block';
         }
-    </script>
-
-    <partial name="_ValidationScriptsPartial" />
-
-    <script>
 
         function toggleCanjePuntos(activo) {
             const campo = document.getElementById('campoPuntos');
             campo.style.display = activo ? 'block' : 'none';
-
             if (!activo) {
                 document.getElementById('inputPuntos').value = 0;
-                document.getElementById('descuentoPuntos')
-                    .classList.add('d-none');
+                document.getElementById('descuentoPuntos').classList.add('d-none');
+                calcularDescuento(0);
             }
         }
 
         function calcularDescuento(valor) {
-            const puntos =
-                Math.min(parseInt(valor) || 0, puntosMaximos);
-
+            const puntos  = Math.min(parseInt(valor) || 0, puntosMaximos);
             document.getElementById('inputPuntos').value = puntos;
 
-            const fila = document.getElementById('filaDescuento');
-            const monto = document.getElementById('montoPuntos');
-            const total = document.getElementById('totalPedido');
-
-            const nuevoTotal =
-                Math.max(0, totalOriginal - puntos);
+            const fila    = document.getElementById('filaDescuento');
+            const monto   = document.getElementById('montoPuntos');
+            const total   = document.getElementById('totalPedido');
+            const nuevoTotal = Math.max(0, totalOriginal - puntos);
 
             if (puntos > 0) {
-                monto.textContent =
-                    `-₡${puntos.toLocaleString('es-CR', {
-                        minimumFractionDigits: 2
-                    })}`;
-
+                monto.textContent = `-₡${puntos.toLocaleString('es-CR',
+                    { minimumFractionDigits: 2 })}`;
                 fila.classList.remove('d-none');
-
-                document.getElementById('montoDescuento')
-                    .textContent =
+                document.getElementById('montoDescuento').textContent =
                     `₡${puntos.toLocaleString('es-CR')}`;
-
-                document.getElementById('descuentoPuntos')
-                    .classList.remove('d-none');
-            }
-            else {
+                document.getElementById('descuentoPuntos').classList.remove('d-none');
+            } else {
                 fila.classList.add('d-none');
-
-                document.getElementById('descuentoPuntos')
-                    .classList.add('d-none');
+                document.getElementById('descuentoPuntos').classList.add('d-none');
             }
 
-            total.textContent =
-                `₡${nuevoTotal.toLocaleString('es-CR', {
-                    minimumFractionDigits: 2
-                })}`;
-
-            document.getElementById("debug").innerText =
-                "Puntos seleccionados: " + puntos;
+            total.textContent = `₡${nuevoTotal.toLocaleString('es-CR',
+                { minimumFractionDigits: 2 })}`;
         }
 
         function usarTodosPuntos() {
@@ -306,5 +348,71 @@
             calcularDescuento(puntosMaximos);
         }
 
+        let recetaArchivoOk = false;
+
+        function validarReceta(input) {
+            const errorEl = document.getElementById('recetaError');
+            const okEl    = document.getElementById('recetaOk');
+            const imgCont = document.getElementById('previewImgContainer');
+            const pdfCont = document.getElementById('previewPdfContainer');
+
+            if (!input.files || input.files.length === 0) {
+                recetaArchivoOk       = false;
+                errorEl.style.display = 'none';
+                okEl.style.display    = 'none';
+                imgCont.style.display = 'none';
+                pdfCont.style.display = 'none';
+                return;
+            }
+
+            const file    = input.files[0];
+            const maxSize = 5 * 1024 * 1024;
+
+            if (file.size > maxSize) {
+                recetaArchivoOk       = false;
+                errorEl.textContent   = 'El archivo supera el límite de 5 MB.';
+                errorEl.style.display = 'block';
+                okEl.style.display    = 'none';
+                imgCont.style.display = 'none';
+                pdfCont.style.display = 'none';
+                input.value = '';
+                return;
+            }
+
+            recetaArchivoOk       = true;
+            errorEl.style.display = 'none';
+            okEl.style.display    = 'block';
+
+            if (file.type === 'application/pdf') {
+                imgCont.style.display = 'none';
+                document.getElementById('pdfNombre').textContent = file.name;
+                pdfCont.style.display = 'block';
+            } else {
+                pdfCont.style.display = 'none';
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('previewImg').src = e.target.result;
+                    imgCont.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('formCheckout').addEventListener('submit', function (e) {
+            const requiere = @(requiereReceta ? "true" : "false");
+            if (!requiere) return;
+
+            const archivo = document.getElementById('ArchivoReceta');
+            const errorEl = document.getElementById('recetaError');
+            const seccion = document.getElementById('seccionReceta');
+
+            if (!recetaArchivoOk || !archivo || !archivo.files || archivo.files.length === 0) {
+                e.preventDefault();
+                errorEl.textContent   = 'Debes adjuntar la receta médica para confirmar el pedido.';
+                errorEl.style.display = 'block';
+                seccion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
     </script>
+    <partial name="_ValidationScriptsPartial" />
 }

@@ -16,7 +16,11 @@ namespace TDFSantaLucia.Models
 
         public string? Receta_URL { get; set; }
 
-        public bool Canjear_Puntos { get; set; }       
+
+        public IFormFile? ArchivoReceta { get; set; }
+        public bool RequiereReceta { get; set; } 
+
+    public bool Canjear_Puntos { get; set; }       
         public int Puntos_Disponibles { get; set; }     
         public int Puntos_A_Canjear { get; set; }
         public decimal Descuento_Puntos => Canjear_Puntos && Puntos_A_Canjear > 0

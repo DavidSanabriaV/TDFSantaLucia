@@ -39,5 +39,6 @@ namespace TDFSantaLucia.Models
 
         public List<DetallePedido> DetallesPedido { get; set; } = new();
         public List<Factura> Facturas { get; set; } = new();
+
     }
 }
