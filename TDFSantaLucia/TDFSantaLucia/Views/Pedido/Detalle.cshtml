@@ -105,12 +105,29 @@
                     }
                 </tbody>
                 <tfoot>
+
+                    @if (Model.Uso_Puntos)
+                    {
+                        <tr>
+                            <td colspan="3"
+                                class="text-end fw-bold text-danger">
+                                Descuento por puntos
+                            </td>
+                            <td class="text-end fw-bold text-danger">
+                                -₡@Model.Descuento_Puntos.ToString("N2")
+                            </td>
+                        </tr>
+                    }
+
                     <tr>
-                        <td colspan="3" class="text-end fw-bold">Total</td>
+                        <td colspan="3" class="text-end fw-bold">
+                            Total
+                        </td>
                         <td class="text-end fw-bold" style="color:#243C8F;">
                             ₡@Model.Total.ToString("N2")
                         </td>
                     </tr>
+
                 </tfoot>
             </table>
         </div>

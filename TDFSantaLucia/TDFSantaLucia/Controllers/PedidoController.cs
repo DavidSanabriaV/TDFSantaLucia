@@ -139,6 +139,16 @@ namespace TDFSantaLucia.Controllers
             if (!model.Items.Any())
                 return RedirectToAction("Index", "Carrito");
 
+            // AGREGAR ESTO: restaurar Puntos_Disponibles
+            var clienteParaPuntos = await ObtenerClienteAsync();
+            if (clienteParaPuntos != null)
+            {
+                var puntosService = HttpContext.RequestServices
+                    .GetRequiredService<IPuntosService>();
+                model.Puntos_Disponibles = puntosService
+                    .ObtenerPuntosDisponibles(clienteParaPuntos.Cliente_Id);
+            }
+
             if (model.Tipo_Entrega == "Domicilio" &&
                 string.IsNullOrWhiteSpace(model.Direccion_Entrega))
             {
