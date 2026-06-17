@@ -1,0 +1,62 @@
+﻿@model TDFSantaLucia.Models.CuponViewModel
+@{
+    ViewData["Title"] = "Editar Cupón";
+}
+
+<div class="container mt-4" style="max-width:600px;">
+    <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
+        <i class="bi bi-ticket-perforated-fill me-2"></i>Editar Cupón
+    </h2>
+
+    <form asp-action="Editar" method="post" class="card border-0 shadow-sm rounded-4 p-4">
+        @Html.AntiForgeryToken()
+        <input asp-for="Cupon_Id" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 small"></div>
+
+        <div class="mb-3">
+            <label asp-for="Descripcion" class="form-label fw-semibold">Descripción</label>
+            <input asp-for="Descripcion" class="form-control rounded-3" />
+            <span asp-validation-for="Descripcion" class="text-danger small"></span>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="Tipo_Descuento" class="form-label fw-semibold">Tipo de Descuento</label>
+                <select asp-for="Tipo_Descuento" class="form-select rounded-3">
+                    <option value="Porcentaje">Porcentaje (%)</option>
+                    <option value="Monto">Monto fijo (₡)</option>
+                </select>
+                <span asp-validation-for="Tipo_Descuento" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Valor_Descuento" class="form-label fw-semibold">Valor</label>
+                <input type="number" name="Valor_Descuento" step="0.01" min="0.01"
+                       value="@Model.Valor_Descuento.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)"
+                       class="form-control rounded-3" />
+                <span asp-validation-for="Valor_Descuento" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Fecha_Expiracion" class="form-label fw-semibold">Fecha de Expiración</label>
+            <input asp-for="Fecha_Expiracion" type="date" class="form-control rounded-3" />
+            <span asp-validation-for="Fecha_Expiracion" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-4">
+            <div class="form-check">
+                <input asp-for="Estado" class="form-check-input" type="checkbox" />
+                <label asp-for="Estado" class="form-check-label fw-semibold">Activo</label>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a asp-action="Index" class="btn btn-secondary rounded-3">⬅ Volver</a>
+            <button type="submit" class="btn btn-warning rounded-3 text-white">✔ Actualizar</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
