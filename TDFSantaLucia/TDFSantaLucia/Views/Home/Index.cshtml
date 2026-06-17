@@ -21,7 +21,7 @@
                         @for (int j = i; j < productos.Count && j < i + 3; j++)
                         {
                             var p = productos[j];
-                            <a href="/producto" class="producto-card">
+                            <a href="/producto/detalle/@p.Producto_Id" class="producto-card">
                                 <img src="@(string.IsNullOrWhiteSpace(p.Imagen_URL) ? Url.Content("~/img/producto-default.png") : p.Imagen_URL)"
                                      class="producto-img" alt="@p.Nombre">
                                 <p class="producto-nombre">@p.Nombre</p>

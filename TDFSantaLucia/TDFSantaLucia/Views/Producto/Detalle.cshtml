@@ -139,12 +139,12 @@
             });
         }
 
-        function agregarAlCarrito(productoId, nombre) {
+                function agregarAlCarrito(productoId, nombre) {
             @if (User.Identity?.IsAuthenticated != true)
             {
                     <text>
-                            window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
-                            return;
+                        window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
                     </text>
             }
 
@@ -155,7 +155,7 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Agregando...';
 
-            fetch('/producto/agregaralcarrito', {
+            fetch('/carrito/agregar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -171,6 +171,8 @@
                 if (data.exito) {
                     mostrarAlerta('success',
                         `<strong>${cantidad}x ${nombre}</strong> agregado${cantidad > 1 ? 's' : ''} al carrito.`);
+                    const badge = document.getElementById('carritoCount');
+                    if (badge) badge.textContent = data.total;
                 } else {
                     mostrarAlerta('danger', data.mensaje);
                 }
