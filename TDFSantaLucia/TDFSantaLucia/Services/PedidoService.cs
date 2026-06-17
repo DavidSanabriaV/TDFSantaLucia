@@ -46,6 +46,7 @@ namespace TDFSantaLucia.Services
         public async Task<(bool exito, string? error, Pedido? pedido)>
             ProcesarPedidoAsync(CheckoutViewModel checkout, int clienteId)
         {
+
             await using var transaction =
                 await _db.Database.BeginTransactionAsync();
 

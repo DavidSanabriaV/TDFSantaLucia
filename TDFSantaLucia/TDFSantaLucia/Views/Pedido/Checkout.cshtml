@@ -1,4 +1,5 @@
 ﻿@model TDFSantaLucia.Models.CheckoutViewModel
+
 @{
     ViewData["Title"] = "Finalizar Pedido";
 }
@@ -136,6 +137,8 @@
                                    max="@Model.Puntos_Disponibles"
                                    value="0"
                                    oninput="calcularDescuento(this.value)" />
+
+                            <div id="debug" class="text-danger fw-bold"></div>
                             <button type="button" class="btn btn-outline-warning"
                                     onclick="usarTodosPuntos()">
                                 Usar todos
@@ -180,21 +183,30 @@
                         </div>
                     }
                     <hr />
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="text-muted">Subtotal</span>
-                        <span>₡@Model.Subtotal.ToString("N2")</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">IVA (13%)</span>
-                        <span>₡@Model.Impuesto.ToString("N2")</span>
-                    </div>
-                    <div class="d-flex justify-content-between
-                            fw-bold fs-5 mb-4">
-                        <span>Total</span>
-                        <span style="color:#243C8F;">
-                            ₡@Model.Total.ToString("N2")
-                        </span>
-                    </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Subtotal</span>
+                    <span>₡@Model.Subtotal.ToString("N2")</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">IVA (13%)</span>
+                    <span>₡@Model.Impuesto.ToString("N2")</span>
+                </div>
+
+                <div id="filaDescuento"
+                     class="d-flex justify-content-between mb-2 text-danger d-none">
+                    <span>Descuento por puntos</span>
+                    <span id="montoPuntos">-₡0.00</span>
+                </div>
+
+                <hr />
+
+                <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+                    <span>Total</span>
+                    <span id="totalPedido" style="color:#243C8F;">
+                        ₡@Model.TotalSinDescuento.ToString("N2")
+                    </span>
+                </div>
 
                     <button type="submit"
                             class="btn btn-success w-100 rounded-3 fw-bold">
@@ -209,26 +221,35 @@
                 </div>
             </div>
         </div>
+
+    <input type="hidden" name="Puntos_Disponibles"
+           value="@Model.Puntos_Disponibles" />
     </form>
 </div>
 
 @section Scripts {
+
     <script>
+        const totalOriginal = @(Model.TotalSinDescuento.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        const puntosMaximos = @Model.Puntos_Disponibles;
+
         function toggleDomicilio(valor) {
-            const campo  = document.getElementById('campoDireccion');
-            const info   = document.getElementById('infoTienda');
+            const campo = document.getElementById('campoDireccion');
+            const info = document.getElementById('infoTienda');
+
             campo.style.display = valor === 'Domicilio' ? 'block' : 'none';
-            info.style.display  = valor === 'Domicilio' ? 'none'  : 'block';
+            info.style.display = valor === 'Domicilio' ? 'none' : 'block';
         }
     </script>
+
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        const puntosMaximos = @Model.Puntos_Disponibles;
 
         function toggleCanjePuntos(activo) {
             const campo = document.getElementById('campoPuntos');
             campo.style.display = activo ? 'block' : 'none';
+
             if (!activo) {
                 document.getElementById('inputPuntos').value = 0;
                 document.getElementById('descuentoPuntos')
@@ -237,23 +258,53 @@
         }
 
         function calcularDescuento(valor) {
-            const puntos = Math.min(parseInt(valor) || 0, puntosMaximos);
+            const puntos =
+                Math.min(parseInt(valor) || 0, puntosMaximos);
+
             document.getElementById('inputPuntos').value = puntos;
 
+            const fila = document.getElementById('filaDescuento');
+            const monto = document.getElementById('montoPuntos');
+            const total = document.getElementById('totalPedido');
+
+            const nuevoTotal =
+                Math.max(0, totalOriginal - puntos);
+
             if (puntos > 0) {
+                monto.textContent =
+                    `-₡${puntos.toLocaleString('es-CR', {
+                        minimumFractionDigits: 2
+                    })}`;
+
+                fila.classList.remove('d-none');
+
                 document.getElementById('montoDescuento')
-                    .textContent = `₡${puntos.toLocaleString('es-CR')}`;
+                    .textContent =
+                    `₡${puntos.toLocaleString('es-CR')}`;
+
                 document.getElementById('descuentoPuntos')
                     .classList.remove('d-none');
-            } else {
+            }
+            else {
+                fila.classList.add('d-none');
+
                 document.getElementById('descuentoPuntos')
                     .classList.add('d-none');
             }
+
+            total.textContent =
+                `₡${nuevoTotal.toLocaleString('es-CR', {
+                    minimumFractionDigits: 2
+                })}`;
+
+            document.getElementById("debug").innerText =
+                "Puntos seleccionados: " + puntos;
         }
 
         function usarTodosPuntos() {
             document.getElementById('inputPuntos').value = puntosMaximos;
             calcularDescuento(puntosMaximos);
         }
+
     </script>
 }
