@@ -83,6 +83,18 @@
                                     <i class="bi bi-download"></i>
                                 </a>
                             </td>
+                            <td class="text-center">
+                                @if (f.Pedido != null && f.Pedido.Uso_Puntos)
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        @f.Pedido.Puntos_Canjeados pts
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>

@@ -18,9 +18,9 @@ namespace TDFSantaLucia.Models
 
         public bool Canjear_Puntos { get; set; }       
         public int Puntos_Disponibles { get; set; }     
-        public int Puntos_A_Canjear { get; set; }      
-        public decimal Descuento_Puntos => Canjear_Puntos
-            ? Math.Min(Puntos_A_Canjear, Puntos_Disponibles)
+        public int Puntos_A_Canjear { get; set; }
+        public decimal Descuento_Puntos => Canjear_Puntos && Puntos_A_Canjear > 0
+            ? Puntos_A_Canjear
             : 0;
 
         public List<CarritoItem> Items { get; set; } = new();
