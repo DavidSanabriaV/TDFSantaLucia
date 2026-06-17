@@ -29,7 +29,7 @@ namespace TDFSantaLucia.Data
         public DbSet<Cupon> Cupones { get; set; }
         public DbSet<ClienteCupon> ClientesCupones { get; set; }
         public DbSet<CarritoItemDb> CarritoItems { get; set; }
-
+        public DbSet<MovimientoPuntos> MovimientosPuntos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
