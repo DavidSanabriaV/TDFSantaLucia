@@ -27,10 +27,14 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="RequiereReceta" />
 
+        <!-- Campos ocultos del cupón, se llenan desde JS -->
+        <input type="hidden" name="Cupon_Id" id="hiddenCuponId" value="" />
+        <input type="hidden" name="ClienteCuponId" id="hiddenClienteCuponId" value="0" />
+        <input type="hidden" name="Descuento_Cupon" id="hiddenDescuentoCupon" value="0" />
+
         <div class="row g-4">
 
             <div class="col-md-7">
-
 
                 <div class="card border-0 shadow-sm rounded-4 p-4 mb-3">
                     <h5 class="fw-bold mb-3" style="color:#243C8F;">
@@ -81,7 +85,8 @@
                     </div>
                 </div>
 
-                <div class="card border-0 shadow-sm rounded-4 p-4 bg-light mb-3" id="infoTienda">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-light mb-3"
+                     id="infoTienda">
                     <h6 class="fw-bold mb-2" style="color:#243C8F;">
                         <i class="bi bi-geo-alt-fill me-1"></i>Dirección de la farmacia
                     </h6>
@@ -90,7 +95,6 @@
                         Horario: Lun–Sáb 8:00–21:00 / Dom 9:00–20:00
                     </p>
                 </div>
-
 
                 @if (Model.Puntos_Disponibles > 0)
                 {
@@ -145,7 +149,8 @@
                             <div id="descuentoPuntos"
                                  class="alert alert-success rounded-3 mt-2 d-none">
                                 <i class="bi bi-check-circle me-1"></i>
-                                Descuento de <strong id="montoDescuento">₡0</strong> aplicado.
+                                Descuento de
+                                <strong id="montoDescuento">₡0</strong> aplicado.
                             </div>
                         </div>
                     </div>
@@ -193,23 +198,23 @@
                             Formatos: PDF, JPG, PNG · Máximo 5 MB.
                         </div>
 
-                        <div id="recetaError" class="text-danger small mt-1" style="display:none;">
+                        <div id="recetaError" class="text-danger small mt-1"
+                             style="display:none;">
                             <i class="bi bi-exclamation-circle me-1"></i>
                             Debes adjuntar la receta médica para confirmar el pedido.
                         </div>
-                        <div id="recetaOk" class="text-success small mt-1" style="display:none;">
+                        <div id="recetaOk" class="text-success small mt-1"
+                             style="display:none;">
                             <i class="bi bi-check-circle me-1"></i>
                             Archivo cargado correctamente.
                         </div>
-
 
                         <div id="previewImgContainer" class="mt-3" style="display:none;">
                             <p class="small text-muted mb-1">Vista previa:</p>
                             <img id="previewImg" src="#" alt="Vista previa"
                                  style="max-height:200px; border-radius:10px;
-                                            object-fit:contain; border:1px solid #dee2e6;" />
+                                        object-fit:contain; border:1px solid #dee2e6;" />
                         </div>
-
 
                         <div id="previewPdfContainer" class="mt-3" style="display:none;">
                             <span class="badge bg-danger fs-6 px-3 py-2">
@@ -221,7 +226,6 @@
                 }
 
             </div>
-
 
             <div class="col-md-5">
                 <div class="card border-0 shadow-sm rounded-4 p-4">
@@ -256,10 +260,28 @@
                         <span>₡@Model.Impuesto.ToString("N2")</span>
                     </div>
 
+                    <!-- Fila descuento puntos -->
                     <div id="filaDescuento"
-                         class="d-flex justify-content-between mb-2 text-danger d-none">
+                         class="d-flex justify-content-between mb-1 text-danger d-none">
                         <span>Descuento por puntos</span>
                         <span id="montoPuntos">-₡0.00</span>
+                    </div>
+
+                    <!-- Fila descuento cupón -->
+                    <div id="filaDescuentoCupon"
+                         class="d-flex justify-content-between mb-1 text-success d-none">
+                        <span>Descuento cupón</span>
+                        <span id="montoCupon" class="fw-bold">-₡0.00</span>
+                    </div>
+
+                    <!-- Alerta cupón aplicado -->
+                    <div id="cuponAplicadoCheckout"
+                         class="alert alert-success rounded-3 small d-none py-2 mb-2">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Cupón aplicado:
+                        <strong id="descuentoTextoCupon"></strong> de descuento
+                        <button type="button" class="btn-close float-end"
+                                onclick="quitarCuponCheckout()"></button>
                     </div>
 
                     <hr />
@@ -300,6 +322,7 @@
     <script>
         const totalOriginal = @(Model.TotalSinDescuento.ToString(System.Globalization.CultureInfo.InvariantCulture));
         const puntosMaximos = @Model.Puntos_Disponibles;
+        let descuentoCuponActual = 0;
 
         function toggleDomicilio(valor) {
             const campo = document.getElementById('campoDireccion');
@@ -319,13 +342,13 @@
         }
 
         function calcularDescuento(valor) {
-            const puntos  = Math.min(parseInt(valor) || 0, puntosMaximos);
+            const puntos     = Math.min(parseInt(valor) || 0, puntosMaximos);
             document.getElementById('inputPuntos').value = puntos;
 
-            const fila    = document.getElementById('filaDescuento');
-            const monto   = document.getElementById('montoPuntos');
-            const total   = document.getElementById('totalPedido');
-            const nuevoTotal = Math.max(0, totalOriginal - puntos);
+            const fila       = document.getElementById('filaDescuento');
+            const monto      = document.getElementById('montoPuntos');
+            const totalEl    = document.getElementById('totalPedido');
+            const nuevoTotal = Math.max(0, totalOriginal - puntos - descuentoCuponActual);
 
             if (puntos > 0) {
                 monto.textContent = `-₡${puntos.toLocaleString('es-CR',
@@ -339,7 +362,7 @@
                 document.getElementById('descuentoPuntos').classList.add('d-none');
             }
 
-            total.textContent = `₡${nuevoTotal.toLocaleString('es-CR',
+            totalEl.textContent = `₡${nuevoTotal.toLocaleString('es-CR',
                 { minimumFractionDigits: 2 })}`;
         }
 
@@ -348,6 +371,60 @@
             calcularDescuento(puntosMaximos);
         }
 
+        // ── Restaurar cupón desde sessionStorage ──────────────────────────
+        (function restaurarCupon() {
+            const cuponId        = sessionStorage.getItem('cuponId');
+            const clienteCuponId = sessionStorage.getItem('clienteCuponId');
+            const descuento      = parseFloat(
+                sessionStorage.getItem('descuento') || '0');
+
+            if (!cuponId || !clienteCuponId || descuento <= 0) return;
+
+            descuentoCuponActual = descuento;
+
+            document.getElementById('hiddenCuponId').value        = cuponId;
+            document.getElementById('hiddenClienteCuponId').value = clienteCuponId;
+            document.getElementById('hiddenDescuentoCupon').value = descuento;
+
+            const puntosActuales = parseInt(
+                document.getElementById('inputPuntos')?.value || '0');
+            const nuevoTotal = Math.max(
+                0, totalOriginal - puntosActuales - descuento);
+
+            document.getElementById('filaDescuentoCupon').classList.remove('d-none');
+            document.getElementById('montoCupon').textContent =
+                `-₡${descuento.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+
+            document.getElementById('cuponAplicadoCheckout').classList.remove('d-none');
+            document.getElementById('descuentoTextoCupon').textContent =
+                `₡${descuento.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+
+            document.getElementById('totalPedido').textContent =
+                `₡${nuevoTotal.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+        })();
+
+        function quitarCuponCheckout() {
+            descuentoCuponActual = 0;
+
+            sessionStorage.removeItem('cuponId');
+            sessionStorage.removeItem('clienteCuponId');
+            sessionStorage.removeItem('descuento');
+
+            document.getElementById('hiddenCuponId').value        = '';
+            document.getElementById('hiddenClienteCuponId').value = '0';
+            document.getElementById('hiddenDescuentoCupon').value = '0';
+
+            document.getElementById('filaDescuentoCupon').classList.add('d-none');
+            document.getElementById('cuponAplicadoCheckout').classList.add('d-none');
+
+            const puntosActuales = parseInt(
+                document.getElementById('inputPuntos')?.value || '0');
+            const nuevoTotal = Math.max(0, totalOriginal - puntosActuales);
+            document.getElementById('totalPedido').textContent =
+                `₡${nuevoTotal.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+        }
+
+        // ── Receta ─────────────────────────────────────────────────────────
         let recetaArchivoOk = false;
 
         function validarReceta(input) {
@@ -398,21 +475,24 @@
             }
         }
 
-        document.getElementById('formCheckout').addEventListener('submit', function (e) {
-            const requiere = @(requiereReceta ? "true" : "false");
-            if (!requiere) return;
+        document.getElementById('formCheckout')
+            .addEventListener('submit', function (e) {
+                const requiere = @(requiereReceta ? "true" : "false");
+                if (!requiere) return;
 
-            const archivo = document.getElementById('ArchivoReceta');
-            const errorEl = document.getElementById('recetaError');
-            const seccion = document.getElementById('seccionReceta');
+                const archivo = document.getElementById('ArchivoReceta');
+                const errorEl = document.getElementById('recetaError');
+                const seccion = document.getElementById('seccionReceta');
 
-            if (!recetaArchivoOk || !archivo || !archivo.files || archivo.files.length === 0) {
-                e.preventDefault();
-                errorEl.textContent   = 'Debes adjuntar la receta médica para confirmar el pedido.';
-                errorEl.style.display = 'block';
-                seccion.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
+                if (!recetaArchivoOk || !archivo ||
+                    !archivo.files || archivo.files.length === 0) {
+                    e.preventDefault();
+                    errorEl.textContent   =
+                        'Debes adjuntar la receta médica para confirmar el pedido.';
+                    errorEl.style.display = 'block';
+                    seccion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
     </script>
     <partial name="_ValidationScriptsPartial" />
 }

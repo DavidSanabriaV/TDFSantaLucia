@@ -36,7 +36,6 @@ namespace TDFSantaLucia.Controllers
         {
             var items = _carritoService.ObtenerCarrito();
 
-            // Pasar puntos disponibles si está autenticado
             int puntosDisponibles = 0;
             if (User.Identity?.IsAuthenticated == true)
             {
@@ -148,6 +147,37 @@ namespace TDFSantaLucia.Controllers
                 .ObtenerPuntosDisponibles(cliente.Cliente_Id);
 
             return Json(new { puntos });
+        }
+
+        [HttpGet("cupones-disponibles")]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> CuponesDisponibles()
+        {
+            var usuario = await _userManager.GetUserAsync(User);
+            if (usuario == null)
+                return Json(new List<object>());
+
+            var cliente = await _db.Clientes
+                .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
+            if (cliente == null)
+                return Json(new List<object>());
+
+            var cupones = _db.ClientesCupones
+                .Include(cc => cc.Cupon)
+                .Where(cc => cc.Cliente_Id == cliente.Cliente_Id
+                          && !cc.Utilizado
+                          && cc.Cupon!.Estado
+                          && cc.Cupon.Fecha_Expiracion >= DateTime.Today)
+                .Select(cc => new
+                {
+                    cuponId = cc.Cupon_Id,
+                    descripcion = cc.Cupon!.Descripcion,
+                    tipo = cc.Cupon.Tipo_Descuento,
+                    valor = cc.Cupon.Valor_Descuento
+                })
+                .ToList();
+
+            return Json(cupones);
         }
     }
 }

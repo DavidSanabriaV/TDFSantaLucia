@@ -87,7 +87,7 @@ builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
 builder.Services.AddScoped<IMovimientoPuntosRepository,MovimientoPuntosRepository>();
 builder.Services.AddScoped<IArticuloRepository, ArticuloRepository>();
-
+builder.Services.AddScoped<ICuponRepository, CuponRepository>();
 
 
 // Registrar Services
@@ -104,6 +104,7 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IFacturaService, FacturaService>();
 builder.Services.AddScoped<IPuntosService, PuntosService>();
 builder.Services.AddScoped<IArticuloService, ArticuloService>();
+builder.Services.AddScoped<ICuponService, CuponService>();
 
 
 // Add services to the container

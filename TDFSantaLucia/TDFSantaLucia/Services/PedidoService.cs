@@ -15,7 +15,7 @@ namespace TDFSantaLucia.Services
 
         private const decimal TasaIVA = 0.13m;
         private const int MesesVencimiento = 24;
-        private const int ColonesPorPunto = 100; // 1 punto por cada ₡100
+        private const int ColonesPorPunto = 100;
 
         public PedidoService(
             IPedidoRepository pedidoRepo,
@@ -46,7 +46,6 @@ namespace TDFSantaLucia.Services
         public async Task<(bool exito, string? error, Pedido? pedido)>
             ProcesarPedidoAsync(CheckoutViewModel checkout, int clienteId)
         {
-
             await using var transaction =
                 await _db.Database.BeginTransactionAsync();
 
@@ -109,15 +108,28 @@ namespace TDFSantaLucia.Services
 
                 await _db.SaveChangesAsync();
 
+                // ── Marcar cupón como utilizado si aplica ─────────────────
+                if (checkout.Cupon_Id.HasValue && checkout.ClienteCuponId > 0)
+                {
+                    var cc = await _db.ClientesCupones
+                        .FirstOrDefaultAsync(x =>
+                            x.Cupon_Cliente_Id == checkout.ClienteCuponId);
+                    if (cc != null)
+                    {
+                        cc.Utilizado = true;
+                        cc.Fecha_Uso = DateTime.Now;
+                        await _db.SaveChangesAsync();
+                    }
+                }
+
                 var subtotal = checkout.Subtotal;
                 var impuesto = checkout.Impuesto;
-                var descuentoPuntos = checkout.Canjear_Puntos
-                    ? checkout.Descuento_Puntos : 0;
+                var descuentoPuntos = checkout.Canjear_Puntos ? checkout.Descuento_Puntos : 0;
+                var descuentoCupon = checkout.Descuento_Cupon;
+                var descuentoTotal = descuentoPuntos + descuentoCupon;
                 var total = checkout.Total;
 
                 // ── Calcular puntos ganados ───────────────────────────────
-                // Solo se acumulan puntos si NO se canjearon puntos
-                // y sobre el subtotal sin IVA ni descuentos
                 int puntosGanados = 0;
                 if (!checkout.Canjear_Puntos)
                     puntosGanados = (int)Math.Floor(subtotal / ColonesPorPunto);
@@ -166,8 +178,7 @@ namespace TDFSantaLucia.Services
                     });
                 }
 
-                // ── Registrar puntos ganados (se activan al aceptar) ──────
-                // Se guardan como pendientes, se activan en CambiarEstado
+                // ── Registrar puntos ganados ──────────────────────────────
                 if (puntosGanados > 0)
                 {
                     await _db.MovimientosPuntos.AddAsync(new MovimientoPuntos
@@ -190,7 +201,7 @@ namespace TDFSantaLucia.Services
                 {
                     Numero_Factura = _facturaRepo.GenerarNumeroFactura(),
                     Subtotal = subtotal,
-                    Descuento = descuentoPuntos,
+                    Descuento = descuentoTotal,
                     Impuesto = impuesto,
                     Total = total,
                     Estado = "Emitida",
@@ -288,7 +299,6 @@ namespace TDFSantaLucia.Services
                 if (pedido.Estado != PedidoEstados.Cancelado &&
                     pedido.Estado != PedidoEstados.Rechazado)
                 {
-                    // Devolver stock
                     foreach (var detalle in pedido.DetallesPedido)
                     {
                         var lote = await _db.Inventarios
@@ -314,7 +324,6 @@ namespace TDFSantaLucia.Services
                         }
                     }
 
-                    // Anular puntos pendientes o ganados de este pedido
                     var movPuntos = await _db.MovimientosPuntos
                         .Where(m => m.Pedido_Id == pedidoId
                                  && (m.Tipo == "Pendiente" || m.Tipo == "Ganado"))
@@ -327,31 +336,22 @@ namespace TDFSantaLucia.Services
                         _db.MovimientosPuntos.Update(m);
                     }
 
-                    // Devolver puntos canjeados si los usó
                     if (pedido.Uso_Puntos && pedido.Puntos_Canjeados > 0)
                     {
-                        var cliente = await _db.Clientes
-                            .FirstOrDefaultAsync(c =>
-                                c.Cliente_Id == pedido.Cliente_Id);
-
-                        if (cliente != null)
+                        await _db.MovimientosPuntos.AddAsync(new MovimientoPuntos
                         {
-                            await _db.MovimientosPuntos.AddAsync(
-                                new MovimientoPuntos
-                                {
-                                    Puntos = pedido.Puntos_Canjeados,
-                                    Tipo = "Devuelto",
-                                    Descripcion =
-                                        $"Devolución de puntos por " +
-                                        $"pedido {pedido.Numero_Orden} rechazado",
-                                    Fecha = DateTime.Now,
-                                    Fecha_Vencimiento =
-                                        DateTime.Now.AddMonths(MesesVencimiento),
-                                    Vencido = false,
-                                    Cliente_Id = pedido.Cliente_Id,
-                                    Pedido_Id = pedido.Pedido_Id
-                                });
-                        }
+                            Puntos = pedido.Puntos_Canjeados,
+                            Tipo = "Devuelto",
+                            Descripcion =
+                                $"Devolución de puntos por " +
+                                $"pedido {pedido.Numero_Orden} rechazado",
+                            Fecha = DateTime.Now,
+                            Fecha_Vencimiento =
+                                DateTime.Now.AddMonths(MesesVencimiento),
+                            Vencido = false,
+                            Cliente_Id = pedido.Cliente_Id,
+                            Pedido_Id = pedido.Pedido_Id
+                        });
                     }
 
                     await _db.SaveChangesAsync();

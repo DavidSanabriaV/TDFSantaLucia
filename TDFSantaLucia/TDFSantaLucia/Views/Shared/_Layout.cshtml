@@ -162,6 +162,25 @@
                     </li>
                 }
 
+                @if (User.IsInRole("Admin"))
+
+                {
+                     <li class="nav-item">
+                         <a class="nav-link menu-link" asp-controller="Cupon" asp-action="Index">
+                             <i class="bi bi-ticket-perforated-fill me-1"></i>Cupones
+                         </a>
+                     </li>
+                 }
+
+                @if (User.IsInRole("Cliente"))
+                 {
+                     <li class="nav-item">
+                         <a class="nav-link menu-link" asp-controller="Cupon" asp-action="MisCupones">
+                             <i class="bi bi-ticket-perforated me-1"></i>Mis Cupones
+                         </a>
+                     </li>
+                 }
+
                 @if (User.IsInRole("Cliente"))
                 {
                     <li class="nav-item dropdown">

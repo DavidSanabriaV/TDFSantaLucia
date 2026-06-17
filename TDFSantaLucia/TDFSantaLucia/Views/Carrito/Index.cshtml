@@ -82,7 +82,6 @@
                     </div>
                 </div>
 
-
                 @if (requiereReceta)
                 {
                     <div class="alert alert-warning rounded-4 mt-3 mb-0">
@@ -124,6 +123,28 @@
                         </span>
                     </div>
 
+                    <!-- Cupón -->
+                    @if (User.IsInRole("Cliente"))
+                    {
+                        <div id="seccionCupon" class="mb-3">
+                            <p class="fw-semibold text-muted small mb-2">¿TIENES UN CUPÓN?</p>
+                            <div id="listaCupones"></div>
+                            <div id="cuponAplicado"
+                                 class="alert alert-success rounded-3 small d-none">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Cupón aplicado: <strong id="descuentoTexto"></strong> de descuento
+                                <button type="button" class="btn-close float-end"
+                                        onclick="quitarCupon()"></button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 d-none"
+                             id="filaDescuento">
+                            <span class="text-success">Descuento cupón</span>
+                            <span class="text-success fw-bold"
+                                  id="resumenDescuento">-₡0.00</span>
+                        </div>
+                    }
+
                     @if (User.Identity?.IsAuthenticated == true && ViewBag.PuntosDisponibles > 0)
                     {
                         <div class="card border-warning rounded-3 p-3 mb-3">
@@ -137,7 +158,8 @@
                                 = ₡@ViewBag.PuntosDisponibles disponibles para canjear.
                             </p>
                             <p class="mb-0 small text-muted">
-                                Puedes canjear tus puntos en el paso siguiente al confirmar tu pedido.
+                                Puedes canjear tus puntos en el paso siguiente
+                                al confirmar tu pedido.
                             </p>
                         </div>
                     }
@@ -240,5 +262,87 @@
             const badge = document.querySelector('.badge.rounded-pill');
             if (badge) badge.textContent = count;
         }
+
+        // ── Cupones ────────────────────────────────────────────────────────
+        let cuponSeleccionadoId  = 0;
+        let clienteCuponIdActual = 0;
+        let descuentoActual      = 0;
+
+        async function cargarCupones() {
+            const res  = await fetch('/carrito/cupones-disponibles');
+            const data = await res.json();
+            const div  = document.getElementById('listaCupones');
+            if (!div) return;
+
+            if (!data.length) {
+                div.innerHTML =
+                    '<small class="text-muted">No tienes cupones disponibles.</small>';
+                return;
+            }
+
+            let html = '<select id="selectCupon" class="form-select form-select-sm rounded-3 mb-2">';
+            html += '<option value="">Selecciona un cupón...</option>';
+            data.forEach(c => {
+                const valor = c.tipo === 'Porcentaje'
+                    ? `${c.valor}% OFF` : `₡${c.valor} OFF`;
+                html += `<option value="${c.cuponId}">${c.descripcion} — ${valor}</option>`;
+            });
+            html += '</select>';
+            html += `<button class="btn btn-outline-primary btn-sm rounded-3 w-100"
+                             onclick="aplicarCupon()">
+                        <i class="bi bi-ticket-perforated me-1"></i>Aplicar cupón
+                     </button>`;
+            div.innerHTML = html;
+        }
+
+        async function aplicarCupon() {
+            const sel = document.getElementById('selectCupon');
+            if (!sel || !sel.value) return;
+
+            const res  = await fetch('/cupon/aplicar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token
+                },
+                body: `cuponId=${sel.value}`
+            });
+            const data = await res.json();
+
+            if (!data.exito) { alert(data.mensaje); return; }
+
+            cuponSeleccionadoId  = parseInt(sel.value);
+            clienteCuponIdActual = data.clienteCuponId;
+            descuentoActual      = parseFloat(data.descuento.replace(',', '.'));
+
+            document.getElementById('cuponAplicado').classList.remove('d-none');
+            document.getElementById('descuentoTexto').textContent = `₡${data.descuento}`;
+            document.getElementById('listaCupones').classList.add('d-none');
+            document.getElementById('filaDescuento').classList.remove('d-none');
+            document.getElementById('resumenDescuento').textContent = `-₡${data.descuento}`;
+            document.getElementById('resumenTotal').textContent = `₡${data.totalFinal}`;
+
+            sessionStorage.setItem('cuponId', cuponSeleccionadoId);
+            sessionStorage.setItem('clienteCuponId', clienteCuponIdActual);
+            sessionStorage.setItem('descuento', descuentoActual);
+        }
+
+        function quitarCupon() {
+            cuponSeleccionadoId  = 0;
+            clienteCuponIdActual = 0;
+            descuentoActual      = 0;
+
+            document.getElementById('cuponAplicado').classList.add('d-none');
+            document.getElementById('listaCupones').classList.remove('d-none');
+            document.getElementById('filaDescuento').classList.add('d-none');
+            document.getElementById('resumenDescuento').textContent = '-₡0.00';
+
+            sessionStorage.removeItem('cuponId');
+            sessionStorage.removeItem('clienteCuponId');
+            sessionStorage.removeItem('descuento');
+            location.reload();
+        }
+
+        if (document.getElementById('listaCupones')) cargarCupones();
     </script>
 }
