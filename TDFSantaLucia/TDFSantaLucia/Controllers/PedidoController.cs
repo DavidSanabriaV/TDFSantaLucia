@@ -107,7 +107,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpGet("detalle/{id:int}")]
-        public async Task<IActionResult> Detalle(int id)
+        public async Task<IActionResult> Detalle(int id, string? desde)
         {
             var pedido = _pedidoService.ObtenerPorId(id);
             if (pedido == null) return NotFound();
@@ -119,6 +119,7 @@ namespace TDFSantaLucia.Controllers
                     return Forbid();
             }
 
+            ViewBag.Desde = desde ?? "mis-pedidos";
             return View(pedido);
         }
 
