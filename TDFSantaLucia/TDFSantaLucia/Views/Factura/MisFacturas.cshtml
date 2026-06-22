@@ -11,22 +11,15 @@
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label fw-semibold text-muted small">
-                    DESDE
-                </label>
-                <input type="date" name="desde" class="form-control"
-                       value="@ViewBag.Desde" />
+                <label class="form-label fw-semibold text-muted small">DESDE</label>
+                <input type="date" name="desde" class="form-control" value="@ViewBag.Desde" />
             </div>
             <div class="col-md-4">
-                <label class="form-label fw-semibold text-muted small">
-                    HASTA
-                </label>
-                <input type="date" name="hasta" class="form-control"
-                       value="@ViewBag.Hasta" />
+                <label class="form-label fw-semibold text-muted small">HASTA</label>
+                <input type="date" name="hasta" class="form-control" value="@ViewBag.Hasta" />
             </div>
             <div class="col-md-4">
-                <button type="submit"
-                        class="btn btn-primary w-100 rounded-3">
+                <button type="submit" class="btn btn-primary w-100 rounded-3">
                     <i class="bi bi-search me-1"></i>Filtrar
                 </button>
             </div>
@@ -50,6 +43,7 @@
                         <th>Pedido</th>
                         <th>Fecha</th>
                         <th class="text-center">Total</th>
+                        <th class="text-center">Descuentos</th>
                         <th class="text-center">Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -57,10 +51,14 @@
                 <tbody>
                     @foreach (var f in Model)
                     {
+                        var subtotal = f.DetallesFactura.Sum(d => d.Subtotal);
+                        var impuesto = Math.Round(subtotal * 0.13m, 2);
+                        var descPuntos = f.Pedido?.Descuento_Puntos ?? 0;
+                        var descCupon = Math.Max(0, subtotal + impuesto - descPuntos - f.Total);
+                        var tieneDesc = (f.Pedido?.Uso_Puntos == true) || (f.Pedido?.Cupon_Id != null);
+
                         <tr>
-                            <td class="fw-bold" style="color:#243C8F;">
-                                @f.Numero_Factura
-                            </td>
+                            <td class="fw-bold" style="color:#243C8F;">@f.Numero_Factura</td>
                             <td>@f.Pedido?.Numero_Orden</td>
                             <td class="text-muted small">
                                 @f.Fecha_Emision.ToString("dd/MM/yyyy HH:mm")
@@ -69,31 +67,42 @@
                                 ₡@f.Total.ToString("N2")
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-success">@f.Estado</span>
-                            </td>
-                            <td class="text-center">
-                                <a asp-action="Detalle"
-                                       asp-route-id="@f.Factura_Id"
-                                       class="btn btn-info btn-sm text-white">
-                                    <i class="bi bi-eye"></i> Ver
-                                </a>
-                                <a asp-action="Descargar"
-                                       asp-route-id="@f.Factura_Id"
-                                       class="btn btn-primary btn-sm">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                            </td>
-                            <td class="text-center">
-                                @if (f.Pedido != null && f.Pedido.Uso_Puntos)
-                                {
-                                    <span class="badge bg-warning text-dark">
-                                        @f.Pedido.Puntos_Canjeados pts
-                                    </span>
-                                }
-                                else
+                                @if (!tieneDesc)
                                 {
                                     <span class="text-muted">—</span>
                                 }
+                                else
+                                {
+                                    <div class="d-flex flex-column gap-1 align-items-center">
+                                        @if (f.Pedido?.Uso_Puntos == true && f.Pedido.Puntos_Canjeados > 0)
+                                        {
+                                            <span class="badge bg-warning text-dark" style="font-size:0.7rem;">
+                                                <i class="bi bi-star-fill me-1"></i>
+                                                @f.Pedido.Puntos_Canjeados pts
+                                            </span>
+                                        }
+                                        @if (f.Pedido?.Cupon_Id != null && descCupon > 0)
+                                        {
+                                            <span class="badge bg-success" style="font-size:0.7rem;">
+                                                <i class="bi bi-ticket-perforated-fill me-1"></i>
+                                                -₡@descCupon.ToString("N2")
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success">@f.Estado</span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Detalle" asp-route-id="@f.Factura_Id"
+                                   class="btn btn-info btn-sm text-white">
+                                    <i class="bi bi-eye"></i> Ver
+                                </a>
+                                <a asp-action="Descargar" asp-route-id="@f.Factura_Id"
+                                   class="btn btn-primary btn-sm">
+                                    <i class="bi bi-download"></i>
+                                </a>
                             </td>
                         </tr>
                     }
