@@ -1,0 +1,194 @@
+﻿@model TDFSantaLucia.Models.ChatbotOpcion
+
+<div class="card border-0 shadow-sm rounded-4 p-4">
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger rounded-3 mb-3">
+            @foreach (var e in ViewData.ModelState.Values
+                .SelectMany(v => v.Errors))
+            {
+                <div><i class="bi bi-exclamation-circle me-1"></i>
+                    @e.ErrorMessage
+                </div>
+            }
+        </div>
+    }
+
+    <div class="mb-3">
+        <label asp-for="Texto" class="form-label fw-semibold">
+            <i class="bi bi-chat-dots me-1"></i>Texto del botón
+        </label>
+        <input asp-for="Texto" class="form-control"
+               placeholder="Ej: Ver mis pedidos" />
+        <span asp-validation-for="Texto" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Intent" class="form-label fw-semibold">
+            <i class="bi bi-lightning me-1"></i>Acción automática
+            <small class="text-muted fw-normal">
+                (consulta datos del usuario logueado)
+            </small>
+        </label>
+        <select asp-for="Intent" class="form-select"
+                onchange="actualizarCampos()">
+            <option value="">— Ninguna —</option>
+            <option value="ver_pedidos">📦 Ver mis pedidos</option>
+            <option value="ver_citas">📅 Ver mis citas</option>
+            <option value="ver_facturas">🧾 Ver mis facturas</option>
+            <option value="ver_carrito">🛒 Ver mi carrito</option>
+            <option value="horario">🕐 Consultar horario</option>
+            <option value="ubicacion">📍 Consultar ubicación</option>
+            <option value="contacto">📞 Consultar contacto</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Url_Redireccion" class="form-label fw-semibold">
+            <i class="bi bi-link-45deg me-1"></i>Redirigir a una página
+            <small class="text-muted fw-normal">(opcional)</small>
+        </label>
+        <select asp-for="Url_Redireccion" class="form-select">
+            <option value="">— No redirigir —</option>
+            <optgroup label="🔐 Cuenta">
+                <option value="/Account/Login">Iniciar sesión</option>
+                <option value="/Account/Registro">Registrarse</option>
+            </optgroup>
+            <optgroup label="🛍️ Tienda">
+                <option value="/">Inicio</option>
+                <option value="/producto">Productos</option>
+                <option value="/carrito">Mi Carrito</option>
+                <option value="/salud">Salud & Bienestar</option>
+            </optgroup>
+            <optgroup label="👤 Cliente">
+                <option value="/pedido/mispedidos">Mis Pedidos</option>
+                <option value="/pedido/checkout">Checkout</option>
+                <option value="/factura/misfacturas">Mis Facturas</option>
+                <option value="/cita/miscitas">Mis Citas</option>
+                <option value="/cita/agendar">Agendar Cita</option>
+                <option value="/cupon/miscupones">Mis Cupones</option>
+            </optgroup>
+            <optgroup label="🛠️ Admin / Empleado">
+                <option value="/pedido/admin">Gestión de Pedidos</option>
+                <option value="/cliente">Clientes</option>
+                <option value="/empleado">Empleados</option>
+                <option value="/inventario">Inventario</option>
+                <option value="/expediente">Expedientes</option>
+                <option value="/factura">Facturas</option>
+                <option value="/cita">Gestión de Citas</option>
+                <option value="/cupon">Cupones</option>
+                <option value="/categoria">Categorías</option>
+                <option value="/chatbot/admin">Gestión Chatbot</option>
+                <option value="/salud/admin">Gestión Salud</option>
+            </optgroup>
+        </select>
+    </div>
+
+    <div class="mb-3" id="campoRespuestaWrap">
+        <label asp-for="Respuesta" class="form-label fw-semibold">
+            <i class="bi bi-reply me-1"></i>Respuesta de texto
+            <small class="text-muted fw-normal" id="respuestaHint">
+                (obligatorio si no hay acción ni URL)
+            </small>
+        </label>
+        <textarea asp-for="Respuesta"
+                  class="form-control"
+                  rows="3"
+                  data-val="false"
+                  placeholder="Respuesta que verá el cliente...">
+        </textarea>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Icono" class="form-label fw-semibold">
+                <i class="bi bi-emoji-smile me-1"></i>Icono
+                <small class="text-muted fw-normal">(Bootstrap Icons)</small>
+            </label>
+            <div class="input-group">
+                <span class="input-group-text" id="previewIcono">
+                    <i class="bi bi-question-circle"></i>
+                </span>
+                <input asp-for="Icono" class="form-control"
+                       placeholder="bi-bag"
+                       oninput="previewIcon(this.value)" />
+            </div>
+            <div class="form-text">
+                <a href="https://icons.getbootstrap.com" target="_blank">
+                    Ver íconos disponibles →
+                </a>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Orden" class="form-label fw-semibold">
+                <i class="bi bi-sort-numeric-up me-1"></i>Orden
+            </label>
+            <input asp-for="Orden" class="form-control"
+                   type="number" min="0" />
+            <div class="form-text">Menor número = aparece primero</div>
+        </div>
+        <div class="col-md-3 d-flex align-items-center pt-4">
+            <div class="form-check form-switch">
+                <input asp-for="Activo" class="form-check-input"
+                       type="checkbox" role="switch"
+                       style="width:2.5em; height:1.4em;" />
+                <label asp-for="Activo"
+                       class="form-check-label fw-semibold ms-2">
+                    Activo
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-light border rounded-3 mt-4 mb-0 small">
+        <strong>💡 Guía rápida:</strong>
+        <ul class="mb-0 mt-1">
+            <li>
+                <strong>Acción automática</strong> — muestra datos
+                personalizados (pedidos, citas, facturas, etc.)
+            </li>
+            <li>
+                <strong>Redirigir a página</strong> — lleva al usuario
+                a una sección específica del sistema
+            </li>
+            <li>
+                <strong>Respuesta de texto</strong> — muestra un mensaje
+                simple. Obligatorio si no elegís ninguna de las anteriores
+            </li>
+            <li>Podés combinar redirección + respuesta de texto</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    function actualizarCampos() {
+        const intent = document.querySelector('[name="Intent"]').value;
+        const wrap   = document.getElementById('campoRespuestaWrap');
+        const hint   = document.getElementById('respuestaHint');
+
+        if (intent) {
+            wrap.style.opacity       = '0.5';
+            wrap.style.pointerEvents = 'none';
+            hint.textContent =
+                '(opcional cuando hay acción automática)';
+        } else {
+            wrap.style.opacity       = '1';
+            wrap.style.pointerEvents = 'auto';
+            hint.textContent =
+                '(obligatorio si no hay acción ni URL)';
+        }
+    }
+
+    function previewIcon(value) {
+        document.getElementById('previewIcono').innerHTML =
+            `<i class="bi ${value}"></i>`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        actualizarCampos();
+        const icono = document.querySelector('[name="Icono"]')?.value;
+        if (icono) previewIcon(icono);
+    });
+</script>
