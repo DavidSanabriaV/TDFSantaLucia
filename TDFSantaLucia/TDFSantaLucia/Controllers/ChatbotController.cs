@@ -19,18 +19,49 @@ namespace TDFSantaLucia.Controllers
             _chatbotService = chatbotService;
             _userManager = userManager;
         }
-
         [HttpGet("opciones")]
         public IActionResult ObtenerOpciones()
         {
             var todas = _chatbotService.ObtenerActivas();
 
-            var rutasAdmin = new[]
+            var rutasAdminExactas = new[]
             {
-        "/pedido/admin", "/cliente", "/empleado",
-        "/inventario", "/expediente", "/factura",
-        "/cita", "/cupon", "/categoria",
-        "/chatbot/admin", "/salud/admin"
+        "/pedido/admin",
+        "/cliente",
+        "/empleado",
+        "/inventario",
+        "/expediente",
+        "/factura",
+        "/cita",
+        "/cupon",
+        "/categoria",
+        "/chatbot/admin",
+        "/salud/admin"
+    };
+
+            var prefijosAdmin = new[]
+            {
+        "/pedido/admin",
+        "/chatbot/admin",
+        "/salud/admin",
+        "/cita/crear",
+        "/cita/revisar",
+        "/cita/asignar",
+        "/cupon/crear",
+        "/cupon/editar"
+    };
+
+            var rutasCliente = new[]
+            {
+        "/pedido/mis-pedidos",
+        "/pedido/mis-puntos",
+        "/pedido/checkout",
+        "/factura/mis-facturas",
+        "/cita/miscitas",
+        "/cita/agendar",
+        "/cupon/mis-cupones",
+        "/tratamiento",
+        "/carrito"
     };
 
             var esAdmin = User.IsInRole("Admin");
@@ -38,9 +69,20 @@ namespace TDFSantaLucia.Controllers
 
             var filtradas = todas.Where(o =>
             {
-                if (!string.IsNullOrEmpty(o.Url_Redireccion) &&
-                    rutasAdmin.Any(r => o.Url_Redireccion.StartsWith(r)) &&
-                    !esAdmin && !esEmpleado)
+                if (string.IsNullOrEmpty(o.Url_Redireccion))
+                    return true;
+
+                if (esAdmin || esEmpleado)
+                {
+                    if (rutasCliente.Contains(o.Url_Redireccion))
+                        return false;
+                    return true;
+                }
+
+                if (rutasAdminExactas.Contains(o.Url_Redireccion))
+                    return false;
+
+                if (prefijosAdmin.Any(p => o.Url_Redireccion.StartsWith(p)))
                     return false;
 
                 return true;
@@ -91,6 +133,12 @@ namespace TDFSantaLucia.Controllers
             ModelState.Remove("Fecha_Actualizacion");
             ModelState.Remove("Respuesta");
 
+            if (string.IsNullOrWhiteSpace(model.Texto))
+                ModelState.AddModelError("Texto", "El texto del botón es obligatorio.");
+            else if (_chatbotService.ExisteTexto(model.Texto))
+                ModelState.AddModelError("Texto",
+                    "Ya existe una opción con ese texto.");
+
             if (string.IsNullOrWhiteSpace(model.Respuesta) &&
                 string.IsNullOrWhiteSpace(model.Intent) &&
                 string.IsNullOrWhiteSpace(model.Url_Redireccion))
@@ -99,10 +147,6 @@ namespace TDFSantaLucia.Controllers
                     "Debés completar al menos: una Acción automática, " +
                     "una URL de redirección, o una Respuesta de texto.");
             }
-
-            if (_chatbotService.ExisteTexto(model.Texto))
-                ModelState.AddModelError("Texto",
-                    "Ya existe una opción con ese texto.");
 
             if (_chatbotService.ExisteOrden(model.Orden))
                 ModelState.AddModelError("Orden",
@@ -117,6 +161,7 @@ namespace TDFSantaLucia.Controllers
             TempData["Exito"] = "Opción creada correctamente.";
             return RedirectToAction("Admin");
         }
+
 
         [HttpGet("admin/editar/{id:int}")]
         [Authorize(Roles = "Admin,Empleado")]
@@ -145,8 +190,10 @@ namespace TDFSantaLucia.Controllers
                     "Debés completar al menos: una Acción automática, " +
                     "una URL de redirección, o una Respuesta de texto.");
             }
+            if (string.IsNullOrWhiteSpace(model.Texto))
+                ModelState.AddModelError("Texto", "El texto del botón es obligatorio.");
 
-            if (_chatbotService.ExisteTexto(model.Texto, model.Opcion_Id))
+            else if (_chatbotService.ExisteTexto(model.Texto, model.Opcion_Id))
                 ModelState.AddModelError("Texto",
                     "Ya existe una opción con ese texto.");
 
