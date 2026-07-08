@@ -1,0 +1,23 @@
+﻿@model TDFSantaLucia.Models.ChatbotOpcion
+@{
+    ViewData["Title"] = "Nueva Opción";
+}
+
+<div class="container py-4 chatbot-form-wrapper">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-plus-circle me-2"></i>Nueva Opción
+    </h2>
+    <form asp-action="Crear" method="post">
+        @Html.AntiForgeryToken()
+        @await Html.PartialAsync("_FormChatbot", Model)
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary rounded-3 px-4">
+                <i class="bi bi-save me-1"></i>Guardar
+            </button>
+            <a asp-action="Admin"
+               class="btn btn-outline-secondary rounded-3">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>

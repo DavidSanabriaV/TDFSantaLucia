@@ -294,6 +294,23 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Confirmacion", new { id = pedido.Pedido_Id });
         }
 
+        [HttpPost("cobrar/{id:int}")]
+        [Authorize(Roles = "Admin,Empleado")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cobrar(int id, string metodoPago)
+        {
+            var pedido = _pedidoService.ObtenerPorId(id);
+            if (pedido == null) return NotFound();
+
+            pedido.Metodo_Pago = metodoPago;
+            pedido.Estado = PedidoEstados.Listo;
+
+            _db.Pedidos.Update(pedido);
+            await _db.SaveChangesAsync();
+
+            TempData["Exito"] = $"Pedido {pedido.Numero_Orden} cobrado correctamente.";
+            return RedirectToAction("Admin");
+        }
         [HttpGet("confirmacion/{id:int}")]
         public IActionResult Confirmacion(int id)
         {

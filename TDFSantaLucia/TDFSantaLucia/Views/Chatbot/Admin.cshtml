@@ -1,0 +1,124 @@
+﻿@model List<TDFSantaLucia.Models.ChatbotOpcion>
+@{
+    ViewData["Title"] = "Gestión Chatbot";
+    var intentLabels = new Dictionary<string, string>
+    {
+        { "ver_pedidos",  "📦 Pedidos" },
+        { "ver_citas",    "📅 Citas" },
+        { "ver_facturas", "🧾 Facturas" },
+        { "ver_carrito",  "🛒 Carrito" },
+        { "horario",      "🕐 Horario" },
+        { "ubicacion",    "📍 Ubicación" },
+        { "contacto",     "📞 Contacto" }
+    };
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0" style="color:#243C8F;">
+            <i class="bi bi-robot me-2"></i>Opciones del Chatbot
+        </h2>
+        <a asp-action="Crear" class="btn btn-primary rounded-3">
+            <i class="bi bi-plus-circle me-1"></i>Nueva Opción
+        </a>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width:60px;">Orden</th>
+                    <th style="width:60px;">Icono</th>
+                    <th>Texto del botón</th>
+                    <th>Acción / Respuesta</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model)
+                {
+                    <tr>
+                        <td class="text-center fw-bold text-muted">
+                            @o.Orden
+                        </td>
+                        <td class="text-center">
+                            <i class="bi @o.Icono fs-4"
+                               style="color:#243C8F;"></i>
+                        </td>
+                        <td class="fw-semibold">@o.Texto</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(o.Intent) &&
+                                 intentLabels.ContainsKey(o.Intent))
+                            {
+                                <span class="badge rounded-pill"
+                                      style="background:#243C8F;">
+                                    @intentLabels[o.Intent]
+                                </span>
+                                <small class="text-muted ms-1">
+                                    acción automática
+                                </small>
+                            }
+                            else
+                            {
+                                <span class="text-muted small"
+                                      style="max-width:280px;
+                                    display:inline-block;
+                                    white-space:nowrap;
+                                    overflow:hidden;
+                                    text-overflow:ellipsis;">
+                                    @o.Respuesta
+                                </span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <span class="badge @(o.Activo
+                                                                  ? "bg-success" : "bg-secondary")">
+                                @(o.Activo ? "Activo" : "Inactivo")
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-action="Editar"
+                                   asp-route-id="@o.Opcion_Id"
+                                   class="btn btn-warning btn-sm text-white"
+                                   title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="Eliminar"
+                                      asp-route-id="@o.Opcion_Id"
+                                      method="post"
+                                      onsubmit="return confirm(
+                                    '¿Eliminar esta opción?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="btn btn-danger btn-sm"
+                                            title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

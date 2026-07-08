@@ -17,7 +17,7 @@ namespace TDFSantaLucia.Repositories
             => _context.Expedientes
                 .Include(e => e.Cliente).ThenInclude(c => c.Usuario)
                 .Include(e => e.Empleado).ThenInclude(emp => emp.Usuario)
-                .Include(e => e.RecetasMedicas)
+                .Include(e => e.RecetasMedicas).ThenInclude(r => r.Producto)
                 .OrderByDescending(e => e.Fecha_Creacion)
                 .ToList();
 
@@ -25,14 +25,14 @@ namespace TDFSantaLucia.Repositories
             => _context.Expedientes
                 .Include(e => e.Cliente).ThenInclude(c => c.Usuario)
                 .Include(e => e.Empleado).ThenInclude(emp => emp.Usuario)
-                .Include(e => e.RecetasMedicas)
+                .Include(e => e.RecetasMedicas).ThenInclude(r => r.Producto)
                 .FirstOrDefault(e => e.Expediente_Id == id);
 
         public List<Expediente> ObtenerPorCliente(int clienteId)
             => _context.Expedientes
                 .Include(e => e.Cliente).ThenInclude(c => c.Usuario)
                 .Include(e => e.Empleado).ThenInclude(emp => emp.Usuario)
-                .Include(e => e.RecetasMedicas)
+                .Include(e => e.RecetasMedicas).ThenInclude(r => r.Producto)
                 .Where(e => e.Cliente_Id == clienteId)
                 .OrderByDescending(e => e.Fecha_Creacion)
                 .ToList();

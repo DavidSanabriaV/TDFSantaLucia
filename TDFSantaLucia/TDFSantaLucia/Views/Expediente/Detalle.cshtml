@@ -1,93 +1,204 @@
-﻿@model TDFSantaLucia.Models.Expediente
+﻿expediente detalle@model TDFSantaLucia.Models.Expediente
 @{
     ViewData["Title"] = "Detalle de Expediente";
 }
 
-<h2 class="mb-4">📋 Detalle de Expediente</h2>
+<div class="container py-4" style="max-width:900px;">
 
-<div class="card border-0 shadow-sm" style="max-width: 800px;">
-    <div class="card-body p-4">
-
-        <div class="d-flex justify-content-between align-items-start mb-3">
-            <div>
-                <h4 class="card-title mb-1">
-                    @(Model.Cliente?.Usuario != null
-                        ? $"{Model.Cliente.Usuario.Nombre} {Model.Cliente.Usuario.Primer_Apellido}"
-                        : "Cliente no disponible")
-                </h4>
-                <small class="text-muted">ID Expediente: @Model.Expediente_Id</small>
-            </div>
-            <span class="badge bg-primary fs-6">
-                @Model.RecetasMedicas.Count receta(s)
-            </span>
+    @if (TempData["ExitoExpediente"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3">
+            ✅ @TempData["ExitoExpediente"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
         </div>
+    }
+    @if (TempData["ErrorExpediente"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3">
+            ❌ @TempData["ErrorExpediente"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
 
-        <hr />
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0" style="color:#243C8F;">
+            <i class="bi bi-folder-fill me-2"></i>Expediente
+            #@Model.Expediente_Id
+        </h2>
+        <span class="badge bg-primary fs-6">
+            @Model.RecetasMedicas.Count receta(s)
+        </span>
+    </div>
 
-        <div class="row mb-3">
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="row g-3">
             <div class="col-md-6">
                 <p class="text-muted small fw-semibold mb-1">CLIENTE</p>
-                <p>
+                <p class="fw-semibold">
                     @(Model.Cliente?.Usuario != null
-                    ? $"{Model.Cliente.Usuario.Nombre} {Model.Cliente.Usuario.Primer_Apellido} {Model.Cliente.Usuario.Segundo_Apellido}"
-                    : "—")
+                                        ? $"{Model.Cliente.Usuario.Nombre} {Model.Cliente.Usuario.Primer_Apellido} {Model.Cliente.Usuario.Segundo_Apellido}"
+                                        : "—")
                 </p>
             </div>
             <div class="col-md-6">
-                <p class="text-muted small fw-semibold mb-1">EMPLEADO RESPONSABLE</p>
-                <p>
+                <p class="text-muted small fw-semibold mb-1">
+                    EMPLEADO RESPONSABLE
+                </p>
+                <p class="fw-semibold">
                     @(Model.Empleado?.Usuario != null
-                    ? $"{Model.Empleado.Usuario.Nombre} {Model.Empleado.Usuario.Primer_Apellido} {Model.Empleado.Usuario.Segundo_Apellido}"
-                    : "—")
+                                        ? $"{Model.Empleado.Usuario.Nombre} {Model.Empleado.Usuario.Primer_Apellido}"
+                                        : "—")
                 </p>
             </div>
-        </div>
-
-        <div class="row mb-3">
             <div class="col-md-6">
-                <p class="text-muted small fw-semibold mb-1">FECHA DE CREACIÓN</p>
+                <p class="text-muted small fw-semibold mb-1">CREADO</p>
                 <p>@Model.Fecha_Creacion.ToString("dd/MM/yyyy HH:mm")</p>
             </div>
             <div class="col-md-6">
-                <p class="text-muted small fw-semibold mb-1">ÚLTIMA ACTUALIZACIÓN</p>
+                <p class="text-muted small fw-semibold mb-1">
+                    ACTUALIZADO
+                </p>
                 <p>@Model.Fecha_Actualizacion.ToString("dd/MM/yyyy HH:mm")</p>
             </div>
-        </div>
-
-        <div class="mb-4">
-            <p class="text-muted small fw-semibold mb-1">DESCRIPCIÓN</p>
-            <p>@(Model.Descripcion ?? "Sin descripción registrada.")</p>
-        </div>
-
-        <hr />
-
-        <h5 class="mb-3">💊 Recetas médicas asociadas</h5>
-
-        @if (Model.RecetasMedicas.Any())
-        {
-            <div class="text-center py-4">
-                <i class="bi bi-clipboard-check display-6 text-primary"></i>
-                <p class="text-muted mt-2">
-                    Este expediente tiene <strong>@Model.RecetasMedicas.Count</strong> receta(s) médica(s) registrada(s).
-                </p>
+            <div class="col-12">
+                <p class="text-muted small fw-semibold mb-1">DESCRIPCIÓN</p>
+                <p>@(Model.Descripcion ?? "Sin descripción registrada.")</p>
             </div>
-        }
-        else
-        {
-            <div class="text-center py-4">
-                <i class="bi bi-clipboard-x display-6 text-muted"></i>
-                <p class="text-muted mt-2">Este expediente no tiene recetas médicas asociadas.</p>
-            </div>
-        }
-
-        <div class="d-flex gap-2 mt-4">
-            <a asp-action="Index" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Volver
-            </a>
-            <a asp-action="Editar" asp-route-id="@Model.Expediente_Id" class="btn btn-warning">
-                <i class="bi bi-pencil"></i> Editar
-            </a>
         </div>
+    </div>
 
+    @* Recetas médicas *@
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0" style="color:#243C8F;">
+            <i class="bi bi-file-medical me-2"></i>Recetas Médicas
+        </h4>
+        @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
+        {
+            <a asp-controller="Receta" asp-action="Crear"
+               asp-route-expedienteId="@Model.Expediente_Id"
+               class="btn btn-success btn-sm rounded-3">
+                <i class="bi bi-plus-circle me-1"></i>
+                Nueva receta
+            </a>
+        }
+    </div>
+
+    @if (!Model.RecetasMedicas.Any())
+    {
+        <div class="text-center py-4 card border-0 shadow-sm rounded-4 mb-4">
+            <i class="bi bi-clipboard-x display-6 text-muted"></i>
+            <p class="text-muted mt-2">
+                Este expediente no tiene recetas médicas.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <table class="table align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Medicamento</th>
+                        <th>Frecuencia</th>
+                        <th>Descripción</th>
+                        <th class="text-center">Vencimiento</th>
+                        <th class="text-center">Fecha emisión</th>
+                        @if (User.IsInRole("Admin") ||
+                                            User.IsInRole("Empleado"))
+                        {
+                            <th class="text-center">Acciones</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.RecetasMedicas
+                                    .OrderByDescending(r => r.Fecha_Emision))
+                    {
+                        <tr>
+                            <td class="fw-semibold">
+                                @r.Producto?.Nombre
+                                @if (!string.IsNullOrEmpty(r.Producto?.Marca))
+                                {
+                                    <small class="text-muted">
+                                        — @r.Producto.Marca
+                                    </small>
+                                }
+                            </td>
+                            <td>@(r.Frecuencia ?? "—")</td>
+                            <td class="text-muted small">
+                                @(r.Descripcion ?? "—")
+                            </td>
+                            <td class="text-center">
+                                @if (r.Fecha_Vencimiento.HasValue)
+                                {
+                                    @if (r.Fecha_Vencimiento < DateTime.Today)
+                                    {
+                                        <span class="badge bg-danger">
+                                            Vencida
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            @(r.Fecha_Vencimiento.Value.ToString("dd/MM/yyyy"))
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="text-center small text-muted">
+                                @r.Fecha_Emision.ToString("dd/MM/yyyy")
+                            </td>
+                            @if (User.IsInRole("Admin") ||
+                                                User.IsInRole("Empleado"))
+                            {
+                                <td class="text-center">
+                                    <a asp-controller="Receta"
+                                       asp-action="Descargar"
+                                       asp-route-id="@r.Receta_Id"
+                                       class="btn btn-info btn-sm text-white"
+                                       target="_blank">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <a asp-controller="Receta"
+                                       asp-action="Editar"
+                                       asp-route-id="@r.Receta_Id"
+                                       class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-controller="Receta"
+                                          asp-action="Eliminar"
+                                          asp-route-id="@r.Receta_Id"
+                                          method="post"
+                                          style="display:inline;"
+                                          onsubmit="return confirm('¿Eliminar esta receta?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-secondary rounded-3">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+        <a asp-action="Editar" asp-route-id="@Model.Expediente_Id"
+           class="btn btn-warning rounded-3">
+            <i class="bi bi-pencil me-1"></i>Editar
+        </a>
     </div>
 </div>

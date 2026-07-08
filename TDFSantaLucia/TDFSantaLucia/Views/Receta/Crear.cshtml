@@ -1,0 +1,102 @@
+﻿@model TDFSantaLucia.Models.RecetaMedica
+@{
+    ViewData["Title"] = "Nueva Receta Médica";
+    var expediente = ViewBag.Expediente as TDFSantaLucia.Models.Expediente;
+}
+
+<div class="container py-4" style="max-width:700px;">
+    <h2 class="fw-bold mb-2" style="color:#243C8F;">
+        <i class="bi bi-file-medical me-2"></i>Nueva Receta Médica
+    </h2>
+
+    @if (expediente != null)
+    {
+        <p class="text-muted mb-4">
+            Expediente de:
+            <strong>
+                @expediente.Cliente?.Usuario?.Nombre
+                @expediente.Cliente?.Usuario?.Primer_Apellido
+            </strong>
+        </p>
+    }
+
+    @if (!ViewData.ModelState.IsValid &&
+             ViewContext.HttpContext.Request.Method == "POST")
+    {
+        <div class="alert alert-danger rounded-3">
+            <ul class="mb-0">
+                @foreach (var e in ViewData.ModelState.Values
+                                    .SelectMany(v => v.Errors))
+                {
+                    <li>@e.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-action="Crear" asp-route-expedienteId="@Model.Expediente_Id"
+          method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Expediente_Id" />
+
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="row g-3">
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Medicamento</label>
+                    @Html.DropDownList("Producto_Id",
+                        (SelectList)ViewBag.Productos,
+                        "— Seleccione un medicamento —",
+                        new { @class = "form-select" })
+                    <span asp-validation-for="Producto_Id"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Frecuencia</label>
+                    <input asp-for="Frecuencia" class="form-control"
+                           placeholder="Ej: Cada 8 horas" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Fecha de vencimiento
+                    </label>
+                    <input asp-for="Fecha_Vencimiento"
+                           type="date" class="form-control" />
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Descripción</label>
+                    <textarea asp-for="Descripcion"
+                              class="form-control" rows="3"
+                              placeholder="Indicaciones del médico...">
+                    </textarea>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Observaciones</label>
+                    <textarea asp-for="Observaciones"
+                              class="form-control" rows="2"
+                              placeholder="Notas adicionales...">
+                    </textarea>
+                </div>
+
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-primary rounded-3">
+                        <i class="bi bi-save me-1"></i>Guardar
+                    </button>
+                    <a asp-controller="Expediente" asp-action="Detalle"
+                       asp-route-id="@Model.Expediente_Id"
+                       class="btn btn-secondary rounded-3">
+                        Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

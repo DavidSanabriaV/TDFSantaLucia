@@ -85,9 +85,13 @@ builder.Services.AddScoped<IExpedienteRepository, ExpedienteRepository>();
 builder.Services.AddScoped<ICitaRepository, CitaRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IFacturaRepository, FacturaRepository>();
-builder.Services.AddScoped<IMovimientoPuntosRepository,MovimientoPuntosRepository>();
+builder.Services.AddScoped<IMovimientoPuntosRepository, MovimientoPuntosRepository>();
 builder.Services.AddScoped<IArticuloRepository, ArticuloRepository>();
 builder.Services.AddScoped<ICuponRepository, CuponRepository>();
+builder.Services.AddScoped<IChatbotRepository, ChatbotRepository>();
+builder.Services.AddScoped<IRecetaRepository, RecetaRepository>();
+builder.Services.AddScoped<ITratamientoRepository, TratamientoRepository>();
+
 
 // Registrar Services
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
@@ -104,6 +108,9 @@ builder.Services.AddScoped<IFacturaService, FacturaService>();
 builder.Services.AddScoped<IPuntosService, PuntosService>();
 builder.Services.AddScoped<IArticuloService, ArticuloService>();
 builder.Services.AddScoped<ICuponService, CuponService>();
+builder.Services.AddScoped<IChatbotService, ChatbotService>();
+builder.Services.AddScoped<IRecetaService, RecetaService>();
+builder.Services.AddScoped<ITratamientoService, TratamientoService>();
 
 
 // Add services to the container
