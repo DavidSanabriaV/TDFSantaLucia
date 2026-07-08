@@ -33,6 +33,7 @@ namespace TDFSantaLucia.Data
         public DbSet<ArticuloSalud> ArticulosSalud { get; set; }
         public DbSet<ComentarioSalud> ComentariosSalud { get; set; }
         public DbSet<LikeArticulo> LikesArticulos { get; set; }
+        public DbSet<ChatbotOpcion> ChatbotOpciones { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -211,7 +212,7 @@ namespace TDFSantaLucia.Data
             // CarritoItemDb -> Cliente
             modelBuilder.Entity<CarritoItemDb>()
                 .HasOne(c => c.Cliente)
-                .WithMany(c => c.CarritoItems)   
+                .WithMany(c => c.CarritoItems)
                 .HasForeignKey(c => c.Cliente_Id)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
@@ -254,6 +255,8 @@ namespace TDFSantaLucia.Data
             modelBuilder.Entity<LikeArticulo>()
                 .HasIndex(l => new { l.Articulo_Id, l.Usuario_Id })
                 .IsUnique();
+
+
         }
     }
 }
