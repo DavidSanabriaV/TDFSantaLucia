@@ -1,0 +1,85 @@
+﻿@model TDFSantaLucia.Models.RecetaMedica
+@{
+    ViewData["Title"] = "Editar Receta Médica";
+    var expediente = ViewBag.Expediente as TDFSantaLucia.Models.Expediente;
+}
+
+<div class="container py-4" style="max-width:700px;">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-file-medical me-2"></i>Editar Receta Médica
+    </h2>
+
+    @if (!ViewData.ModelState.IsValid &&
+             ViewContext.HttpContext.Request.Method == "POST")
+    {
+        <div class="alert alert-danger rounded-3">
+            <ul class="mb-0">
+                @foreach (var e in ViewData.ModelState.Values
+                                    .SelectMany(v => v.Errors))
+                {
+                    <li>@e.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-action="Editar" asp-route-id="@Model.Receta_Id" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Receta_Id" />
+        <input type="hidden" asp-for="Expediente_Id" />
+
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="row g-3">
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Medicamento</label>
+                    @Html.DropDownList("Producto_Id",
+                        (SelectList)ViewBag.Productos,
+                        "— Seleccione un medicamento —",
+                        new { @class = "form-select" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Frecuencia</label>
+                    <input asp-for="Frecuencia" class="form-control" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Fecha de vencimiento
+                    </label>
+                    <input asp-for="Fecha_Vencimiento"
+                           type="date" class="form-control"
+                           value="@Model.Fecha_Vencimiento?.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Descripción</label>
+                    <textarea asp-for="Descripcion"
+                              class="form-control" rows="3"></textarea>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Observaciones</label>
+                    <textarea asp-for="Observaciones"
+                              class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-primary rounded-3">
+                        <i class="bi bi-save me-1"></i>Guardar cambios
+                    </button>
+                    <a asp-controller="Expediente" asp-action="Detalle"
+                       asp-route-id="@Model.Expediente_Id"
+                       class="btn btn-secondary rounded-3">
+                        Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

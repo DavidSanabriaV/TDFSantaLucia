@@ -12,6 +12,12 @@ namespace TDFSantaLucia.Models
 
         public string? Frecuencia { get; set; }
 
+        public DateTime Fecha_Emision { get; set; }
+
+        public DateTime? Fecha_Vencimiento { get; set; }
+
+        public string? Observaciones { get; set; }
+
         [ForeignKey(nameof(Producto))]
         public int Producto_Id { get; set; }
         public Producto? Producto { get; set; }
