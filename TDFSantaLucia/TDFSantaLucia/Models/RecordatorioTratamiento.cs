@@ -12,6 +12,8 @@ namespace TDFSantaLucia.Models
 
         public bool Confirmacion { get; set; }
 
+        public bool Alerta_Activa { get; set; } = true;
+
         [ForeignKey(nameof(Tratamiento))]
         public int Tratamiento_Id { get; set; }
         public Tratamiento? Tratamiento { get; set; }

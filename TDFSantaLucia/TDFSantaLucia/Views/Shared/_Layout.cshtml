@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
     <header>
@@ -19,337 +20,689 @@
             <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
 
                 <a asp-controller="Home" asp-action="Index">
-                    <img src="~/images/fotoL.jpg" alt="Logo" style="height:58px; border-radius:14px;">
-                </a>
+                    <img src="~/images/fotoL.jpg" alt="Logo"
+                         style="height:58px; border-radius:14px;">
+                    </a>
 
-                <form asp-controller="Producto"
-                      asp-action="Index"
-                      method="get"
-                      class="flex-grow-1 mx-4"
-                      style="max-width:550px;">
-                    <div class="input-group buscador-navbar">
-                        <input type="text" name="buscar" class="form-control"
-                               placeholder="Buscar producto..." autocomplete="off">
-                        <button class="input-group-text">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </form>
+                    <form asp-controller="Producto"
+                          asp-action="Index"
+                          method="get"
+                          class="flex-grow-1 mx-4"
+                          style="max-width:550px;">
+                        <div class="input-group buscador-navbar">
+                            <input type="text" name="buscar" class="form-control"
+                                   placeholder="Buscar producto..."
+                                   autocomplete="off">
+                            <button class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
 
-                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
 
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <div class="dropdown">
-                            <a href="#"
-                                   class="icon-navbar d-flex align-items-center gap-2 dropdown-toggle text-decoration-none"
-                                   data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle fs-5"></i>
-                                <span class="small fw-semibold d-none d-md-inline"
-                                      style="max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:inline-block;">
-                                    @User.Identity.Name
-                                </span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
-                                <li>
-                                    <span class="dropdown-item-text small text-muted">
-                                        @if (User.IsInRole("Admin"))
-                                        {
-                                            <i class="bi bi-shield-fill-check text-danger me-1"></i>
-                                            <text>Administrador</text>
-                                        }
-                                        else if (User.IsInRole("Empleado"))
-                                        {
-                                            <i class="bi bi-person-badge-fill text-primary me-1"></i>
-                                            <text>Empleado</text>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-person-fill text-success me-1"></i>
-                                            <text>Cliente</text>
-                                        }
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="dropdown">
+                                <a href="#"
+                                       class="icon-navbar d-flex align-items-center gap-2 dropdown-toggle text-decoration-none"
+                                       data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle fs-5"></i>
+                                    <span class="small fw-semibold d-none d-md-inline"
+                                          style="max-width:120px; overflow:hidden;
+                                        text-overflow:ellipsis;
+                                        white-space:nowrap;
+                                        display:inline-block;">
+                                        @User.Identity.Name
                                     </span>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                                    <li>
+                                        <span class="dropdown-item-text small text-muted">
+                                            @if (User.IsInRole("Admin"))
+                                            {
+                                                <i class="bi bi-shield-fill-check text-danger me-1"></i>
+                                                <text>Administrador</text>
+                                            }
+                                            else if (User.IsInRole("Empleado"))
+                                            {
+                                                <i class="bi bi-person-badge-fill text-primary me-1"></i>
+                                                <text>Empleado</text>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-person-fill text-success me-1"></i>
+                                                <text>Cliente</text>
+                                            }
+                                        </span>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-controller="Account"
+                                              asp-action="Logout" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="dropdown-item text-danger">
+                                                <i class="bi bi-box-arrow-right me-2"></i>
+                                                Cerrar sesión
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login"
+                                   class="icon-navbar">
+                                <i class="bi bi-person"></i>
+                            </a>
+                        }
+
+                        <a asp-controller="Carrito" asp-action="Index"
+                               class="icon-navbar position-relative" id="btnCarrito">
+                            <i class="bi bi-cart"></i>
+                            <span class="position-absolute top-0 start-100
+                            translate-middle badge rounded-pill
+                            bg-info text-dark"
+                                  style="font-size:10px;"
+                                  id="carritoCount">0</span>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-navbar px-4 py-2">
+                <ul class="nav justify-content-center align-items-center flex-wrap gap-2">
+
+                    <li class="nav-item">
+                        <a class="nav-link menu-link"
+                               asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-house-fill me-1"></i>Home
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link menu-link"
+                               asp-controller="Producto" asp-action="Index">
+                            <i class="bi bi-bag-fill me-1"></i>Productos
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link menu-link"
+                               asp-controller="Articulo" asp-action="Index">
+                            <i class="bi bi-heart-pulse-fill me-1"></i>Salud & Bienestar
+                        </a>
+                    </li>
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Cliente" asp-action="Index">
+                                <i class="bi bi-people-fill me-1"></i>Clientes
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Inventario" asp-action="Index">
+                                <i class="bi bi-box-seam-fill me-1"></i>Inventario
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Expediente" asp-action="Index">
+                                <i class="bi bi-folder-fill me-1"></i>Expedientes
+                            </a>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link menu-link dropdown-toggle"
+                                   href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-calendar2-heart-fill me-1"></i>Citas
+                            </a>
+                            <ul class="dropdown-menu">
                                 <li>
-                                    <form asp-controller="Account" asp-action="Logout" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
-                                        </button>
-                                    </form>
+                                    <a class="dropdown-item"
+                                           asp-controller="Cita" asp-action="Index">
+                                        Gestión de Citas
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Articulo" asp-action="Admin">
+                                <i class="bi bi-journal-text me-1"></i>Gestión Salud
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Cupon" asp-action="Index">
+                                <i class="bi bi-ticket-perforated-fill me-1"></i>Cupones
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Chatbot" asp-action="Admin">
+                                <i class="bi bi-robot me-1"></i>Chatbot
+                            </a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Cliente"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Cupon" asp-action="MisCupones">
+                                <i class="bi bi-ticket-perforated me-1"></i>Mis Cupones
+                            </a>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link menu-link dropdown-toggle"
+                                   href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-calendar2-heart-fill me-1"></i>Citas
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item"
+                                           asp-controller="Cita" asp-action="MisCitas">
+                                        <i class="bi bi-calendar-check me-1"></i>Mis Citas
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                           asp-controller="Cita" asp-action="Agendar">
+                                        <i class="bi bi-calendar-plus me-1"></i>Agendar Cita
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Pedido" asp-action="MisPedidos">
+                                <i class="bi bi-list-ul me-1"></i>Mis Pedidos
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Pedido" asp-action="MisPuntos">
+                                <i class="bi bi-star-fill me-1"></i>Mis Puntos
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Factura" asp-action="MisFacturas">
+                                <i class="bi bi-receipt me-1"></i>Mis Facturas
+                            </a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Pedido" asp-action="Admin">
+                                <i class="bi bi-clipboard2-check-fill me-1"></i>Pedidos
+                            </a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Categoria" asp-action="Index">
+                                <i class="bi bi-grid-fill me-1"></i>Categorías
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Empleado" asp-action="Index">
+                                <i class="bi bi-person-badge-fill me-1"></i>Empleados
+                            </a>
+                        </li>
+                    }
+
+                    @if (User.IsInRole("Cliente"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link menu-link"
+                                   asp-controller="Tratamiento" asp-action="Index">
+                                <i class="bi bi-capsule me-1"></i>Mis Tratamientos
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </header>
+
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="footer-custom pt-4 pb-2">
+            <div class="container">
+                <div class="row justify-content-between mb-3">
+
+                    <div class="col-12 col-lg-3 mb-3 text-center text-lg-start">
+                        <a asp-controller="Home" asp-action="Index">
+                            <img src="~/images/fotoL.jpg"
+                                 alt="Logo Farmacia Santa Lucía"
+                                 style="height:100px; border-radius:16px;">
+                            </a>
+                        </div>
+
+                        <div class="col-12 col-lg-3 mb-3">
+                            <h6 class="fw-bold mb-3 footer-title">Contacto</h6>
+                            <ul class="nav flex-column">
+                                <li class="nav-item mb-2 footer-text">
+                                    <i class="bi bi-telephone-fill me-2"></i>2237 3040
+                                </li>
+                                <li class="nav-item mb-2 footer-text">
+                                    <i class="bi bi-envelope-fill me-2"></i>
+                                    farmasantalucia@ice.co.cr
+                                </li>
+                                <li class="nav-item mb-2 footer-text">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>
+                                    Heredia, Costa Rica, 40102
                                 </li>
                             </ul>
                         </div>
-                    }
-                    else
-                    {
-                        <a asp-controller="Account" asp-action="Login" class="icon-navbar">
-                            <i class="bi bi-person"></i>
-                        </a>
-                    }
 
-                    <a asp-controller="Carrito" asp-action="Index"
-                           class="icon-navbar position-relative" id="btnCarrito">
-                        <i class="bi bi-cart"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle
-                        badge rounded-pill bg-info text-dark"
-                              style="font-size:10px;" id="carritoCount">0</span>
-                    </a>
+                        <div class="col-12 col-lg-3 mb-3">
+                            <h6 class="fw-bold mb-3 footer-title">Enlaces</h6>
+                            <ul class="nav flex-column">
+                                <li class="nav-item mb-2">
+                                    <a asp-controller="Home" asp-action="Index"
+                                           class="footer-link">
+                                        <i class="bi bi-house-fill me-2"></i>Inicio
+                                    </a>
+                                </li>
+                                <li class="nav-item mb-2">
+                                    <a asp-controller="Producto" asp-action="Index"
+                                           class="footer-link">
+                                        <i class="bi bi-bag-fill me-2"></i>Productos
+                                    </a>
+                                </li>
+                                <li class="nav-item mb-2">
+                                    <a asp-controller="Home" asp-action="SobreNosotros"
+                                           class="footer-link">
+                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                        Sobre nosotros
+                                    </a>
+                                </li>
+                                <li class="nav-item mb-2">
+                                    <a asp-controller="Cita" asp-action="Index"
+                                           class="footer-link">
+                                        <i class="bi bi-calendar-check-fill me-2"></i>Citas
+                                    </a>
+                                </li>
+                                <li class="nav-item mb-2">
+                                    <a asp-controller="Articulo" asp-action="Index"
+                                           class="footer-link">
+                                        <i class="bi bi-heart-pulse-fill me-2"></i>
+                                        Salud & Bienestar
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
 
-                </div>
-            </div>
-        </div>
-
-        <div class="menu-navbar px-4 py-2">
-            <ul class="nav justify-content-center align-items-center flex-wrap gap-2">
-
-                <li class="nav-item">
-                    <a class="nav-link menu-link" asp-controller="Home" asp-action="Index">
-                        <i class="bi bi-house-fill me-1"></i>Home
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link menu-link" asp-controller="Producto" asp-action="Index">
-                        <i class="bi bi-bag-fill me-1"></i>Productos
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link menu-link" asp-controller="Articulo" asp-action="Index">
-                        <i class="bi bi-heart-pulse-fill me-1"></i>Salud & Bienestar
-                    </a>
-                </li>
-
-                @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
-                {
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" asp-controller="Cliente" asp-action="Index">
-                            <i class="bi bi-people-fill me-1"></i>Clientes
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" asp-controller="Inventario" asp-action="Index">
-                            <i class="bi bi-box-seam-fill me-1"></i>Inventario
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" asp-controller="Expediente" asp-action="Index">
-                            <i class="bi bi-folder-fill me-1"></i>Expedientes
-                        </a>
-                    </li>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link menu-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-calendar2-heart-fill me-1"></i>Citas
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" asp-controller="Cita" asp-action="Index">
-                                    Gestión de Citas
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" asp-controller="Articulo" asp-action="Admin">
-                            <i class="bi bi-journal-text me-1"></i>Gestión Salud
-                        </a>
-                    </li>
-                }
-
-                @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
-                {
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" asp-controller="Cupon" asp-action="Index">
-                            <i class="bi bi-ticket-perforated-fill me-1"></i>Cupones
-                        </a>
-                    </li>
-                }
-
-                @if (User.IsInRole("Cliente"))
-                {
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" asp-controller="Cupon" asp-action="MisCupones">
-                            <i class="bi bi-ticket-perforated me-1"></i>Mis Cupones
-                        </a>
-                    </li>
-                }
-
-                @if (User.IsInRole("Cliente"))
-                {
-                    <li class="nav-item dropdown">
-                        <a class="nav-link menu-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-calendar2-heart-fill me-1"></i>Citas
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" asp-controller="Cita" asp-action="MisCitas">
-                                    <i class="bi bi-calendar-check me-1"></i>Mis Citas
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" asp-controller="Cita" asp-action="Agendar">
-                                    <i class="bi bi-calendar-plus me-1"></i>Agendar Cita
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                }
-
-                @if (User.IsInRole("Cliente"))
-                {
-                    <li class="nav-item">
-                        <a class="nav-link menu-link"
-                               asp-controller="Pedido" asp-action="MisPedidos">
-                            <i class="bi bi-list-ul me-1"></i>Mis Pedidos
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link menu-link"
-                           asp-controller="Pedido" asp-action="MisPuntos">
-                            <i class="bi bi-star-fill me-1"></i>Mis Puntos
-                        </a>
-                    </li>
-
-
-                    <li class="nav-item">
-                        <a class="nav-link menu-link"
-                               asp-controller="Factura" asp-action="MisFacturas">
-                            <i class="bi bi-receipt me-1"></i>Mis Facturas
-                        </a>
-                    </li>
-                }
-
-                @if (User.IsInRole("Admin") || User.IsInRole("Empleado"))
-                {
-                    <li class="nav-item">
-                        <a class="nav-link menu-link"
-                               asp-controller="Pedido" asp-action="Admin">
-                            <i class="bi bi-clipboard2-check-fill me-1"></i>Pedidos
-                        </a>
-                    </li>
-                }
-
-                @if (User.IsInRole("Admin"))
-                {
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" asp-controller="Categoria" asp-action="Index">
-                            <i class="bi bi-grid-fill me-1"></i>Categorías
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link menu-link" asp-controller="Empleado" asp-action="Index">
-                            <i class="bi bi-person-badge-fill me-1"></i>Empleados
-                        </a>
-                    </li>
-                }
-
-            </ul>
-        </div>
-    </header>
-
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="footer-custom pt-4 pb-2">
-        <div class="container">
-            <div class="row justify-content-between mb-3">
-
-                <div class="col-12 col-lg-3 mb-3 text-center text-lg-start">
-                    <a asp-controller="Home" asp-action="Index">
-                        <img src="~/images/fotoL.jpg" alt="Logo Farmacia Santa Lucía"
-                             style="height:100px; border-radius:16px;">
-                    </a>
+                    </div>
                 </div>
 
-                <div class="col-12 col-lg-3 mb-3">
-                    <h6 class="fw-bold mb-3 footer-title">Contacto</h6>
-                    <ul class="nav flex-column">
-                        <li class="nav-item mb-2 footer-text">
-                            <i class="bi bi-telephone-fill me-2"></i>2237 3040
-                        </li>
-                        <li class="nav-item mb-2 footer-text">
-                            <i class="bi bi-envelope-fill me-2"></i>farmasantalucia@ice.co.cr
-                        </li>
-                        <li class="nav-item mb-2 footer-text">
-                            <i class="bi bi-geo-alt-fill me-2"></i>Heredia, Costa Rica, 40102
-                        </li>
-                    </ul>
+                <hr class="footer-divider">
+
+                <div class="container">
+                    <div class="row align-items-center mb-2">
+                        <div class="col-12 text-center">
+                            <small class="footer-copy">
+                                Farmacia Santa Lucía de Barva © 2026.
+                                Todos los derechos reservados.
+                            </small>
+                        </div>
+                    </div>
                 </div>
+            </footer>
 
-                <div class="col-12 col-lg-3 mb-3">
-                    <h6 class="fw-bold mb-3 footer-title">Enlaces</h6>
-                    <ul class="nav flex-column">
-                        <li class="nav-item mb-2">
-                            <a asp-controller="Home" asp-action="Index" class="footer-link">
-                                <i class="bi bi-house-fill me-2"></i>Inicio
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a asp-controller="Producto" asp-action="Index" class="footer-link">
-                                <i class="bi bi-bag-fill me-2"></i>Productos
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a asp-controller="Home" asp-action="SobreNosotros" class="footer-link">
-                                <i class="bi bi-info-circle-fill me-2"></i>Sobre nosotros
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a asp-controller="Cita" asp-action="Index" class="footer-link">
-                                <i class="bi bi-calendar-check-fill me-2"></i>Citas
-                            </a>
-                        </li>
-                        <li class="nav-item mb-2">
-                            <a asp-controller="Articulo" asp-action="Index" class="footer-link">
-                                <i class="bi bi-heart-pulse-fill me-2"></i>Salud & Bienestar
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+            <script src="~/lib/jquery/dist/jquery.min.js"></script>
+            <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="~/js/site.js" asp-append-version="true"></script>
+            @await RenderSectionAsync("Scripts", required: false)
 
-            </div>
-        </div>
-
-        <hr class="footer-divider">
-
-        <div class="container">
-            <div class="row align-items-center mb-2">
-                <div class="col-12 text-center">
-                    <small class="footer-copy">
-                        Farmacia Santa Lucía de Barva © 2026. Todos los derechos reservados.
-                    </small>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-
-    <script>
-            function actualizarContadorCarrito() {
-                fetch('/carrito/contar')
+            <script>
+                    function actualizarContadorCarrito() {
+                    fetch('/carrito/contar')
                     .then(r => r.json())
                     .then(d => {
-                        const badge = document.getElementById('carritoCount');
-                        if (badge) badge.textContent = d.count;
+                    const badge = document.getElementById('carritoCount');
+                    if (badge) badge.textContent = d.count;
                     })
                     .catch(() => {});
-            }
+                    }
+                    actualizarContadorCarrito();
+            </script>
 
-            actualizarContadorCarrito();
-    </script>
-</body>
-</html>
+            @* ── Chatbot burbuja flotante ── *@
+            <div id="chatbotBurbuja">
+                <div id="chatbotVentana">
+                    <div class="chatbot-header">
+                        <span>
+                            <i class="bi bi-robot me-2"></i>Asistente Virtual
+                        </span>
+                        <button onclick="cerrarChat()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div id="chatbotMensajes"></div>
+                    <div class="chatbot-opciones" id="chatbotOpciones"></div>
+                    <div id="chatbotInput">
+                        <input type="text" id="chatbotTexto"
+                               placeholder="Escribí tu consulta..."
+                               onkeydown="if(event.key==='Enter') enviarTexto()" />
+                        <button onclick="enviarTexto()">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </div>
+                <button id="chatbotBtn" onclick="toggleChat()"
+                        title="Asistente Virtual">
+                    <i class="bi bi-robot"></i>
+                </button>
+            </div>
+
+            <script>
+                    let chatAbierto   = false;
+                    let opcionesCache = [];
+                    const estaAuth    = @(User.Identity?.IsAuthenticated == true
+                                                                                            ? "true" : "false");
+
+                    // ── Toggle ────────────────────────────────────────────────────────────
+
+                    async function toggleChat() {
+                    chatAbierto = !chatAbierto;
+                    const ventana = document.getElementById('chatbotVentana');
+                    ventana.classList.toggle('abierto', chatAbierto);
+
+                    if (chatAbierto &&
+                    document.getElementById('chatbotMensajes').children.length === 0)
+                    {
+                    await iniciarChat();
+                    }
+                    }
+
+                    function cerrarChat() {
+                    chatAbierto = false;
+                    document.getElementById('chatbotVentana').classList.remove('abierto');
+                    }
+
+                    // ── Inicio ────────────────────────────────────────────────────────────
+
+                    async function iniciarChat() {
+                    agregarBurbuja('bot',
+                    '¡Hola! 👋 Soy el asistente de Farmacia Santa Lucía. ' +
+                    '¿En qué puedo ayudarte?');
+                    await cargarOpciones();
+                    }
+
+                    async function cargarOpciones() {
+                    const resp    = await fetch('/chatbot/opciones');
+                    opcionesCache = await resp.json();
+                    mostrarOpciones();
+                    }
+
+                    function mostrarOpciones() {
+                    const cont = document.getElementById('chatbotOpciones');
+                    cont.innerHTML = '';
+                    opcionesCache.forEach(o => {
+                    const btn = document.createElement('button');
+                    btn.innerHTML =
+                    `<i class="bi ${o.icono || 'bi-chat'} me-1"></i>${o.texto}`;
+                    btn.onclick = () => seleccionarOpcion(o);
+                    cont.appendChild(btn);
+                    });
+                    }
+
+                    function ocultarOpciones() {
+                    document.getElementById('chatbotOpciones').innerHTML = '';
+                    }
+
+                    // ── Seleccionar opción ────────────────────────────────────────────────
+
+                    async function seleccionarOpcion(opcion) {
+                    agregarBurbuja('usuario', opcion.texto);
+                    ocultarOpciones();
+                    mostrarTyping();
+
+                    const resp = await fetch('/chatbot/responder', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({
+                    opcionId: opcion.opcion_Id,
+                    texto:    null
+                    })
+                    });
+
+                    const data = await resp.json();
+                    quitarTyping();
+                    procesarRespuesta(data);
+                    }
+
+                    // ── Texto libre ───────────────────────────────────────────────────────
+
+                    async function enviarTexto() {
+                    const input = document.getElementById('chatbotTexto');
+                    const texto = input.value.trim();
+                    if (!texto) return;
+
+                    input.value = '';
+                    agregarBurbuja('usuario', texto);
+                    ocultarOpciones();
+                    mostrarTyping();
+
+                    const resp = await fetch('/chatbot/responder', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ opcionId: null, texto })
+                    });
+
+                    const data = await resp.json();
+                    quitarTyping();
+                    procesarRespuesta(data);
+                    }
+
+                    // ── Procesar respuesta — UNA SOLA FUNCIÓN ─────────────────────────────
+
+                    function procesarRespuesta(data) {
+                    if (data.mensaje)
+                    agregarBurbuja('bot', data.mensaje);
+
+                    switch (data.tipo) {
+                    case 'redireccion':
+                    if (data.datos)
+                    agregarLinkBot('Ir ahora →', String(data.datos));
+                    break;
+
+                    case 'pedidos':
+                    if (data.datos?.length)
+                    agregarTarjetas(data.datos, renderPedido);
+                    agregarLinkBot('📦 Ver todos mis pedidos',
+                    '/pedido/mispedidos');
+                    break;
+
+                    case 'citas':
+                    if (data.datos?.length)
+                    agregarTarjetas(data.datos, renderCita);
+                    agregarLinkBot('📅 Ver todas mis citas', '/cita/miscitas');
+                    break;
+
+                    case 'facturas':
+                    if (data.datos?.length)
+                    agregarTarjetas(data.datos, renderFactura);
+                    agregarLinkBot('🧾 Ver todas mis facturas',
+                    '/factura/misfacturas');
+                    break;
+
+                    case 'carrito':
+                    if (data.datos?.length)
+                    agregarTarjetas(data.datos, renderCarritoItem);
+                    agregarLinkBot('🛒 Ir al carrito', '/carrito');
+                    break;
+                    }
+
+                    // Volver a mostrar opciones después de un delay sin eval
+                    const delay = 500;
+                    const id = window.setTimeout(mostrarOpciones, delay);
+                    scrollChat();
+                    }
+
+                    // ── Renders ───────────────────────────────────────────────────────────
+
+                    function renderPedido(p) {
+                    const colores = {
+                    'Pendiente': 'warning text-dark',
+                    'Aceptado':  'info text-dark',
+                    'EnProceso': 'primary',
+                    'Listo':     'success',
+                    'EnCamino':  'primary',
+                    'Entregado': 'success',
+                    'Rechazado': 'danger',
+                    'Cancelado': 'secondary'
+                    };
+                    const badge = colores[p.estado] ?? 'secondary';
+                    return `
+                    <div class="chatbot-tarjeta">
+                    <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold" style="color:#243C8F;">
+                    ${p.numero_Orden}
+                    </span>
+                    <span class="badge bg-${badge}">${p.estado}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted">📅 ${p.fecha}</small>
+                    <small class="fw-bold text-success">${p.total}</small>
+                    </div>
+                    </div>`;
+                    }
+
+                    function renderCita(c) {
+                    return `
+                    <div class="chatbot-tarjeta">
+                    <div class="fw-semibold">
+                    <i class="bi bi-calendar-event me-1"
+                    style="color:#243C8F;"></i>
+                    ${c.fecha}
+                    </div>
+                    <div class="small text-muted mt-1">
+                    ${c.servicio ?? 'Sin especificar'}
+                    </div>
+                    <span class="badge bg-info text-dark mt-1">
+                    ${c.estado}
+                    </span>
+                    </div>`;
+                    }
+
+                    function renderFactura(f) {
+                    return `
+                    <div class="chatbot-tarjeta">
+                    <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold" style="color:#243C8F;">
+                    ${f.numero_Factura}
+                    </span>
+                    <span class="badge bg-success">${f.estado}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted">📅 ${f.fecha}</small>
+                    <small class="fw-bold text-success">${f.total}</small>
+                    </div>
+                    </div>`;
+                    }
+
+                    function renderCarritoItem(i) {
+                    return `
+                    <div class="chatbot-tarjeta">
+                    <div class="fw-semibold">${i.nombre}</div>
+                    <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted">
+                    x${i.cantidad} — ${i.precio}
+                    </small>
+                    <small class="fw-bold text-success">${i.subtotal}</small>
+                    </div>
+                    </div>`;
+                    }
+
+                    // ── Helpers ───────────────────────────────────────────────────────────
+
+                    function agregarBurbuja(tipo, texto) {
+                    const cont = document.getElementById('chatbotMensajes');
+                    const div  = document.createElement('div');
+                    div.className    = `chat-burbuja ${tipo}`;
+                    div.style.whiteSpace = 'pre-line';
+                    div.textContent  = texto;
+                    cont.appendChild(div);
+                    scrollChat();
+                    }
+
+                    function agregarTarjetas(datos, renderFn) {
+                    const cont = document.getElementById('chatbotMensajes');
+                    const wrap = document.createElement('div');
+                    wrap.className = 'chatbot-tarjetas';
+                    wrap.innerHTML = datos.map(renderFn).join('');
+                    cont.appendChild(wrap);
+                    scrollChat();
+                    }
+
+                    function agregarLinkBot(texto, url) {
+                    const cont = document.getElementById('chatbotMensajes');
+                    const div  = document.createElement('div');
+                    div.className = 'chat-burbuja bot';
+                    const a = document.createElement('a');
+                    a.href      = url;
+                    a.style.color      = '#243C8F';
+                    a.style.fontWeight = '600';
+                    a.textContent = texto + ' →';
+                    div.appendChild(a);
+                    cont.appendChild(div);
+                    scrollChat();
+                    }
+
+                    function mostrarTyping() {
+                    const cont = document.getElementById('chatbotMensajes');
+                    const div  = document.createElement('div');
+                    div.className = 'chat-burbuja bot chat-typing';
+                    div.id        = 'chatTyping';
+                    const s1 = document.createElement('span');
+                    const s2 = document.createElement('span');
+                    const s3 = document.createElement('span');
+                    div.appendChild(s1);
+                    div.appendChild(s2);
+                    div.appendChild(s3);
+                    cont.appendChild(div);
+                    scrollChat();
+                    }
+
+                    function quitarTyping() {
+                    document.getElementById('chatTyping')?.remove();
+                    }
+
+                    function scrollChat() {
+                    const msgs = document.getElementById('chatbotMensajes');
+                    msgs.scrollTop = msgs.scrollHeight;
+                    }
+            </script>
+
+        </body>
+    </html>

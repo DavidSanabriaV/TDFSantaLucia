@@ -20,6 +20,8 @@ namespace TDFSantaLucia.Models
 
         public bool Estado { get; set; }
 
+        public bool Alertas_Activas { get; set; } = true;
+
         [ForeignKey(nameof(Cliente))]
         public int Cliente_Id { get; set; }
         public Cliente? Cliente { get; set; }

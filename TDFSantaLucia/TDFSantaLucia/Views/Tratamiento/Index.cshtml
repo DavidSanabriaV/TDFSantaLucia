@@ -1,0 +1,209 @@
+﻿@model List<TDFSantaLucia.Models.Tratamiento>
+@{
+    ViewData["Title"] = "Mis Tratamientos";
+    var hoy = DateTime.Today;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#243C8F;">
+                <i class="bi bi-capsule me-2"></i>Mis Tratamientos
+            </h2>
+            <p class="text-muted mb-0">
+                Gestiona tus medicamentos y recordatorios
+            </p>
+        </div>
+        <a asp-action="Crear" class="btn btn-success rounded-3">
+            <i class="bi bi-plus-circle me-1"></i>Nuevo tratamiento
+        </a>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3">
+            ✅ @TempData["Exito"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3">
+            ❌ @TempData["Error"]
+            <button type="button" class="btn-close"
+                    data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @* Alerta de recordatorios activos *@
+    <div id="alertaRecordatorios"></div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-capsule display-3 text-muted"></i>
+            <p class="text-muted mt-3">
+                No tienes tratamientos registrados.
+            </p>
+        </div>
+    }
+    else
+    {
+        @foreach (var t in Model)
+        {
+            var activo = t.Estado && t.Fecha_Fin >= hoy;
+            var vencido = t.Fecha_Fin < hoy;
+
+            <div class="card border-0 shadow-sm rounded-4 mb-3">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between
+                        align-items-start flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color:#243C8F;">
+                                <i class="bi bi-capsule me-1"></i>
+                                @t.Nombre_Medicamento
+                            </h5>
+                            @if (!string.IsNullOrEmpty(t.Dosis))
+                            {
+                                <small class="text-muted">
+                                    Dosis: @t.Dosis
+                                </small>
+                            }
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            @if (vencido)
+                            {
+                                <span class="badge bg-secondary">Vencido</span>
+                            }
+                            else if (activo)
+                            {
+                                <span class="badge bg-success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Inactivo</span>
+                            }
+
+                            @* Toggle alertas *@
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="alerta_@t.Tratamiento_Id"
+                                @(t.Alertas_Activas ? "checked" : "")
+                                       onchange="toggleAlertas(@t.Tratamiento_Id, this)" />
+                                <label class="form-check-label small"
+                                       for="alerta_@t.Tratamiento_Id">
+                                    <i class="bi bi-bell me-1"></i>Alertas
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3 g-2">
+                        <div class="col-md-3">
+                            <small class="text-muted">Inicio</small>
+                            <div class="fw-semibold">
+                                @t.Fecha_Inicio.ToString("dd/MM/yyyy")
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <small class="text-muted">Fin</small>
+                            <div class="fw-semibold">
+                                @t.Fecha_Fin.ToString("dd/MM/yyyy")
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Horarios</small>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                @foreach (var r in t.Recordatorios
+                                                                    .OrderBy(r => r.Hora))
+                                {
+                                    <span class="badge bg-primary">
+                                        <i class="bi bi-clock me-1"></i>
+                                        @r.Hora.ToString(@"hh\:mm")
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="Editar"
+                               asp-route-id="@t.Tratamiento_Id"
+                               class="btn btn-warning btn-sm rounded-3">
+                            <i class="bi bi-pencil me-1"></i>Editar
+                        </a>
+                        <form asp-action="Eliminar"
+                              asp-route-id="@t.Tratamiento_Id"
+                              method="post"
+                              onsubmit="return confirm('¿Eliminar este tratamiento?')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="btn btn-danger btn-sm rounded-3">
+                                <i class="bi bi-trash me-1"></i>Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        const token = document.querySelector(
+            'input[name="__RequestVerificationToken"]').value;
+
+        // Verificar recordatorios cada minuto
+        function verificarRecordatorios() {
+            fetch('/tratamiento/recordatorios')
+                .then(r => r.json())
+                .then(lista => {
+                    const contenedor =
+                        document.getElementById('alertaRecordatorios');
+                    contenedor.innerHTML = '';
+
+                    lista.forEach(function (r) {
+                        const div = document.createElement('div');
+                        div.className =
+                            'alert alert-warning alert-dismissible ' +
+                            'fade show rounded-3 d-flex align-items-center gap-2';
+                        div.innerHTML = `
+                            <i class="bi bi-bell-fill fs-5"></i>
+                            <div>
+                                <strong>⏰ Recordatorio:</strong>
+                                Es hora de tomar
+                                <strong>${r.medicamento}</strong>
+                                ${r.dosis ? '— Dosis: ' + r.dosis : ''}.
+                                Hora programada: ${r.hora}
+                            </div>
+                            <button type="button" class="btn-close ms-auto"
+                                    data-bs-dismiss="alert"></button>`;
+                        contenedor.appendChild(div);
+                    });
+                })
+                .catch(() => {});
+        }
+
+        verificarRecordatorios();
+        setInterval(verificarRecordatorios, 60000);
+
+        function toggleAlertas(id, checkbox) {
+            fetch(`/tratamiento/toggle-alertas/${id}`, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token }
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (!d.exito) {
+                    checkbox.checked = !checkbox.checked;
+                    alert(d.error ?? 'Error al cambiar alertas.');
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,161 @@
+﻿@model TDFSantaLucia.Models.TratamientoViewModel
+@{
+    ViewData["Title"] = "Nuevo Tratamiento";
+}
+
+<div class="container py-4" style="max-width:700px;">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-capsule me-2"></i>Nuevo Tratamiento
+    </h2>
+
+    @if (!ViewData.ModelState.IsValid &&
+             ViewContext.HttpContext.Request.Method == "POST")
+    {
+        <div class="alert alert-danger rounded-3">
+            <h6 class="fw-bold mb-2">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Corrija los siguientes errores:
+            </h6>
+            <ul class="mb-0">
+                @foreach (var e in ViewData.ModelState.Values
+                                    .SelectMany(v => v.Errors))
+                {
+                    <li>@e.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-action="Crear" method="post">
+        @Html.AntiForgeryToken()
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <div class="row g-3">
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">
+                        Nombre del medicamento
+                    </label>
+                    <input asp-for="Nombre_Medicamento"
+                           class="form-control"
+                           placeholder="Ej: Metformina 500mg" />
+                    <span asp-validation-for="Nombre_Medicamento"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Dosis</label>
+                    <input asp-for="Dosis" class="form-control"
+                           placeholder="Ej: 1 tableta" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Duración</label>
+                    <input asp-for="Duracion" class="form-control"
+                           placeholder="Ej: 30 días" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Fecha de inicio
+                    </label>
+                    <input asp-for="Fecha_Inicio"
+                           type="date" class="form-control"
+                           value="@Model.Fecha_Inicio.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="Fecha_Inicio"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Fecha de fin</label>
+                    <input asp-for="Fecha_Fin"
+                           type="date" class="form-control"
+                           value="@Model.Fecha_Fin.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="Fecha_Fin"
+                          class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input asp-for="Alertas_Activas"
+                               class="form-check-input"
+                               type="checkbox" checked />
+                        <label asp-for="Alertas_Activas"
+                               class="form-check-label">
+                            <i class="bi bi-bell me-1"></i>
+                            Activar alertas de recordatorio
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">
+                        Horarios de recordatorio
+                    </label>
+                    <div id="contenedorHorarios">
+                        <div class="input-group mb-2">
+                            <span class="input-group-text">
+                                <i class="bi bi-clock"></i>
+                            </span>
+                            <input type="time" name="horarios"
+                                   class="form-control"
+                                   value="08:00" />
+                            <button type="button"
+                                    class="btn btn-outline-danger"
+                                    onclick="quitarHorario(this)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button"
+                            class="btn btn-outline-primary btn-sm rounded-3"
+                            onclick="agregarHorario()">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Agregar horario
+                    </button>
+                    <small class="text-muted d-block mt-1">
+                        Agrega un horario por cada toma del día.
+                    </small>
+                </div>
+
+                <div class="col-12 d-flex gap-2 mt-2">
+                    <button type="submit" class="btn btn-primary rounded-3">
+                        <i class="bi bi-save me-1"></i>Guardar
+                    </button>
+                    <a asp-action="Index"
+                           class="btn btn-secondary rounded-3">
+                        Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function agregarHorario() {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            div.innerHTML = `
+                <span class="input-group-text">
+                    <i class="bi bi-clock"></i>
+                </span>
+                <input type="time" name="horarios"
+                       class="form-control" value="08:00" />
+                <button type="button" class="btn btn-outline-danger"
+                        onclick="quitarHorario(this)">
+                    <i class="bi bi-trash"></i>
+                </button>`;
+            document.getElementById('contenedorHorarios').appendChild(div);
+        }
+
+        function quitarHorario(btn) {
+            const contenedor = document.getElementById('contenedorHorarios');
+            if (contenedor.children.length > 1)
+                btn.closest('.input-group').remove();
+            else
+                alert('Debe tener al menos un horario.');
+        }
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}
