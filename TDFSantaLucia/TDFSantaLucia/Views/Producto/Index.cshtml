@@ -264,7 +264,8 @@
         const slider    = document.getElementById('filtroPrecio');
         slider.max      = precioMax;
         slider.value    = precioMax;
-        document.getElementById('precioLabel').textContent = '₡' + precioMax.toLocaleString('es-CR');
+        document.getElementById('precioLabel').textContent =
+            '₡' + precioMax.toLocaleString('es-CR');
 
         function filtrar() {
             const texto     = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -274,22 +275,30 @@
             const estado    = document.getElementById('filtroEstado').value;
             const precio    = parseFloat(slider.value);
             const orden     = document.getElementById('ordenar').value;
-            const hayFiltros = texto || categoria || marca || receta || estado || precio < precioMax || orden;
+            const hayFiltros = texto || categoria || marca || receta ||
+                               estado || precio < precioMax || orden;
 
-            document.getElementById('btnLimpiarFiltros').style.display = hayFiltros ? 'block' : 'none';
+            document.getElementById('btnLimpiarFiltros').style.display =
+                hayFiltros ? 'block' : 'none';
             actualizarChips(texto, categoria, marca, receta, estado, precio);
 
             let visibles = cards.filter(c => {
                 const nombreCard    = c.dataset.nombre    || '';
                 const categoriaCard = c.dataset.categoria || '';
                 const marcaCard     = c.dataset.marca     || '';
-                const pasaTexto     = !texto     || nombreCard.includes(texto) || categoriaCard.includes(texto) || marcaCard.includes(texto);
+
+                const pasaTexto     = !texto     ||
+                    nombreCard.includes(texto)    ||
+                    categoriaCard.includes(texto) ||
+                    marcaCard.includes(texto);
                 const pasaCategoria = !categoria || categoriaCard === categoria;
                 const pasaMarca     = !marca     || marcaCard     === marca;
                 const pasaReceta    = !receta    || c.dataset.receta === receta;
                 const pasaEstado    = !estado    || c.dataset.estado === estado;
                 const pasaPrecio    = parseFloat(c.dataset.precio) <= precio;
-                const visible = pasaTexto && pasaCategoria && pasaMarca && pasaReceta && pasaEstado && pasaPrecio;
+
+                const visible = pasaTexto && pasaCategoria && pasaMarca &&
+                                pasaReceta && pasaEstado && pasaPrecio;
                 c.classList.toggle('d-none', !visible);
                 return visible;
             });
@@ -297,35 +306,56 @@
             if (orden) {
                 const grid = document.getElementById('gridProductos');
                 visibles.sort((a, b) => {
-                    if (orden === 'nombre-asc')  return a.dataset.nombre.localeCompare(b.dataset.nombre);
-                    if (orden === 'nombre-desc') return b.dataset.nombre.localeCompare(a.dataset.nombre);
-                    if (orden === 'precio-asc')  return parseFloat(a.dataset.precio) - parseFloat(b.dataset.precio);
-                    if (orden === 'precio-desc') return parseFloat(b.dataset.precio) - parseFloat(a.dataset.precio);
+                    if (orden === 'nombre-asc')
+                        return a.dataset.nombre.localeCompare(b.dataset.nombre);
+                    if (orden === 'nombre-desc')
+                        return b.dataset.nombre.localeCompare(a.dataset.nombre);
+                    if (orden === 'precio-asc')
+                        return parseFloat(a.dataset.precio) - parseFloat(b.dataset.precio);
+                    if (orden === 'precio-desc')
+                        return parseFloat(b.dataset.precio) - parseFloat(a.dataset.precio);
                 });
                 visibles.forEach(c => grid.appendChild(c));
             }
 
             const total = visibles.length;
             document.getElementById('contadorResultados').innerHTML =
-                total > 0 ? <span class="fw-semibold">${total}</span> producto${total !== 1 ? 's' : ''} : '';
+                total > 0
+                    ? `<span class="fw-semibold">${total}</span> producto${total !== 1 ? 's' : ''}`
+                    : '';
             document.getElementById('estadoVacio').classList.toggle('d-none', total > 0);
         }
 
         function actualizarChips(texto, categoria, marca, receta, estado, precio) {
-            const hay = texto || categoria || marca || receta || estado || precio < precioMax;
-            document.getElementById('filtrosActivos').classList.toggle('d-none', !hay);
-            setChip('chipTexto',     texto     ? "${texto}" : null);
+            const hay = texto || categoria || marca || receta ||
+                        estado || precio < precioMax;
+            document.getElementById('filtrosActivos')
+                .classList.toggle('d-none', !hay);
+
+            setChip('chipTexto',
+                texto ? `"${texto}"` : null);
             setChip('chipCategoria', categoria || null);
             setChip('chipMarca',     marca     || null);
-            setChip('chipReceta',    receta === 'true' ? 'Con receta' : receta === 'false' ? 'Sin receta' : null);
-            setChip('chipEstado',    estado === 'true' ? 'Activo'     : estado === 'false' ? 'Inactivo'   : null);
-            setChip('chipPrecio',    precio < precioMax ? Hasta ₡${precio.toLocaleString('es-CR')} : null);
+            setChip('chipReceta',
+                receta === 'true'  ? 'Con receta' :
+                receta === 'false' ? 'Sin receta' : null);
+            setChip('chipEstado',
+                estado === 'true'  ? 'Activo'   :
+                estado === 'false' ? 'Inactivo' : null);
+            setChip('chipPrecio',
+                precio < precioMax
+                    ? `Hasta ₡${precio.toLocaleString('es-CR')}`
+                    : null);
         }
 
         function setChip(id, texto) {
             const el = document.getElementById(id);
-            if (texto) { el.textContent = texto; el.classList.remove('d-none'); }
-            else        { el.classList.add('d-none'); }
+            if (texto) {
+                el.textContent = texto;
+                el.classList.remove('d-none');
+            } else {
+                el.classList.add('d-none');
+            }
         }
 
         function limpiarTodo() {
@@ -336,17 +366,19 @@
             document.getElementById('filtroEstado').value    = '';
             document.getElementById('ordenar').value         = '';
             slider.value = precioMax;
-            document.getElementById('precioLabel').textContent = '₡' + precioMax.toLocaleString('es-CR');
+            document.getElementById('precioLabel').textContent =
+                '₡' + precioMax.toLocaleString('es-CR');
             cards.forEach(c => c.classList.remove('d-none'));
             document.getElementById('btnLimpiarFiltros').style.display = 'none';
             document.getElementById('estadoVacio').classList.add('d-none');
             document.getElementById('filtrosActivos').classList.add('d-none');
-            document.getElementById('contadorResultados').textContent = '';
-            document.getElementById('btnLimpiarTexto').style.display  = 'none';
+            document.getElementById('contadorResultados').textContent  = '';
+            document.getElementById('btnLimpiarTexto').style.display   = 'none';
         }
 
         document.getElementById('searchInput').addEventListener('input', function () {
-            document.getElementById('btnLimpiarTexto').style.display = this.value ? 'block' : 'none';
+            document.getElementById('btnLimpiarTexto').style.display =
+                this.value ? 'block' : 'none';
             filtrar();
         });
         document.getElementById('filtroCategoria').addEventListener('change', filtrar);
@@ -355,7 +387,8 @@
         document.getElementById('filtroEstado').addEventListener('change', filtrar);
         document.getElementById('ordenar').addEventListener('change', filtrar);
         slider.addEventListener('input', function () {
-            document.getElementById('precioLabel').textContent = '₡' + parseInt(this.value).toLocaleString('es-CR');
+            document.getElementById('precioLabel').textContent =
+                '₡' + parseInt(this.value).toLocaleString('es-CR');
             filtrar();
         });
         document.getElementById('btnLimpiarTexto').addEventListener('click', function () {
@@ -368,9 +401,11 @@
 
         function mostrarAlerta(tipo, mensaje) {
             const div = document.createElement('div');
-            div.className = alert alert-${tipo} alert-dismissible fade show rounded-3 shadow-sm;
+            div.className =
+                `alert alert-${tipo} alert-dismissible fade show rounded-3 shadow-sm`;
             div.role = 'alert';
-            div.innerHTML = `<i class="bi bi-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${mensaje}
+            div.innerHTML =
+                `<i class="bi bi-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${mensaje}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
             document.querySelector('.container-fluid').prepend(div);
             setTimeout(() => div.remove(), 4000);
@@ -379,19 +414,22 @@
         function agregarAlCarrito(productoId, nombre) {
             @if (User.Identity?.IsAuthenticated != true)
             {
-                        <text>
-                                window.location.href = '/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
-                                return;
-                        </text>
+                    <text>
+                            window.location.href = '/Account/Login?returnUrl=' +
+                                encodeURIComponent(window.location.pathname);
+                            return;
+                    </text>
             }
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const token = document.querySelector(
+                'input[name="__RequestVerificationToken"]').value;
+
             fetch('/carrito/agregar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'RequestVerificationToken': token
                 },
-                body: productoId=${productoId}&cantidad=1
+                body: `productoId=${productoId}&cantidad=1`
             })
             .then(res => res.json())
             .then(data => {
@@ -406,11 +444,13 @@
         }
 
         function eliminarProducto(id, nombre) {
-            if (!confirm(¿Desea eliminar "${nombre}"?)) return;
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            if (!confirm(`¿Desea eliminar "${nombre}"?`)) return;
+
+            const token = document.querySelector(
+                'input[name="__RequestVerificationToken"]').value;
             const form  = document.createElement('form');
             form.method = 'POST';
-            form.action = /producto/eliminar/${id};
+            form.action = `/producto/eliminar/${id}`;
             const input = document.createElement('input');
             input.type  = 'hidden';
             input.name  = '__RequestVerificationToken';

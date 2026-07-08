@@ -151,18 +151,7 @@ namespace TDFSantaLucia.Controllers
             return View(producto);
         }
 
-        [HttpGet("eliminar/{id:int}")]
-        public IActionResult Eliminar(int? id)
-        {
-            if (id == null) return NotFound();
-            var producto = _productoService.ObtenerPorId(id.Value);
-            if (producto == null) return NotFound();
-            ViewData["Title"] = "Eliminar Producto";
-            return View(producto);
-        }
-
         [HttpPost("eliminar/{id:int}")]
-        [ActionName("Eliminar")]
         [ValidateAntiForgeryToken]
         public IActionResult EliminarConfirmado(int id)
         {
@@ -174,11 +163,11 @@ namespace TDFSantaLucia.Controllers
             if (!resultado.exito)
             {
                 TempData["ErrorProducto"] = resultado.error;
-                return RedirectToAction(nameof(Administrar));
+                return RedirectToAction(nameof(Index));
             }
 
             TempData["ExitoProducto"] = "Producto eliminado correctamente.";
-            return RedirectToAction(nameof(Administrar));
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost("agregaralcarrito")]
