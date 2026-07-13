@@ -91,6 +91,7 @@ builder.Services.AddScoped<ICuponRepository, CuponRepository>();
 builder.Services.AddScoped<IChatbotRepository, ChatbotRepository>();
 builder.Services.AddScoped<IRecetaRepository, RecetaRepository>();
 builder.Services.AddScoped<ITratamientoRepository, TratamientoRepository>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 
 
 // Registrar Services
@@ -111,6 +112,7 @@ builder.Services.AddScoped<ICuponService, CuponService>();
 builder.Services.AddScoped<IChatbotService, ChatbotService>();
 builder.Services.AddScoped<IRecetaService, RecetaService>();
 builder.Services.AddScoped<ITratamientoService, TratamientoService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 
 // Add services to the container
