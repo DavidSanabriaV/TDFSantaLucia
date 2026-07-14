@@ -103,9 +103,18 @@ namespace TDFSantaLucia.Controllers
             ViewBag.Hasta = hasta?.ToString("yyyy-MM-dd");
             ViewBag.TipoFiltro = tipoFiltro ?? "TODOS";
 
+            if (productoId.HasValue && productoId.Value == -1)
+            {
+                ViewBag.Producto = null;
+                ViewBag.VerTodos = true;
+                var movimientosTodos = _movimientoRepo.ObtenerTodos(desde, hasta, tipoFiltro);
+                return View(movimientosTodos);
+            }
+
             if (!productoId.HasValue || productoId.Value == 0)
             {
                 ViewBag.Producto = null;
+                ViewBag.VerTodos = false;
                 return View(new List<MovimientoInventario>());
             }
 
@@ -114,6 +123,7 @@ namespace TDFSantaLucia.Controllers
 
             var movimientos = _movimientoRepo.ObtenerPorProducto(productoId.Value, desde, hasta, tipoFiltro);
             ViewBag.Producto = producto;
+            ViewBag.VerTodos = false;
 
             return View(movimientos);
         }
