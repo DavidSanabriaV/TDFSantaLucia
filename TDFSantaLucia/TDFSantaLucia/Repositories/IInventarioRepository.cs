@@ -14,5 +14,7 @@ namespace TDFSantaLucia.Repositories
         void Agregar(Inventario inventario);
         void Actualizar(Inventario inventario);
         void Eliminar(int id);
+        void GuardarCambios();
+
     }
 }

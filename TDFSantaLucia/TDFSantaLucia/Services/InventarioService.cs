@@ -7,11 +7,16 @@ namespace TDFSantaLucia.Services
     {
         private readonly IInventarioRepository _repo;
         private readonly IProductoRepository _productoRepo;
+        private readonly IMovimientoInventarioRepository _movimientoRepo;
 
-        public InventarioService(IInventarioRepository repo, IProductoRepository productoRepo)
+        public InventarioService(
+            IInventarioRepository repo,
+            IProductoRepository productoRepo,
+            IMovimientoInventarioRepository movimientoRepo)
         {
             _repo = repo;
             _productoRepo = productoRepo;
+            _movimientoRepo = movimientoRepo;
         }
 
         public List<Inventario> ObtenerTodos()
@@ -66,6 +71,20 @@ namespace TDFSantaLucia.Services
 
             _repo.Agregar(inventario);
 
+            if (inventario.Cantidad_Disponible > 0)
+            {
+                _movimientoRepo.Agregar(new MovimientoInventario
+                {
+                    Tipo_Movimiento = "ENTRADA",
+                    Cantidad = inventario.Cantidad_Disponible,
+                    Descripcion = "Ingreso de lote",
+                    Fecha_Movimiento = DateTime.Now,
+                    Producto_Id = inventario.Producto_Id,
+                    Inventario_Id = inventario.Inventario_Id
+                });
+                _movimientoRepo.GuardarCambios();
+            }
+
             if (!producto.Estado && inventario.Cantidad_Disponible > 0)
             {
                 producto.Estado = true;
@@ -80,6 +99,8 @@ namespace TDFSantaLucia.Services
             var existente = _repo.ObtenerPorId(id);
             if (existente == null)
                 return (false, "El lote de inventario no existe.");
+
+            var cantidadAnterior = existente.Cantidad_Disponible;
 
             var producto = _productoRepo.ObtenerPorId(inventario.Producto_Id);
             if (producto == null)
@@ -108,6 +129,21 @@ namespace TDFSantaLucia.Services
             existente.Estado = inventario.Estado;
 
             _repo.Actualizar(existente);
+
+            var diferencia = inventario.Cantidad_Disponible - cantidadAnterior;
+            if (diferencia != 0)
+            {
+                _movimientoRepo.Agregar(new MovimientoInventario
+                {
+                    Tipo_Movimiento = diferencia > 0 ? "ENTRADA" : "SALIDA",
+                    Cantidad = Math.Abs(diferencia),
+                    Descripcion = "Ajuste manual de lote",
+                    Fecha_Movimiento = DateTime.Now,
+                    Producto_Id = inventario.Producto_Id,
+                    Inventario_Id = existente.Inventario_Id
+                });
+                _movimientoRepo.GuardarCambios();
+            }
 
             var tieneStock = _repo.ObtenerPorProducto(inventario.Producto_Id)
                 .Any(i => i.Estado && i.Cantidad_Disponible > 0);

@@ -34,7 +34,7 @@ namespace TDFSantaLucia.Data
         public DbSet<ComentarioSalud> ComentariosSalud { get; set; }
         public DbSet<LikeArticulo> LikesArticulos { get; set; }
         public DbSet<ChatbotOpcion> ChatbotOpciones { get; set; }
-
+        public DbSet<MovimientoInventario> MovimientosInventario { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -256,7 +256,36 @@ namespace TDFSantaLucia.Data
                 .HasIndex(l => new { l.Articulo_Id, l.Usuario_Id })
                 .IsUnique();
 
+            // MovimientoInventario -> Producto
+            modelBuilder.Entity<MovimientoInventario>()
+                .HasOne(m => m.Producto)
+                .WithMany()
+                .HasForeignKey(m => m.Producto_Id)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            // MovimientoInventario -> Inventario (opcional)
+            modelBuilder.Entity<MovimientoInventario>()
+                .HasOne(m => m.Inventario)
+                .WithMany()
+                .HasForeignKey(m => m.Inventario_Id)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // MovimientoInventario -> Pedido (opcional)
+            modelBuilder.Entity<MovimientoInventario>()
+                .HasOne(m => m.Pedido)
+                .WithMany()
+                .HasForeignKey(m => m.Pedido_Id)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // MovimientoInventario -> Usuario (opcional)
+            modelBuilder.Entity<MovimientoInventario>()
+                .HasOne(m => m.Usuario)
+                .WithMany()
+                .HasForeignKey(m => m.Usuario_Id)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

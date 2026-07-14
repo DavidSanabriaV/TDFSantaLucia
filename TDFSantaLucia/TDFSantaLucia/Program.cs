@@ -92,7 +92,7 @@ builder.Services.AddScoped<IChatbotRepository, ChatbotRepository>();
 builder.Services.AddScoped<IRecetaRepository, RecetaRepository>();
 builder.Services.AddScoped<ITratamientoRepository, TratamientoRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
-
+builder.Services.AddScoped<IMovimientoInventarioRepository, MovimientoInventarioRepository>();
 
 // Registrar Services
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();

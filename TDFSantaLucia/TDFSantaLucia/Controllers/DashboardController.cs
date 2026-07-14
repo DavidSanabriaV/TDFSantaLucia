@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TDFSantaLucia.Services;
 using System.Text;
+using TDFSantaLucia.Models;
+using TDFSantaLucia.Repositories;
+using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
@@ -10,10 +12,13 @@ namespace TDFSantaLucia.Controllers
     public class DashboardController : Controller
     {
         private readonly IDashboardService _dashboardService;
-
-        public DashboardController(IDashboardService dashboardService)
+        private readonly IMovimientoInventarioRepository _movimientoRepo;
+        private readonly IProductoRepository _productoRepo;
+        public DashboardController(IDashboardService dashboardService, IMovimientoInventarioRepository movimientoRepo, IProductoRepository productoRepo)
         {
             _dashboardService = dashboardService;
+            _movimientoRepo = movimientoRepo;
+            _productoRepo = productoRepo;
         }
 
         [HttpGet("")]
@@ -77,7 +82,6 @@ namespace TDFSantaLucia.Controllers
             return File(bytes, "text/csv", $"ventas_{inicio:yyyyMMdd}_{fin:yyyyMMdd}.csv");
         }
 
-        // Escapa comillas y neutraliza inyección de fórmulas en Excel (=, +, -, @)
         private static string EscaparCsv(string? valor)
         {
             if (string.IsNullOrEmpty(valor)) return "\"\"";
@@ -85,6 +89,33 @@ namespace TDFSantaLucia.Controllers
             if (v.StartsWith("=") || v.StartsWith("+") || v.StartsWith("-") || v.StartsWith("@"))
                 v = "'" + v;
             return $"\"{v}\"";
+        }
+
+        [HttpGet("historial")]
+        public IActionResult Historial(int? productoId, DateTime? desde, DateTime? hasta, string? tipoFiltro)
+        {
+            var todosLosProductos = _productoRepo.ObtenerTodos()
+                .OrderBy(p => p.Nombre)
+                .ToList();
+
+            ViewBag.TodosLosProductos = todosLosProductos;
+            ViewBag.Desde = desde?.ToString("yyyy-MM-dd");
+            ViewBag.Hasta = hasta?.ToString("yyyy-MM-dd");
+            ViewBag.TipoFiltro = tipoFiltro ?? "TODOS";
+
+            if (!productoId.HasValue || productoId.Value == 0)
+            {
+                ViewBag.Producto = null;
+                return View(new List<MovimientoInventario>());
+            }
+
+            var producto = todosLosProductos.FirstOrDefault(p => p.Producto_Id == productoId.Value);
+            if (producto == null) return NotFound();
+
+            var movimientos = _movimientoRepo.ObtenerPorProducto(productoId.Value, desde, hasta, tipoFiltro);
+            ViewBag.Producto = producto;
+
+            return View(movimientos);
         }
     }
 }

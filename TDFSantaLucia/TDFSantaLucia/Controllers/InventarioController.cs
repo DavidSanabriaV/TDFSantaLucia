@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TDFSantaLucia.Models;
+using TDFSantaLucia.Repositories;
 using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
@@ -11,11 +12,15 @@ namespace TDFSantaLucia.Controllers
     public class InventarioController : Controller
     {
         private readonly IInventarioService _service;
+        private readonly IMovimientoInventarioRepository _movimientoRepo;
         private const int DiasAlertaVencimiento = 30;
 
-        public InventarioController(IInventarioService service)
+        public InventarioController(
+            IInventarioService service,
+            IMovimientoInventarioRepository movimientoRepo)
         {
             _service = service;
+            _movimientoRepo = movimientoRepo;
         }
 
         [HttpGet("")]
@@ -161,5 +166,7 @@ namespace TDFSantaLucia.Controllers
 
             ViewBag.Productos = productos;
         }
+
+        
     }
 }

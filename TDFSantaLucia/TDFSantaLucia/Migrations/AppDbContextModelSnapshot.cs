@@ -147,6 +147,49 @@ namespace TDFSantaLucia.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("TDFSantaLucia.Models.ArticuloSalud", b =>
+                {
+                    b.Property<int>("Articulo_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Categoria")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Contenido")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Fecha_Actualizacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("Fecha_Creacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Imagen_URL")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("Publicado")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Resumen")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Usuario_Id")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Articulo_Id");
+
+                    b.HasIndex("Usuario_Id");
+
+                    b.ToTable("ArticulosSalud");
+                });
+
             modelBuilder.Entity("TDFSantaLucia.Models.CarritoItemDb", b =>
                 {
                     b.Property<int>("CarritoItem_Id")
@@ -207,6 +250,45 @@ namespace TDFSantaLucia.Migrations
                     b.HasKey("Categoria_Id");
 
                     b.ToTable("Categorias");
+                });
+
+            modelBuilder.Entity("TDFSantaLucia.Models.ChatbotOpcion", b =>
+                {
+                    b.Property<int>("Opcion_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime>("Fecha_Actualizacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("Fecha_Creacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Icono")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Intent")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Respuesta")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Url_Redireccion")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Opcion_Id");
+
+                    b.ToTable("ChatbotOpciones");
                 });
 
             modelBuilder.Entity("TDFSantaLucia.Models.Cita", b =>
@@ -294,6 +376,35 @@ namespace TDFSantaLucia.Migrations
                     b.HasIndex("Cupon_Id");
 
                     b.ToTable("ClientesCupones");
+                });
+
+            modelBuilder.Entity("TDFSantaLucia.Models.ComentarioSalud", b =>
+                {
+                    b.Property<int>("Comentario_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Articulo_Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Contenido")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Fecha_Creacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Usuario_Id")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Comentario_Id");
+
+                    b.HasIndex("Articulo_Id");
+
+                    b.HasIndex("Usuario_Id");
+
+                    b.ToTable("ComentariosSalud");
                 });
 
             modelBuilder.Entity("TDFSantaLucia.Models.Cupon", b =>
@@ -571,6 +682,76 @@ namespace TDFSantaLucia.Migrations
                     b.ToTable("Inventarios");
                 });
 
+            modelBuilder.Entity("TDFSantaLucia.Models.LikeArticulo", b =>
+                {
+                    b.Property<int>("Like_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Articulo_Id")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Usuario_Id")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Like_Id");
+
+                    b.HasIndex("Usuario_Id");
+
+                    b.HasIndex("Articulo_Id", "Usuario_Id")
+                        .IsUnique();
+
+                    b.ToTable("LikesArticulos");
+                });
+
+            modelBuilder.Entity("TDFSantaLucia.Models.MovimientoInventario", b =>
+                {
+                    b.Property<int>("Movimiento_Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Fecha_Movimiento")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("Inventario_Id")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Pedido_Id")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Producto_Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tipo_Movimiento")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Usuario_Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Movimiento_Id");
+
+                    b.HasIndex("Inventario_Id");
+
+                    b.HasIndex("Pedido_Id");
+
+                    b.HasIndex("Producto_Id");
+
+                    b.HasIndex("Usuario_Id");
+
+                    b.ToTable("MovimientosInventario");
+                });
+
             modelBuilder.Entity("TDFSantaLucia.Models.MovimientoPuntos", b =>
                 {
                     b.Property<int>("Movimiento_Id")
@@ -736,7 +917,16 @@ namespace TDFSantaLucia.Migrations
                     b.Property<int>("Expediente_Id")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("Fecha_Emision")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("Fecha_Vencimiento")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Frecuencia")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Observaciones")
                         .HasColumnType("longtext");
 
                     b.Property<int>("Producto_Id")
@@ -756,6 +946,9 @@ namespace TDFSantaLucia.Migrations
                     b.Property<int>("Recordatorio_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<bool>("Alerta_Activa")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<bool>("Confirmacion")
                         .HasColumnType("tinyint(1)");
@@ -778,6 +971,9 @@ namespace TDFSantaLucia.Migrations
                     b.Property<int>("Tratamiento_Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<bool>("Alertas_Activas")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<int>("Cliente_Id")
                         .HasColumnType("int");
@@ -949,6 +1145,17 @@ namespace TDFSantaLucia.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TDFSantaLucia.Models.ArticuloSalud", b =>
+                {
+                    b.HasOne("TDFSantaLucia.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("Usuario_Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("TDFSantaLucia.Models.CarritoItemDb", b =>
                 {
                     b.HasOne("TDFSantaLucia.Models.Cliente", "Cliente")
@@ -1006,6 +1213,25 @@ namespace TDFSantaLucia.Migrations
                     b.Navigation("Cliente");
 
                     b.Navigation("Cupon");
+                });
+
+            modelBuilder.Entity("TDFSantaLucia.Models.ComentarioSalud", b =>
+                {
+                    b.HasOne("TDFSantaLucia.Models.ArticuloSalud", "Articulo")
+                        .WithMany("Comentarios")
+                        .HasForeignKey("Articulo_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TDFSantaLucia.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("Usuario_Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Articulo");
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("TDFSantaLucia.Models.Cupon", b =>
@@ -1128,6 +1354,57 @@ namespace TDFSantaLucia.Migrations
                     b.Navigation("Producto");
                 });
 
+            modelBuilder.Entity("TDFSantaLucia.Models.LikeArticulo", b =>
+                {
+                    b.HasOne("TDFSantaLucia.Models.ArticuloSalud", "Articulo")
+                        .WithMany("Likes")
+                        .HasForeignKey("Articulo_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TDFSantaLucia.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("Usuario_Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Articulo");
+
+                    b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("TDFSantaLucia.Models.MovimientoInventario", b =>
+                {
+                    b.HasOne("TDFSantaLucia.Models.Inventario", "Inventario")
+                        .WithMany()
+                        .HasForeignKey("Inventario_Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TDFSantaLucia.Models.Pedido", "Pedido")
+                        .WithMany()
+                        .HasForeignKey("Pedido_Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TDFSantaLucia.Models.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("Producto_Id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TDFSantaLucia.Models.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("Usuario_Id")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Inventario");
+
+                    b.Navigation("Pedido");
+
+                    b.Navigation("Producto");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("TDFSantaLucia.Models.MovimientoPuntos", b =>
                 {
                     b.HasOne("TDFSantaLucia.Models.Cliente", "Cliente")
@@ -1213,6 +1490,13 @@ namespace TDFSantaLucia.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("TDFSantaLucia.Models.ArticuloSalud", b =>
+                {
+                    b.Navigation("Comentarios");
+
+                    b.Navigation("Likes");
                 });
 
             modelBuilder.Entity("TDFSantaLucia.Models.Categoria", b =>

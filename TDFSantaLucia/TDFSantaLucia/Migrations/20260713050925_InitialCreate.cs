@@ -103,6 +103,33 @@ namespace TDFSantaLucia.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "ChatbotOpciones",
+                columns: table => new
+                {
+                    Opcion_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Texto = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Respuesta = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Icono = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Intent = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Url_Redireccion = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Orden = table.Column<int>(type: "int", nullable: false),
+                    Activo = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Fecha_Creacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Fecha_Actualizacion = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatbotOpciones", x => x.Opcion_Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -124,6 +151,40 @@ namespace TDFSantaLucia.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ArticulosSalud",
+                columns: table => new
+                {
+                    Articulo_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Titulo = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Contenido = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Resumen = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Imagen_URL = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Categoria = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Publicado = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Fecha_Creacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Fecha_Actualizacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Usuario_Id = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ArticulosSalud", x => x.Articulo_Id);
+                    table.ForeignKey(
+                        name: "FK_ArticulosSalud_AspNetUsers_Usuario_Id",
+                        column: x => x.Usuario_Id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -345,6 +406,66 @@ namespace TDFSantaLucia.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "ComentariosSalud",
+                columns: table => new
+                {
+                    Comentario_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Contenido = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fecha_Creacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Articulo_Id = table.Column<int>(type: "int", nullable: false),
+                    Usuario_Id = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ComentariosSalud", x => x.Comentario_Id);
+                    table.ForeignKey(
+                        name: "FK_ComentariosSalud_ArticulosSalud_Articulo_Id",
+                        column: x => x.Articulo_Id,
+                        principalTable: "ArticulosSalud",
+                        principalColumn: "Articulo_Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ComentariosSalud_AspNetUsers_Usuario_Id",
+                        column: x => x.Usuario_Id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "LikesArticulos",
+                columns: table => new
+                {
+                    Like_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Articulo_Id = table.Column<int>(type: "int", nullable: false),
+                    Usuario_Id = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fecha = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LikesArticulos", x => x.Like_Id);
+                    table.ForeignKey(
+                        name: "FK_LikesArticulos_ArticulosSalud_Articulo_Id",
+                        column: x => x.Articulo_Id,
+                        principalTable: "ArticulosSalud",
+                        principalColumn: "Articulo_Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LikesArticulos_AspNetUsers_Usuario_Id",
+                        column: x => x.Usuario_Id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "CarritoItems",
                 columns: table => new
                 {
@@ -390,6 +511,7 @@ namespace TDFSantaLucia.Migrations
                     Fecha_Inicio = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Fecha_Fin = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Estado = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Alertas_Activas = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Cliente_Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -457,6 +579,15 @@ namespace TDFSantaLucia.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Fecha_Creacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Fecha_Actualizacion = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Receta_URL = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Requiere_Receta = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Estado_Receta = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Puntos_Canjeados = table.Column<int>(type: "int", nullable: false),
+                    Descuento_Puntos = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    Puntos_Ganados = table.Column<int>(type: "int", nullable: false),
+                    Uso_Puntos = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Cliente_Id = table.Column<int>(type: "int", nullable: false),
                     Cupon_Id = table.Column<int>(type: "int", nullable: true)
                 },
@@ -605,6 +736,7 @@ namespace TDFSantaLucia.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Hora = table.Column<TimeSpan>(type: "time(6)", nullable: false),
                     Confirmacion = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Alerta_Activa = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Tratamiento_Id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -686,6 +818,40 @@ namespace TDFSantaLucia.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "MovimientosPuntos",
+                columns: table => new
+                {
+                    Movimiento_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Puntos = table.Column<int>(type: "int", nullable: false),
+                    Tipo = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Descripcion = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fecha = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Fecha_Vencimiento = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Vencido = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    Cliente_Id = table.Column<int>(type: "int", nullable: false),
+                    Pedido_Id = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MovimientosPuntos", x => x.Movimiento_Id);
+                    table.ForeignKey(
+                        name: "FK_MovimientosPuntos_Clientes_Cliente_Id",
+                        column: x => x.Cliente_Id,
+                        principalTable: "Clientes",
+                        principalColumn: "Cliente_Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MovimientosPuntos_Pedidos_Pedido_Id",
+                        column: x => x.Pedido_Id,
+                        principalTable: "Pedidos",
+                        principalColumn: "Pedido_Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "RecetasMedicas",
                 columns: table => new
                 {
@@ -694,6 +860,10 @@ namespace TDFSantaLucia.Migrations
                     Descripcion = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Frecuencia = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fecha_Emision = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Fecha_Vencimiento = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    Observaciones = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Producto_Id = table.Column<int>(type: "int", nullable: false),
                     Expediente_Id = table.Column<int>(type: "int", nullable: false)
@@ -709,6 +879,54 @@ namespace TDFSantaLucia.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_RecetasMedicas_Productos_Producto_Id",
+                        column: x => x.Producto_Id,
+                        principalTable: "Productos",
+                        principalColumn: "Producto_Id",
+                        onDelete: ReferentialAction.Restrict);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "MovimientosInventario",
+                columns: table => new
+                {
+                    Movimiento_Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Tipo_Movimiento = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Cantidad = table.Column<int>(type: "int", nullable: false),
+                    Descripcion = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fecha_Movimiento = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Producto_Id = table.Column<int>(type: "int", nullable: false),
+                    Inventario_Id = table.Column<int>(type: "int", nullable: true),
+                    Pedido_Id = table.Column<int>(type: "int", nullable: true),
+                    Usuario_Id = table.Column<string>(type: "varchar(255)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MovimientosInventario", x => x.Movimiento_Id);
+                    table.ForeignKey(
+                        name: "FK_MovimientosInventario_AspNetUsers_Usuario_Id",
+                        column: x => x.Usuario_Id,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MovimientosInventario_Inventarios_Inventario_Id",
+                        column: x => x.Inventario_Id,
+                        principalTable: "Inventarios",
+                        principalColumn: "Inventario_Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MovimientosInventario_Pedidos_Pedido_Id",
+                        column: x => x.Pedido_Id,
+                        principalTable: "Pedidos",
+                        principalColumn: "Pedido_Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MovimientosInventario_Productos_Producto_Id",
                         column: x => x.Producto_Id,
                         principalTable: "Productos",
                         principalColumn: "Producto_Id",
@@ -745,6 +963,11 @@ namespace TDFSantaLucia.Migrations
                         onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ArticulosSalud_Usuario_Id",
+                table: "ArticulosSalud",
+                column: "Usuario_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -815,6 +1038,16 @@ namespace TDFSantaLucia.Migrations
                 column: "Cupon_Id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ComentariosSalud_Articulo_Id",
+                table: "ComentariosSalud",
+                column: "Articulo_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ComentariosSalud_Usuario_Id",
+                table: "ComentariosSalud",
+                column: "Usuario_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Cupones_Usuario_Id",
                 table: "Cupones",
                 column: "Usuario_Id");
@@ -876,6 +1109,47 @@ namespace TDFSantaLucia.Migrations
                 column: "Producto_Id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_LikesArticulos_Articulo_Id_Usuario_Id",
+                table: "LikesArticulos",
+                columns: new[] { "Articulo_Id", "Usuario_Id" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LikesArticulos_Usuario_Id",
+                table: "LikesArticulos",
+                column: "Usuario_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MovimientosInventario_Inventario_Id",
+                table: "MovimientosInventario",
+                column: "Inventario_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MovimientosInventario_Pedido_Id",
+                table: "MovimientosInventario",
+                column: "Pedido_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MovimientosInventario_Producto_Id",
+                table: "MovimientosInventario",
+                column: "Producto_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MovimientosInventario_Usuario_Id",
+                table: "MovimientosInventario",
+                column: "Usuario_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MovimientosPuntos_Cliente_Id",
+                table: "MovimientosPuntos",
+                column: "Cliente_Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MovimientosPuntos_Pedido_Id",
+                table: "MovimientosPuntos",
+                column: "Pedido_Id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Pedidos_Cliente_Id",
                 table: "Pedidos",
                 column: "Cliente_Id");
@@ -933,10 +1207,16 @@ namespace TDFSantaLucia.Migrations
                 name: "CarritoItems");
 
             migrationBuilder.DropTable(
+                name: "ChatbotOpciones");
+
+            migrationBuilder.DropTable(
                 name: "Citas");
 
             migrationBuilder.DropTable(
                 name: "ClientesCupones");
+
+            migrationBuilder.DropTable(
+                name: "ComentariosSalud");
 
             migrationBuilder.DropTable(
                 name: "DetallesFactura");
@@ -948,7 +1228,13 @@ namespace TDFSantaLucia.Migrations
                 name: "HorariosEmpleados");
 
             migrationBuilder.DropTable(
-                name: "Inventarios");
+                name: "LikesArticulos");
+
+            migrationBuilder.DropTable(
+                name: "MovimientosInventario");
+
+            migrationBuilder.DropTable(
+                name: "MovimientosPuntos");
 
             migrationBuilder.DropTable(
                 name: "RecetasMedicas");
@@ -963,10 +1249,13 @@ namespace TDFSantaLucia.Migrations
                 name: "Facturas");
 
             migrationBuilder.DropTable(
-                name: "Expedientes");
+                name: "ArticulosSalud");
 
             migrationBuilder.DropTable(
-                name: "Productos");
+                name: "Inventarios");
+
+            migrationBuilder.DropTable(
+                name: "Expedientes");
 
             migrationBuilder.DropTable(
                 name: "Tratamientos");
@@ -975,16 +1264,19 @@ namespace TDFSantaLucia.Migrations
                 name: "Pedidos");
 
             migrationBuilder.DropTable(
-                name: "Empleados");
+                name: "Productos");
 
             migrationBuilder.DropTable(
-                name: "Categorias");
+                name: "Empleados");
 
             migrationBuilder.DropTable(
                 name: "Clientes");
 
             migrationBuilder.DropTable(
                 name: "Cupones");
+
+            migrationBuilder.DropTable(
+                name: "Categorias");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

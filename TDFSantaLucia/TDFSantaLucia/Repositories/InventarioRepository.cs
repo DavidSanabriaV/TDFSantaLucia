@@ -84,5 +84,8 @@ namespace TDFSantaLucia.Repositories
                 _db.SaveChanges();
             }
         }
+
+        public void GuardarCambios() => _db.SaveChanges();
+
     }
 }

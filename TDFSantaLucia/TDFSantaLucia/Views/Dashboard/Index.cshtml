@@ -28,10 +28,15 @@
                 <a asp-action="Index" asp-controller="Dashboard" class="btn btn-outline-secondary btn-sm w-100">Limpiar</a>
             </div>
             <div class="col-md-2">
+                <a asp-action="Historial" asp-controller="Dashboard" class="btn btn-outline-primary btn-sm w-100">📋 Historial</a>
+            </div>
+        </form>
+        <div class="row g-2 mt-1">
+            <div class="col-md-3">
                 <a href="/dashboard/exportar-ventas-csv?fechaInicio=@Model.FechaInicio.ToString("yyyy-MM-dd")&fechaFin=@Model.FechaFin.ToString("yyyy-MM-dd")"
                    class="btn btn-success btn-sm w-100">⬇ CSV Top Ventas</a>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 

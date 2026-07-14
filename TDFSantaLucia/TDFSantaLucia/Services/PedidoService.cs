@@ -11,6 +11,7 @@ namespace TDFSantaLucia.Services
         private readonly IFacturaRepository _facturaRepo;
         private readonly IInventarioRepository _inventarioRepo;
         private readonly IProductoRepository _productoRepo;
+        private readonly IMovimientoInventarioRepository _movimientoRepo;
         private readonly AppDbContext _db;
 
         private const decimal TasaIVA = 0.13m;
@@ -22,12 +23,14 @@ namespace TDFSantaLucia.Services
             IFacturaRepository facturaRepo,
             IInventarioRepository inventarioRepo,
             IProductoRepository productoRepo,
+            IMovimientoInventarioRepository movimientoRepo,
             AppDbContext db)
         {
             _pedidoRepo = pedidoRepo;
             _facturaRepo = facturaRepo;
             _inventarioRepo = inventarioRepo;
             _productoRepo = productoRepo;
+            _movimientoRepo = movimientoRepo;
             _db = db;
         }
 
@@ -77,6 +80,7 @@ namespace TDFSantaLucia.Services
 
                 // ── Stock ─────────────────────────────────────────────────
                 var detalles = new List<DetallePedido>();
+                var movimientosPendientes = new List<(int ProductoId, int InventarioId, int Cantidad)>();
 
                 foreach (var item in checkout.Items)
                 {
@@ -103,6 +107,8 @@ namespace TDFSantaLucia.Services
                         lote.Cantidad_Disponible -= descontar;
                         pendiente -= descontar;
                         _db.Inventarios.Update(lote);
+
+                        movimientosPendientes.Add((item.Producto_Id, lote.Inventario_Id, descontar));
                     }
 
                     detalles.Add(new DetallePedido
@@ -154,6 +160,23 @@ namespace TDFSantaLucia.Services
 
                 _pedidoRepo.Agregar(pedido);
                 await _db.SaveChangesAsync();
+
+                foreach (var mov in movimientosPendientes)
+                {
+                    _movimientoRepo.Agregar(new MovimientoInventario
+                    {
+                        Tipo_Movimiento = "SALIDA",
+                        Cantidad = mov.Cantidad,
+                        Descripcion = "Venta",
+                        Fecha_Movimiento = DateTime.Now,
+                        Producto_Id = mov.ProductoId,
+                        Inventario_Id = mov.InventarioId,
+                        Pedido_Id = pedido.Pedido_Id
+                    });
+                }
+                await _db.SaveChangesAsync();
+
+                // ── Marcar cupón como utilizado ───────────────────────────
 
                 // ── Marcar cupón como utilizado ───────────────────────────
                 if (checkout.Cupon_Id.HasValue && checkout.ClienteCupon_Id > 0)
@@ -305,6 +328,17 @@ namespace TDFSantaLucia.Services
                         {
                             lote.Cantidad_Disponible += detalle.Cantidad;
                             _db.Inventarios.Update(lote);
+
+                            _movimientoRepo.Agregar(new MovimientoInventario
+                            {
+                                Tipo_Movimiento = "ENTRADA",
+                                Cantidad = detalle.Cantidad,
+                                Descripcion = $"Devolución por pedido {nuevoEstado.ToLower()}",
+                                Fecha_Movimiento = DateTime.Now,
+                                Producto_Id = detalle.Producto_Id,
+                                Inventario_Id = lote.Inventario_Id,
+                                Pedido_Id = pedido.Pedido_Id
+                            });
 
                             var prod = await _db.Productos
                                 .FirstOrDefaultAsync(p => p.Producto_Id == detalle.Producto_Id);
