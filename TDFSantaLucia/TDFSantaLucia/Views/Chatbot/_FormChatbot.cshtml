@@ -31,8 +31,7 @@
                 (consulta datos del usuario logueado)
             </small>
         </label>
-        <select asp-for="Intent" class="form-select"
-                onchange="actualizarCampos()">
+        <select asp-for="Intent" class="form-select" onchange="actualizarCampos()">
             <option value="">— Ninguna —</option>
             <option value="ver_pedidos">📦 Ver mis pedidos</option>
             <option value="ver_citas">📅 Ver mis citas</option>
@@ -167,15 +166,32 @@
 
 <script>
     function actualizarCampos() {
-        const intent = document.querySelector('[name="Intent"]').value;
-        const wrap   = document.getElementById('campoRespuestaWrap');
-        const hint   = document.getElementById('respuestaHint');
+        const intentSelect = document.querySelector('[name="Intent"]');
+        const urlSelect     = document.querySelector('[name="Url_Redireccion"]');
+        const intent        = intentSelect.value;
+        const url            = urlSelect.value;
+        const wrap           = document.getElementById('campoRespuestaWrap');
+        const hint           = document.getElementById('respuestaHint');
 
         if (intent) {
+            urlSelect.value    = '';
+            urlSelect.disabled = true;
+        } else {
+            urlSelect.disabled = false;
+        }
+
+        if (url) {
+            intentSelect.value    = '';
+            intentSelect.disabled = true;
+        } else {
+            intentSelect.disabled = false;
+        }
+
+        if (intent || url) {
             wrap.style.opacity       = '0.5';
             wrap.style.pointerEvents = 'none';
             hint.textContent =
-                '(opcional cuando hay acción automática)';
+                '(opcional cuando hay acción automática o redirección)';
         } else {
             wrap.style.opacity       = '1';
             wrap.style.pointerEvents = 'auto';

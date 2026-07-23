@@ -6,8 +6,7 @@ namespace TDFSantaLucia.Models
     {
         [Key]
         public int Opcion_Id { get; set; }
-
-        [Required]
+       
         public string Texto { get; set; } = string.Empty;
         public string? Respuesta { get; set; }
 
