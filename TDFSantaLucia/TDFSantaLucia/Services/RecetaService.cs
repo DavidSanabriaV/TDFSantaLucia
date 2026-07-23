@@ -172,5 +172,8 @@ namespace TDFSantaLucia.Services
 
             return Encoding.UTF8.GetBytes(sb.ToString());
         }
+
+        public List<RecetaMedica> ObtenerPorCliente(int clienteId)
+            => _repo.ObtenerPorCliente(clienteId);
     }
 }

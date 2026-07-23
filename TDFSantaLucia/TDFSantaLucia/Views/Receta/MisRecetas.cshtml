@@ -1,0 +1,70 @@
+﻿@model List<TDFSantaLucia.Models.RecetaMedica>
+
+@{
+    ViewData["Title"] = "Mis Recetas";
+}
+
+<div class="container mt-4">
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-file-medical me-2"></i>Mis Recetas
+    </h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No tenés recetas médicas registradas.</div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var receta in Model)
+            {
+                <div class="col-md-6 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                @receta.Producto?.Nombre
+                                @if (!string.IsNullOrEmpty(receta.Producto?.Marca))
+                                {
+                                    <small class="text-muted">— @receta.Producto.Marca</small>
+                                }
+                            </h5>
+                            <p><strong>Frecuencia:</strong> @(receta.Frecuencia ?? "—")</p>
+                            <p><strong>Indicaciones:</strong> @(receta.Descripcion ?? "—")</p>
+                            <p><strong>Fecha de emisión:</strong> @receta.Fecha_Emision.ToString("dd/MM/yyyy")</p>
+                            <p>
+                                <strong>Vencimiento:</strong>
+                                @if (receta.Fecha_Vencimiento.HasValue)
+                                {
+                                    @if (receta.Fecha_Vencimiento.Value.Date < DateTime.Today)
+                                    {
+                                        <span class="badge bg-danger fs-6">Vencida</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success fs-6">
+                                            @receta.Fecha_Vencimiento.Value.ToString("dd/MM/yyyy")
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </p>
+                            @if (!string.IsNullOrEmpty(receta.Observaciones))
+                            {
+                                <p class="text-muted small"><strong>Observaciones:</strong> @receta.Observaciones</p>
+                            }
+
+                            <a asp-controller="Receta" asp-action="Descargar"
+                               asp-route-id="@receta.Receta_Id"
+                               class="btn btn-info btn-sm text-white" target="_blank">
+                                <i class="bi bi-download"></i> Descargar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

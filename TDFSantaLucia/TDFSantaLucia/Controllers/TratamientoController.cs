@@ -83,7 +83,7 @@ namespace TDFSantaLucia.Controllers
                 return View(model);
             }
 
-            TempData["Exito"] = "Tratamiento registrado correctamente.";
+            TempData["ExitoTratamientos"] = "Tratamiento registrado correctamente.";
             return RedirectToAction("Index");
         }
 
@@ -140,7 +140,7 @@ namespace TDFSantaLucia.Controllers
                 return View(model);
             }
 
-            TempData["Exito"] = "Tratamiento actualizado correctamente.";
+            TempData["ExitoTratamientos"] = "Tratamiento actualizado correctamente.";
             return RedirectToAction("Index");
         }
 
@@ -156,9 +156,9 @@ namespace TDFSantaLucia.Controllers
                 .Eliminar(id, cliente.Cliente_Id);
 
             if (!exito)
-                TempData["Error"] = error;
+                TempData["ErrorTratamientos"] = error;
             else
-                TempData["Exito"] = "Tratamiento eliminado correctamente.";
+                TempData["ExitoTratamientos"] = "Tratamiento eliminado correctamente.";
 
             return RedirectToAction("Index");
         }

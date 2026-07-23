@@ -10,5 +10,6 @@ namespace TDFSantaLucia.Repositories
         void Agregar(RecetaMedica receta);
         void Actualizar(RecetaMedica receta);
         void Eliminar(int id);
+        List<RecetaMedica> ObtenerPorCliente(int clienteId);
     }
 }

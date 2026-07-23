@@ -19,18 +19,18 @@
         </a>
     </div>
 
-    @if (TempData["Exito"] != null)
+    @if (TempData["ExitoTratamientos"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show rounded-3">
-            ✅ @TempData["Exito"]
+            ✅ @TempData["ExitoTratamientos"]
             <button type="button" class="btn-close"
                     data-bs-dismiss="alert"></button>
         </div>
     }
-    @if (TempData["Error"] != null)
+    @if (TempData["ErrorTratamientos"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show rounded-3">
-            ❌ @TempData["Error"]
+            ❌ @TempData["ErrorTratamientos"]
             <button type="button" class="btn-close"
                     data-bs-dismiss="alert"></button>
         </div>

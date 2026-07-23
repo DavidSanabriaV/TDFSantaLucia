@@ -11,5 +11,6 @@ namespace TDFSantaLucia.Services
         (bool exito, string? error) Eliminar(int id);
         List<Producto> ObtenerProductos();
         byte[] GenerarPdf(RecetaMedica receta);
+        List<RecetaMedica> ObtenerPorCliente(int clienteId);
     }
 }

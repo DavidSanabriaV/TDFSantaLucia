@@ -1,27 +1,45 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using TDFSantaLucia.Data;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
-    [Authorize(Roles = "Admin,Empleado")]
+    [Authorize]
     [Route("receta")]
     public class RecetaController : Controller
     {
         private readonly IRecetaService _recetaService;
         private readonly IExpedienteService _expedienteService;
+        private readonly UserManager<Usuario> _userManager;
+        private readonly AppDbContext _db;
 
         public RecetaController(
             IRecetaService recetaService,
-            IExpedienteService expedienteService)
+            IExpedienteService expedienteService,
+            UserManager<Usuario> userManager,
+            AppDbContext db)
         {
             _recetaService = recetaService;
             _expedienteService = expedienteService;
+            _userManager = userManager;
+            _db = db;
+        }
+
+        private async Task<Cliente?> ObtenerClienteAsync()
+        {
+            var usuario = await _userManager.GetUserAsync(User);
+            if (usuario == null) return null;
+            return await _db.Clientes
+                .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
         }
 
         [HttpGet("crear/{expedienteId:int}")]
+        [Authorize(Roles = "Admin,Empleado")]
         public IActionResult Crear(int expedienteId)
         {
             var expediente = _expedienteService.ObtenerDetalle(expedienteId);
@@ -38,6 +56,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("crear/{expedienteId:int}")]
+        [Authorize(Roles = "Admin,Empleado")]
         [ValidateAntiForgeryToken]
         public IActionResult Crear(int expedienteId, RecetaMedica receta)
         {
@@ -67,6 +86,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpGet("editar/{id:int}")]
+        [Authorize(Roles = "Admin,Empleado")]
         public IActionResult Editar(int id)
         {
             var receta = _recetaService.ObtenerPorId(id);
@@ -80,6 +100,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("editar/{id:int}")]
+        [Authorize(Roles = "Admin,Empleado")]
         [ValidateAntiForgeryToken]
         public IActionResult Editar(int id, RecetaMedica receta)
         {
@@ -105,6 +126,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("eliminar/{id:int}")]
+        [Authorize(Roles = "Admin,Empleado")]
         [ValidateAntiForgeryToken]
         public IActionResult Eliminar(int id)
         {
@@ -142,6 +164,17 @@ namespace TDFSantaLucia.Controllers
             var bytes = _recetaService.GenerarPdf(receta);
             return File(bytes, "text/html",
                 $"Receta-{receta.Receta_Id}.html");
+        }
+
+        [HttpGet("mis-recetas")]
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> MisRecetas()
+        {
+            var cliente = await ObtenerClienteAsync();
+            if (cliente == null) return RedirectToAction("Index", "Home");
+
+            var recetas = _recetaService.ObtenerPorCliente(cliente.Cliente_Id);
+            return View(recetas);
         }
     }
 }

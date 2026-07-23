@@ -60,5 +60,13 @@ namespace TDFSantaLucia.Repositories
                 _db.SaveChanges();
             }
         }
+
+        public List<RecetaMedica> ObtenerPorCliente(int clienteId)
+             => _db.RecetasMedicas
+            .Include(r => r.Producto)
+            .Include(r => r.Expediente)
+            .Where(r => r.Expediente!.Cliente_Id == clienteId)
+            .OrderByDescending(r => r.Fecha_Emision)
+            .ToList();
     }
 }
