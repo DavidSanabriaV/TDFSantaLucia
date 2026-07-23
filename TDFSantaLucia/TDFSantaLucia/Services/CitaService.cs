@@ -38,6 +38,8 @@ namespace TDFSantaLucia.Services
             {
                 Clientes = _clienteRepo.ObtenerTodos(),
                 Empleados = _empleadoRepo.ObtenerTodos()
+                                .Where(e => e.Estado)
+                                .ToList()
             };
 
             if (citaId.HasValue)

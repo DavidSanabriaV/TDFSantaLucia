@@ -28,18 +28,66 @@
 
             <div class="col-12">
                 <label class="form-label fw-semibold">Cliente</label>
-                @Html.DropDownList("Cliente_Id", (SelectList)ViewBag.Clientes,
-                    "— Seleccione un cliente —",
-                    new { @class = "form-select " + (ViewData.ModelState["Cliente_Id"]?.Errors.Any() == true ? "is-invalid" : "") })
-                @Html.ValidationMessage("Cliente_Id", "", new { @class = "invalid-feedback" })
+
+                <input type="text" id="buscadorCliente" class="form-control rounded-3 mb-2"
+                       placeholder="🔍 Buscar cliente..."
+                       autocomplete="off" />
+
+                <div id="listaClientes"
+                     style="max-height:220px; overflow-y:auto; border:1px solid #dee2e6;
+                                border-radius:10px; background:white;">
+                    @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Clientes)
+                    {
+                        <div class="cliente-item px-3 py-2"
+                             style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
+                             data-id="@item.Value"
+                             data-nombre="@item.Text">
+                            <div class="fw-semibold">@item.Text</div>
+                        </div>
+                    }
+                </div>
+
+                <div id="clienteSeleccionado" class="mt-2" style="display:none;">
+                    <span class="badge bg-success px-3 py-2 fs-6" id="clienteNombreBadge"></span>
+                    <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarCliente">
+                        ✕ Cambiar
+                    </button>
+                </div>
+
+                <input type="hidden" name="Cliente_Id" id="clienteIdHidden" />
+                @Html.ValidationMessage("Cliente_Id", "", new { @class = "invalid-feedback d-block" })
             </div>
 
             <div class="col-12">
                 <label class="form-label fw-semibold">Empleado responsable</label>
-                @Html.DropDownList("Empleado_Id", (SelectList)ViewBag.Empleados,
-                    "— Seleccione un empleado —",
-                    new { @class = "form-select " + (ViewData.ModelState["Empleado_Id"]?.Errors.Any() == true ? "is-invalid" : "") })
-                @Html.ValidationMessage("Empleado_Id", "", new { @class = "invalid-feedback" })
+
+                <input type="text" id="buscadorEmpleado" class="form-control rounded-3 mb-2"
+                       placeholder="🔍 Buscar empleado..."
+                       autocomplete="off" />
+
+                <div id="listaEmpleados"
+                     style="max-height:220px; overflow-y:auto; border:1px solid #dee2e6;
+                                border-radius:10px; background:white;">
+                    @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Empleados)
+                    {
+                        <div class="empleado-item px-3 py-2"
+                             style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
+                             data-id="@item.Value"
+                             data-nombre="@item.Text">
+                            <div class="fw-semibold">@item.Text</div>
+                        </div>
+                    }
+                </div>
+
+                <div id="empleadoSeleccionado" class="mt-2" style="display:none;">
+                    <span class="badge bg-success px-3 py-2 fs-6" id="empleadoNombreBadge"></span>
+                    <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarEmpleado">
+                        ✕ Cambiar
+                    </button>
+                </div>
+
+                <input type="hidden" name="Empleado_Id" id="empleadoIdHidden" />
+                @Html.ValidationMessage("Empleado_Id", "", new { @class = "invalid-feedback d-block" })
             </div>
 
             <div class="col-12">
@@ -47,21 +95,86 @@
                 @Html.TextAreaFor(m => m.Descripcion, 4, 0, new
                 {
                     @class = "form-control" + (ViewData.ModelState["Descripcion"]?.Errors.Any() == true ? " is-invalid" : ""),
-                    placeholder = "Descripción general del expediente (opcional)..."
-                })
-                @Html.ValidationMessageFor(m => m.Descripcion, "", new { @class = "invalid-feedback" })
-            </div>
+                        placeholder = "Descripción general del expediente (opcional)..."
+                        })
+            @Html.ValidationMessageFor(m => m.Descripcion, "", new { @class = "invalid-feedback" })
+        </div>
 
-            <div class="col-12 d-flex gap-2 mt-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Guardar
-                </button>
-                @Html.ActionLink("Cancelar", "Index", "Expediente", null, new { @class = "btn btn-secondary" })
-            </div>
-        }
+        <div class="col-12 d-flex gap-2 mt-2">
+            <button type="submit" class="btn btn-primary" id="btnGuardar">
+                <i class="bi bi-save"></i> Guardar
+            </button>
+            @Html.ActionLink("Cancelar", "Index", "Expediente", null, new { @class = "btn btn-secondary" })
+        </div>
+                }
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        const byId = id => document.getElementById(id);
+
+        const itemsCliente = Array.from(document.querySelectorAll('.cliente-item'));
+
+        byId('buscadorCliente').addEventListener('input', function () {
+            const texto = this.value.toLowerCase();
+            itemsCliente.forEach(i => {
+                i.style.display = i.dataset.nombre.toLowerCase().includes(texto) ? '' : 'none';
+            });
+        });
+
+        itemsCliente.forEach(i => {
+            i.addEventListener('mouseenter', () => i.style.background = '#f0f7ff');
+            i.addEventListener('mouseleave', () => i.style.background = 'white');
+
+            i.addEventListener('click', () => {
+                byId('clienteIdHidden').value          = i.dataset.id;
+                byId('clienteNombreBadge').textContent = i.dataset.nombre;
+                byId('clienteSeleccionado').style.display = 'block';
+                byId('listaClientes').style.display       = 'none';
+                byId('buscadorCliente').style.display     = 'none';
+            });
+        });
+
+        byId('btnLimpiarCliente').addEventListener('click', () => {
+            byId('clienteIdHidden').value             = '';
+            byId('buscadorCliente').value             = '';
+            byId('clienteSeleccionado').style.display = 'none';
+            byId('listaClientes').style.display       = '';
+            byId('buscadorCliente').style.display     = '';
+            itemsCliente.forEach(i => i.style.display = '');
+        });
+
+        const itemsEmpleado = Array.from(document.querySelectorAll('.empleado-item'));
+
+        byId('buscadorEmpleado').addEventListener('input', function () {
+            const texto = this.value.toLowerCase();
+            itemsEmpleado.forEach(i => {
+                i.style.display = i.dataset.nombre.toLowerCase().includes(texto) ? '' : 'none';
+            });
+        });
+
+        itemsEmpleado.forEach(i => {
+            i.addEventListener('mouseenter', () => i.style.background = '#f0f7ff');
+            i.addEventListener('mouseleave', () => i.style.background = 'white');
+
+            i.addEventListener('click', () => {
+                byId('empleadoIdHidden').value          = i.dataset.id;
+                byId('empleadoNombreBadge').textContent = i.dataset.nombre;
+                byId('empleadoSeleccionado').style.display = 'block';
+                byId('listaEmpleados').style.display       = 'none';
+                byId('buscadorEmpleado').style.display     = 'none';
+            });
+        });
+
+        byId('btnLimpiarEmpleado').addEventListener('click', () => {
+            byId('empleadoIdHidden').value             = '';
+            byId('buscadorEmpleado').value             = '';
+            byId('empleadoSeleccionado').style.display = 'none';
+            byId('listaEmpleados').style.display       = '';
+            byId('buscadorEmpleado').style.display     = '';
+            itemsEmpleado.forEach(i => i.style.display = '');
+        });
+    </script>
 }
