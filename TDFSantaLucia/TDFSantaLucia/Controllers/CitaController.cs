@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
+    [Authorize(Roles = "Admin,Empleado")]
     [Route("cita")]
     public class CitaController : Controller
     {
@@ -14,12 +16,14 @@ namespace TDFSantaLucia.Controllers
             _citaService = citaService;
         }
 
+        [Authorize(Roles = "Cliente")]
         [HttpGet("agendar")]
         public IActionResult Agendar()
         {
             return View(new CitaViewModel());
         }
 
+        [Authorize(Roles = "Cliente")]
         [HttpPost("agendar")]
         public IActionResult Agendar(CitaViewModel model)
         {
@@ -47,6 +51,7 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("MisCitas");
         }
 
+        [Authorize(Roles = "Cliente")]
         [HttpGet("miscitas")]
         public IActionResult MisCitas()
         {
@@ -65,6 +70,7 @@ namespace TDFSantaLucia.Controllers
             return View(citas);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpGet("detallecliente/{id:int}")]
         public IActionResult DetalleCliente(int id)
         {
@@ -73,6 +79,7 @@ namespace TDFSantaLucia.Controllers
             return View(cita);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpGet("crear")]
         public IActionResult Crear()
         {
@@ -80,6 +87,7 @@ namespace TDFSantaLucia.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpPost("crear")]
         public IActionResult Crear(CitaViewModel model)
         {
@@ -105,6 +113,7 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpGet("")]
         public IActionResult Index()
         {
@@ -112,6 +121,7 @@ namespace TDFSantaLucia.Controllers
             return View(citas);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpGet("revisar/{id:int}")]
         public IActionResult Revisar(int id)
         {
@@ -120,6 +130,7 @@ namespace TDFSantaLucia.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpPost("asignar/{id:int}")]
         public IActionResult Asignar(int id, int empleadoId)
         {
@@ -130,6 +141,7 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Revisar", new { id });
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpPost("cambiarestado/{id:int}")]
         public IActionResult CambiarEstado(int id, string estado)
         {
@@ -137,6 +149,7 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpGet("detalle/{id:int}")]
         public IActionResult Detalle(int id)
         {
@@ -145,6 +158,7 @@ namespace TDFSantaLucia.Controllers
             return View(cita);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("eliminar/{id:int}")]
         public IActionResult Eliminar(int id)
         {

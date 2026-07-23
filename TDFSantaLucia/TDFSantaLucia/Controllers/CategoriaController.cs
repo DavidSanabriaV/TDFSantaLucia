@@ -5,6 +5,7 @@ using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("categoria")]
     public class CategoriaController : Controller
     {

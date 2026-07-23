@@ -67,6 +67,7 @@ namespace TDFSantaLucia.Controllers
             return View(producto);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpGet("crear")]
         public IActionResult Crear()
         {
@@ -75,6 +76,7 @@ namespace TDFSantaLucia.Controllers
             return View(new Producto());
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpPost("crear")]
         [ValidateAntiForgeryToken]
         public IActionResult Crear(
@@ -82,13 +84,18 @@ namespace TDFSantaLucia.Controllers
             Producto producto)
         {
             if (_productoService.ExisteNombre(producto.Nombre?.Trim() ?? ""))
-                ModelState.AddModelError("Nombre", "Ya existe un producto con ese nombre.");
+                ModelState.AddModelError(
+                    "Nombre",
+                    "Ya existe un producto con ese nombre.");
 
             if (ModelState.IsValid)
             {
                 producto.Estado = false;
                 _productoService.Crear(producto);
-                TempData["ExitoProducto"] = "Producto creado. Estará inactivo hasta que se registre stock en inventario.";
+
+                TempData["ExitoProducto"] =
+                    "Producto creado. Estará inactivo hasta que se registre stock en inventario.";
+
                 return RedirectToAction(nameof(Administrar));
             }
 
@@ -97,6 +104,7 @@ namespace TDFSantaLucia.Controllers
             return View(producto);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpGet("editar/{id:int}")]
         public IActionResult Editar(int? id)
         {
@@ -111,6 +119,7 @@ namespace TDFSantaLucia.Controllers
             return View(producto);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpPost("editar/{id:int}")]
         [ValidateAntiForgeryToken]
         public IActionResult Editar(
@@ -132,14 +141,20 @@ namespace TDFSantaLucia.Controllers
                 }
             }
 
-            if (_productoService.ExisteNombreEnOtra(producto.Nombre?.Trim() ?? "", id))
-                ModelState.AddModelError("Nombre", "Ya existe otro producto con ese nombre.");
+            if (_productoService.ExisteNombreEnOtra(
+                producto.Nombre?.Trim() ?? "", id))
+            {
+                ModelState.AddModelError(
+                    "Nombre",
+                    "Ya existe otro producto con ese nombre.");
+            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var (exito, error) = _productoService.Actualizar(producto);
+                    var (exito, error) =
+                        _productoService.Actualizar(producto);
 
                     if (!exito)
                     {
@@ -149,7 +164,8 @@ namespace TDFSantaLucia.Controllers
                         return View(producto);
                     }
 
-                    TempData["ExitoProducto"] = "Producto actualizado exitosamente.";
+                    TempData["ExitoProducto"] =
+                        "Producto actualizado exitosamente.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -167,6 +183,7 @@ namespace TDFSantaLucia.Controllers
             return View(producto);
         }
 
+        [Authorize(Roles = "Admin,Empleado")]
         [HttpPost("eliminar/{id:int}")]
         [ValidateAntiForgeryToken]
         public IActionResult EliminarConfirmado(int id)
@@ -184,12 +201,16 @@ namespace TDFSantaLucia.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["ExitoProducto"] = "Producto eliminado correctamente.";
+            TempData["ExitoProducto"] =
+                "Producto eliminado correctamente.";
+
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost("agregaralcarrito")]
-        public IActionResult AgregarAlCarrito(int productoId, int cantidad = 1)
+        public IActionResult AgregarAlCarrito(
+            int productoId,
+            int cantidad = 1)
         {
             var producto = _productoService.ObtenerPorId(productoId);
 
@@ -226,7 +247,11 @@ namespace TDFSantaLucia.Controllers
                 .OrderBy(c => c.Nombre)
                 .ToList();
 
-            ViewBag.Categorias = new SelectList(categorias, "Categoria_Id", "Nombre", selectedId);
+            ViewBag.Categorias = new SelectList(
+                categorias,
+                "Categoria_Id",
+                "Nombre",
+                selectedId);
         }
     }
 }
