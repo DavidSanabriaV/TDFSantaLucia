@@ -18,17 +18,17 @@
         </a>
     </div>
 
-    @if (TempData["Exito"] != null)
+    @if (TempData["ExitoEmpleado"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4">
-            <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
+            <i class="bi bi-check-circle me-2"></i>@TempData["ExitoEmpleado"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
-    @if (TempData["Error"] != null)
+    @if (TempData["ErrorEmpleado"] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4">
-            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorEmpleado"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }

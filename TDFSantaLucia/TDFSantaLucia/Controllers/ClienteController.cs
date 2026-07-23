@@ -50,7 +50,7 @@ namespace TDFSantaLucia.Controllers
                 return View(model);
             }
 
-            TempData["Exito"] = "Cliente creado correctamente.";
+            TempData["ExitoCliente"] = "Cliente creado correctamente.";
             return RedirectToAction("Index");
         }
 
@@ -101,9 +101,9 @@ namespace TDFSantaLucia.Controllers
         {
             var (exito, error) = await _clienteService.EliminarClienteAsync(id);
             if (!exito)
-                TempData["Error"] = error;
+                TempData["ErrorCliente"] = error;
             else
-                TempData["Exito"] = "Cliente eliminado correctamente.";
+                TempData["ExitoCliente"] = "Cliente eliminado correctamente.";
 
             return RedirectToAction("Index");
         }
