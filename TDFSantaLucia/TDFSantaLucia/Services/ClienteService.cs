@@ -16,7 +16,6 @@ namespace TDFSantaLucia.Services
             _userManager = userManager;
         }
 
-
         private static string GenerarUsername(string nombre, string primerApellido)
         {
             var texto = $"{nombre.Trim()}.{primerApellido.Trim()}"
@@ -36,6 +35,12 @@ namespace TDFSantaLucia.Services
                 .ToLower();
         }
 
+        private bool CedulaEnUso(string cedula, string? excluirUsuarioId = null)
+        {
+            return _userManager.Users.Any(u =>
+                u.Cedula == cedula.Trim() &&
+                (excluirUsuarioId == null || u.Id != excluirUsuarioId));
+        }
 
         public List<Cliente> ObtenerTodos()
             => _clienteRepo.ObtenerTodos();
@@ -43,9 +48,12 @@ namespace TDFSantaLucia.Services
         public Cliente? ObtenerPorId(int id)
             => _clienteRepo.ObtenerPorId(id);
 
-
         public async Task<(bool exito, string? error)> CrearCliente(ClienteViewModel model)
         {
+            // Validar cédula duplicada
+            if (!string.IsNullOrWhiteSpace(model.Cedula) && CedulaEnUso(model.Cedula))
+                return (false, "Ya existe un usuario registrado con esa cédula.");
+
             var usernameBase = GenerarUsername(model.Nombre, model.Primer_Apellido);
             var username = usernameBase;
             int contador = 1;
@@ -107,6 +115,11 @@ namespace TDFSantaLucia.Services
             var usuario = await _userManager.FindByIdAsync(cliente.Usuario_ID);
             if (usuario == null)
                 return (false, "Usuario no encontrado.");
+
+            // Validar cédula duplicada excluyendo el usuario actual
+            if (!string.IsNullOrWhiteSpace(model.Cedula) &&
+                CedulaEnUso(model.Cedula, usuario.Id))
+                return (false, "Ya existe un usuario registrado con esa cédula.");
 
             if (usuario.Email?.ToUpper() != model.Email.Trim().ToUpper())
             {
@@ -170,7 +183,6 @@ namespace TDFSantaLucia.Services
                 return (false, "No se puede eliminar un cliente con tratamientos registrados.");
 
             var usuarioId = cliente.Usuario_ID;
-
             _clienteRepo.Eliminar(id);
 
             if (!string.IsNullOrWhiteSpace(usuarioId))

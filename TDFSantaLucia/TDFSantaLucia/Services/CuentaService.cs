@@ -67,12 +67,23 @@ namespace TDFSantaLucia.Services
 
         public async Task<(bool Succeeded, string? ErrorMessage)> RegistrarClienteAsync(RegisterViewModel model)
         {
+            // Validar correo duplicado
             var emailNormalizado = model.Email.Trim().ToUpper();
             var emailExistente = _userManager.Users
                 .FirstOrDefault(u => u.NormalizedEmail == emailNormalizado);
 
             if (emailExistente != null)
                 return (false, "Ya existe una cuenta con ese correo.");
+
+            // Validar cédula duplicada
+            if (!string.IsNullOrWhiteSpace(model.Cedula))
+            {
+                var cedulaExistente = _userManager.Users
+                    .Any(u => u.Cedula == model.Cedula.Trim());
+
+                if (cedulaExistente)
+                    return (false, "Ya existe una cuenta registrada con esa cédula.");
+            }
 
             var usernameBase = GenerarUsername(model.Nombre, model.Primer_Apellido);
             var username = usernameBase;
