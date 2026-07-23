@@ -141,11 +141,14 @@ namespace TDFSantaLucia.Controllers
                 clienteId
             );
 
+            // Solo empleados activos
             ViewBag.Empleados = new SelectList(
-                empleados.Select(e => new {
-                    e.Empleado_Id,
-                    NombreCompleto = $"{e.Usuario.Nombre} {e.Usuario.Primer_Apellido} {e.Usuario.Segundo_Apellido}"
-                }),
+                empleados
+                    .Where(e => e.Usuario?.Estado == true)
+                    .Select(e => new {
+                        e.Empleado_Id,
+                        NombreCompleto = $"{e.Usuario.Nombre} {e.Usuario.Primer_Apellido} {e.Usuario.Segundo_Apellido}"
+                    }),
                 "Empleado_Id",
                 "NombreCompleto",
                 empleadoId

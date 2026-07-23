@@ -110,7 +110,8 @@
                     <input asp-for="password"
                            type="password"
                            class="form-control"
-                           id="passwordInput" />
+                           id="passwordInput"
+                           autocomplete="new-password" />
 
                     <button type="button"
                             class="btn btn-outline-secondary"
@@ -164,6 +165,10 @@
                        min="0"
                        class="form-control"
                        value="@(Model.SalarioBruto?.ToString("0.##"))" />
+
+                <span asp-validation-for="SalarioBruto"
+                      class="text-danger">
+                </span>
 
             </div>
 

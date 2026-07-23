@@ -16,6 +16,7 @@ namespace TDFSantaLucia.Repositories
         public List<Empleado> ObtenerTodos()
         {
             return _context.Empleados
+                .AsNoTracking()
                 .Include(e => e.Usuario)
                 .ToList();
         }

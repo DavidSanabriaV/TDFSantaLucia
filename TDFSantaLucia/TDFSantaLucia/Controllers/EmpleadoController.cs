@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
 
 
 namespace TDFSantaLucia.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [Route("empleado")]
     public class EmpleadoController : Controller
     {
@@ -49,6 +47,11 @@ namespace TDFSantaLucia.Controllers
         [HttpPost("crear")]
         public async Task<IActionResult> Crear(EmpleadoViewModel model)
         {
+            if (string.IsNullOrWhiteSpace(model.password))
+            {
+                ModelState.AddModelError(nameof(model.password), "La contraseña es obligatoria.");
+            }
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Roles = _empleadoService.ObtenerRoles();
@@ -68,6 +71,8 @@ namespace TDFSantaLucia.Controllers
 
             return RedirectToAction("Index");
         }
+
+
 
         [HttpGet("editar/{id:int}")]
         public async Task<IActionResult> Editar(int id)
@@ -111,11 +116,11 @@ namespace TDFSantaLucia.Controllers
             try
             {
                 await _empleadoService.EliminarEmpleadoAsync(id);
-                TempData["ExitoEmpleado"] = "Empleado eliminado correctamente.";
+                TempData["Exito"] = "Empleado eliminado correctamente.";
             }
             catch (InvalidOperationException ex)
             {
-                TempData["ErrorEmpleado"] = ex.Message;
+                TempData["Error"] = ex.Message;
             }
 
             return RedirectToAction("Index");
