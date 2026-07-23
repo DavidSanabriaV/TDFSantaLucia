@@ -126,6 +126,24 @@ namespace TDFSantaLucia.Services
 
             if (emailExistente != null)
                 return (false, "Ya existe un usuario registrado con ese correo.");
+            if (!string.IsNullOrWhiteSpace(model.Cedula))
+            {
+                var cedulaExiste = _repository.ObtenerTodos()
+                    .Any(e => e.Cedula == model.Cedula.Trim());
+
+                if (cedulaExiste)
+                    return (false, "Ya existe un empleado registrado con esa cédula.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.Telefono))
+            {
+                var telefonoExiste = _repository.ObtenerTodos()
+                    .Any(e => e.Telefono == model.Telefono.Trim());
+
+                if (telefonoExiste)
+                    return (false, "Ya existe un empleado registrado con ese teléfono.");
+            }
+
 
             var usuario = new Usuario
             {
@@ -141,10 +159,10 @@ namespace TDFSantaLucia.Services
                 EmailConfirmed = true
             };
 
-            var result = await _userManager.CreateAsync(
-                usuario,
-                model.password ?? "Empleado123!"
-            );
+            if (string.IsNullOrWhiteSpace(model.password))
+                return (false, "La contraseña es obligatoria.");
+
+            var result = await _userManager.CreateAsync(usuario, model.password);
 
             if (!result.Succeeded)
                 return (false, string.Join(", ", result.Errors.Select(e => e.Description)));
@@ -174,6 +192,7 @@ namespace TDFSantaLucia.Services
             if (existente == null)
                 return (false, "Usuario no encontrado.");
 
+
             if (existente.UserName != model.UserName)
             {
                 var existe = await _userManager.FindByNameAsync(model.UserName);
@@ -191,6 +210,25 @@ namespace TDFSantaLucia.Services
                 if (emailExiste != null)
                     return (false, "Ya existe un usuario con ese correo.");
             }
+
+            if (!string.IsNullOrWhiteSpace(model.Cedula))
+            {
+                var cedulaExiste = _repository.ObtenerTodos()
+                    .Any(e => e.Cedula == model.Cedula.Trim() && e.Empleado_Id != model.Empleado_Id);
+
+                if (cedulaExiste)
+                    return (false, "Ya existe un empleado registrado con esa cédula.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.Telefono))
+            {
+                var telefonoExiste = _repository.ObtenerTodos()
+                    .Any(e => e.Telefono == model.Telefono.Trim() && e.Empleado_Id != model.Empleado_Id);
+
+                if (telefonoExiste)
+                    return (false, "Ya existe un empleado registrado con ese teléfono.");
+            }
+
 
             existente.Nombre = model.Nombre.Trim();
             existente.Primer_Apellido = model.Primer_Apellido.Trim();

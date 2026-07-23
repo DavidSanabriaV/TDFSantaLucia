@@ -42,8 +42,9 @@ namespace TDFSantaLucia.Models
 
         public string? Puesto { get; set; }
 
+        [Required(ErrorMessage = "El salario bruto es obligatorio")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "El salario debe ser mayor a 0")]
         public decimal? SalarioBruto { get; set; }
-
         public decimal? SalarioNeto { get; set; }
 
         public bool Estado { get; set; } = true;
