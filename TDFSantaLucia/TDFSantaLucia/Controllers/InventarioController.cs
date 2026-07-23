@@ -7,7 +7,7 @@ using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
-
+    [Authorize(Roles = "Admin,Empleado")]
     [Route("inventario")]
     public class InventarioController : Controller
     {

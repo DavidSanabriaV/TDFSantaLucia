@@ -8,7 +8,6 @@ using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
-    [Authorize(Roles = "Admin,Empleado")]
     [Route("cupon")]
     public class CuponController : Controller
     {
