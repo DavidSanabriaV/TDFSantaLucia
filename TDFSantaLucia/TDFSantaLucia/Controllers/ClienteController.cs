@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
+    [Authorize(Roles = "Admin,Empleado")]
     [Route("cliente")]
     public class ClienteController : Controller
     {

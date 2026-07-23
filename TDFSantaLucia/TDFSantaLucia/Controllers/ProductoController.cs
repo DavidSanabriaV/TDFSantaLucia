@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TDFSantaLucia.Models;
@@ -6,6 +7,7 @@ using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
+    [Authorize]
     [Route("producto")]
     public class ProductoController : Controller
     {
@@ -23,6 +25,7 @@ namespace TDFSantaLucia.Controllers
             _carritoService = carritoService;
         }
 
+        [AllowAnonymous]
         public IActionResult Index(string? buscar)
         {
             ViewData["Title"] = "Productos";
@@ -31,18 +34,19 @@ namespace TDFSantaLucia.Controllers
             return View(productos);
         }
 
-
         [HttpGet("sugerencias")]
         public IActionResult Sugerencias()
         {
             var productos = _productoService.ObtenerTodos()
                 .Where(p => p.Estado)
-                .Select(p => new {
+                .Select(p => new
+                {
                     id = p.Producto_Id,
                     nombre = p.Nombre,
                     precio = p.Precio,
                     imagen = p.Imagen_URL
                 });
+
             return Json(productos);
         }
 
@@ -54,8 +58,11 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Detalle(int? id)
         {
             if (id == null) return NotFound();
+
             var producto = _productoService.ObtenerPorId(id.Value);
+
             if (producto == null) return NotFound();
+
             ViewData["Title"] = "Detalle de Producto";
             return View(producto);
         }
@@ -71,8 +78,8 @@ namespace TDFSantaLucia.Controllers
         [HttpPost("crear")]
         [ValidateAntiForgeryToken]
         public IActionResult Crear(
-        [Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
-        Producto producto)
+            [Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
+            Producto producto)
         {
             if (_productoService.ExisteNombre(producto.Nombre?.Trim() ?? ""))
                 ModelState.AddModelError("Nombre", "Ya existe un producto con ese nombre.");
@@ -94,8 +101,11 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Editar(int? id)
         {
             if (id == null) return NotFound();
+
             var producto = _productoService.ObtenerPorId(id.Value);
+
             if (producto == null) return NotFound();
+
             CargarCategorias(producto.Categoria_Id);
             ViewData["Title"] = "Editar Producto";
             return View(producto);
@@ -106,13 +116,15 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Editar(
             int id,
             [Bind("Producto_Id,Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
-    Producto producto)
+            Producto producto)
         {
-            if (id != producto.Producto_Id) return NotFound();
+            if (id != producto.Producto_Id)
+                return NotFound();
 
             if (producto.Precio == 0)
             {
                 var original = _productoService.ObtenerPorId(id);
+
                 if (original != null)
                 {
                     producto.Precio = original.Precio;
@@ -128,6 +140,7 @@ namespace TDFSantaLucia.Controllers
                 try
                 {
                     var (exito, error) = _productoService.Actualizar(producto);
+
                     if (!exito)
                     {
                         ModelState.AddModelError("Estado", error!);
@@ -135,14 +148,17 @@ namespace TDFSantaLucia.Controllers
                         ViewData["Title"] = "Editar Producto";
                         return View(producto);
                     }
+
                     TempData["ExitoProducto"] = "Producto actualizado exitosamente.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!_productoService.ExisteAsync(producto.Producto_Id))
                         return NotFound();
+
                     throw;
                 }
+
                 return RedirectToAction(nameof(Administrar));
             }
 
@@ -156,7 +172,9 @@ namespace TDFSantaLucia.Controllers
         public IActionResult EliminarConfirmado(int id)
         {
             var producto = _productoService.ObtenerPorId(id);
-            if (producto == null) return NotFound();
+
+            if (producto == null)
+                return NotFound();
 
             var resultado = _productoService.Eliminar(id);
 

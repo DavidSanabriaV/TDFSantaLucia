@@ -8,6 +8,7 @@ using TDFSantaLucia.Services;
 
 namespace TDFSantaLucia.Controllers
 {
+    [Authorize(Roles = "Admin,Empleado")]
     [Route("cupon")]
     public class CuponController : Controller
     {
@@ -33,7 +34,6 @@ namespace TDFSantaLucia.Controllers
                 .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
         }
 
-        // ── ADMIN CRUD ──────────────────────────────────────────────────────
 
         [HttpGet("")]
         [Authorize(Roles = "Admin,Empleado")]
@@ -161,7 +161,6 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Detalle", new { id = cuponId });
         }
 
-        // ── CLIENTE ─────────────────────────────────────────────────────────
 
         [HttpGet("mis-cupones")]
         [Authorize(Roles = "Cliente")]
@@ -182,7 +181,6 @@ namespace TDFSantaLucia.Controllers
             if (cliente == null)
                 return Json(new { exito = false, mensaje = "Cliente no encontrado." });
 
-            // Parsear con cultura invariante para que "2712.00" funcione siempre
             if (!decimal.TryParse(
                     totalActual,
                     System.Globalization.NumberStyles.Any,

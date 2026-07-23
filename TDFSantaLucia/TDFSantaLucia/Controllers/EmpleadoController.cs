@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
 
 
 namespace TDFSantaLucia.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("empleado")]
     public class EmpleadoController : Controller
     {
