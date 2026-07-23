@@ -158,7 +158,7 @@ namespace TDFSantaLucia.Controllers
             var (exito, error) = _chatbotService.Crear(model);
             if (!exito) { ModelState.AddModelError("", error!); return View(model); }
 
-            TempData["Exito"] = "Opción creada correctamente.";
+            TempData["ExitoChatbot"] = "Opción creada correctamente.";
             return RedirectToAction("Admin");
         }
 
@@ -211,7 +211,7 @@ namespace TDFSantaLucia.Controllers
                 return View(model);
             }
 
-            TempData["Exito"] = "Opción actualizada correctamente.";
+            TempData["ExitoChatbot"] = "Opción actualizada correctamente.";
             return RedirectToAction("Admin");
         }
 
@@ -221,8 +221,8 @@ namespace TDFSantaLucia.Controllers
         public IActionResult Eliminar(int id)
         {
             var (exito, error) = _chatbotService.Eliminar(id);
-            if (!exito) TempData["Error"] = error;
-            else TempData["Exito"] = "Opción eliminada.";
+            if (!exito) TempData["ErrorChatbot"] = error;
+            else TempData["ExitoChatbot"] = "Opción eliminada.";
             return RedirectToAction("Admin");
         }
     }

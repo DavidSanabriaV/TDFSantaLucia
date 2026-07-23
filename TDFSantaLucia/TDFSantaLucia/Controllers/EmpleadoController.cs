@@ -116,11 +116,11 @@ namespace TDFSantaLucia.Controllers
             try
             {
                 await _empleadoService.EliminarEmpleadoAsync(id);
-                TempData["Exito"] = "Empleado eliminado correctamente.";
+                TempData["ExitoEmpleado"] = "Empleado eliminado correctamente.";
             }
             catch (InvalidOperationException ex)
             {
-                TempData["Error"] = ex.Message;
+                TempData["ErrorEmpleado"] = ex.Message;
             }
 
             return RedirectToAction("Index");

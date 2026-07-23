@@ -164,7 +164,7 @@ namespace TDFSantaLucia.Controllers
                 return View(model);
             }
 
-            TempData["Exito"] = "Artículo creado correctamente.";
+            TempData["ExitoArticulo"] = "Artículo creado correctamente.";
             return RedirectToAction("Admin");
         }
 
@@ -206,7 +206,7 @@ namespace TDFSantaLucia.Controllers
                 return View(model);
             }
 
-            TempData["Exito"] = "Artículo actualizado correctamente.";
+            TempData["ExitoArticulo"] = "Artículo actualizado correctamente.";
             return RedirectToAction("Admin");
         }
 
@@ -216,8 +216,8 @@ namespace TDFSantaLucia.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             var (exito, error) = await _articuloService.EliminarAsync(id);
-            if (!exito) TempData["Error"] = error;
-            else TempData["Exito"] = "Artículo eliminado.";
+            if (!exito) TempData["ErrorArticulo"] = error;
+            else TempData["ExitoArticulo"] = "Artículo eliminado.";
             return RedirectToAction("Admin");
         }
 

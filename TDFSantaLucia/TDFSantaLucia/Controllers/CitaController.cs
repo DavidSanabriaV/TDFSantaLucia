@@ -104,11 +104,11 @@ namespace TDFSantaLucia.Controllers
             var resultado = _citaService.AgendarCita(model);
             if (!resultado.success)
             {
-                TempData["Error"] = resultado.error;
+                TempData["ErrorCita"] = resultado.error;
                 return RedirectToAction("Index");
             }
 
-            TempData["Success"] = "Cita creada correctamente.";
+            TempData["ExitoCita"] = "Cita creada correctamente.";
             return RedirectToAction("Index");
         }
 
@@ -135,7 +135,7 @@ namespace TDFSantaLucia.Controllers
         {
             var resultado = _citaService.AsignarEmpleado(id, empleadoId);
             if (!resultado.success)
-                TempData["Error"] = resultado.error;
+                TempData["ErrorCita"] = resultado.error;
 
             return RedirectToAction("Revisar", new { id });
         }
