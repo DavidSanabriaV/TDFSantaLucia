@@ -129,6 +129,10 @@ using (var scope = app.Services.CreateScope())
 
     var services = scope.ServiceProvider;
 
+    // Aplicar migraciones pendientes automáticamente (crea las tablas si no existen)
+    var dbContext = services.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
     var userManager = services.GetRequiredService<UserManager<Usuario>>();
