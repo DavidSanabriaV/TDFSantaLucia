@@ -9,118 +9,139 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Iniciar Sesión - Farmacia Santa Lucía</title>
+    <title>@ViewData["Title"] — Farmacia Santa Lucía</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/site.css" />
-
-</head>
-<body class="auth-body">
-
-<div class="login-card card p-4 p-md-5 mx-3">
-
-    <div class="text-center mb-4">
-        <img src="~/images/fotoL.jpg" alt="Logo Farmacia Santa Lucía" class="login-logo mb-3" />
-        <h4 class="fw-bold" style="color:#1a3c5e;">Farmacia Santa Lucía</h4>
-        <p class="text-muted small mb-0">Ingresa tus credenciales para continuar</p>
-    </div>
-
-    @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
-    {
-        <div class="alert alert-danger rounded-3 small">
-            <i class="bi bi-exclamation-triangle-fill me-1"></i>
-            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-            {
-                <span>@error.ErrorMessage</span>
-            }
-        </div>
-    }
-
-    <form asp-action="Login" asp-controller="Account" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
-
-        <div class="mb-3">
-            <label asp-for="Correo" class="form-label fw-semibold small text-muted">
-                CORREO ELECTRÓNICO
-            </label>
-            <div class="input-group">
-                <input asp-for="Correo"
-                       class="form-control"
-                       placeholder="correo@ejemplo.com"
-                       autocomplete="email" />
-                <span class="input-group-text">
-                    <i class="bi bi-envelope text-muted"></i>
-                </span>
-            </div>
-            <span asp-validation-for="Correo" class="text-danger small"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Password" class="form-label fw-semibold small text-muted">
-                CONTRASEÑA
-            </label>
-            <div class="input-group">
-                <input asp-for="Password"
-                       class="form-control"
-                       id="passwordInput"
-                       placeholder="••••••••"
-                       autocomplete="current-password" />
-                <span class="input-group-text" onclick="togglePassword()">
-                    <i class="bi bi-eye" id="eyeIcon"></i>
-                </span>
-            </div>
-            <span asp-validation-for="Password" class="text-danger small"></span>
-        </div>
-
-        <div class="mb-4 d-flex align-items-center justify-content-between">
-            <div class="form-check">
-                <input asp-for="RememberMe" class="form-check-input" />
-                <label asp-for="RememberMe" class="form-check-label small">Recordarme</label>
-            </div>
-        </div>
-
-        <button type="submit" class="btn btn-login btn-primary w-100 text-white mb-3">
-            <i class="bi bi-box-arrow-in-right me-2"></i>Ingresar
-        </button>
-
-    </form>
-
-    <div class="divider mb-3">o</div>
-
-    <a asp-action="Registro" asp-controller="Account"
-       class="btn btn-outline-primary btn-registro w-100">
-        <i class="bi bi-person-plus me-2"></i>Crear cuenta
-    </a>
-
-</div>
-
-<script>
-    function togglePassword() {
-        const input = document.getElementById('passwordInput');
-        const icon  = document.getElementById('eyeIcon');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.replace('bi-eye', 'bi-eye-slash');
-        } else {
-            input.type = 'password';
-            icon.classList.replace('bi-eye-slash', 'bi-eye');
-        }
-    }
-</script>
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <style>
+            body {
+                min-height: 100vh;
+                background: linear-gradient(135deg, #1a3c5e 0%, #243C8F 60%, #0dcaf0 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .login-card {
+                width: 100%;
+                max-width: 440px;
+                border-radius: 1.5rem;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            }
+
+            .login-logo {
+                width: 90px;
+                height: 90px;
+                object-fit: contain;
+                border-radius: 50%;
+            }
 
             input[type="password"]::-ms-reveal,
-            input[type="password"]::-ms-clear {
+            input[type="password"]::-ms-clear,
+            input::-ms-reveal,
+            input::-ms-clear {
                 display: none;
             }
-
     </style>
+</head>
+<body>
+    <div class="login-card card border-0 p-4 p-md-5">
 
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<partial name="_ValidationScriptsPartial" />
+        <div class="text-center mb-4">
+            <img src="~/images/fotoL.jpg" alt="Logo" class="login-logo mb-3" />
+            <h4 class="fw-bold mb-0" style="color:#1a3c5e;">Farmacia Santa Lucía</h4>
+            <p class="text-muted small">Barva, Heredia</p>
+        </div>
+
+        <h5 class="fw-bold mb-4 text-center" style="color:#1a3c5e;">Iniciar Sesión</h5>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger rounded-3 small mb-3">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="@ViewData["ReturnUrl"]" name="returnUrl" />
+
+            <div class="mb-3">
+                <label asp-for="Correo" class="form-label fw-semibold">Correo electrónico</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-envelope text-muted"></i>
+                    </span>
+                    <input asp-for="Correo"
+                           type="email"
+                           class="form-control border-start-0 ps-0 rounded-end-3"
+                           placeholder="correo@ejemplo.com"
+                           autofocus />
+                </div>
+                <span asp-validation-for="Correo" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Password" class="form-label fw-semibold">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-lock text-muted"></i>
+                    </span>
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control border-start-0 ps-0"
+                           id="passwordInput"
+                           placeholder="••••••••"
+                           autocomplete="current-password" />
+                    <button type="button"
+                            class="btn btn-outline-secondary rounded-end-3"
+                            onclick="togglePassword()">
+                        <i class="bi bi-eye" id="iconoOjo"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2" id="btnLogin">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Ingresar
+            </button>
+
+        </form>
+
+        <hr class="my-4" />
+
+        <div class="text-center">
+            <p class="text-muted small mb-2">¿No tienes cuenta?</p>
+            <a asp-controller="Account" asp-action="Registro"
+               class="btn btn-outline-primary w-100 rounded-3">
+                <i class="bi bi-person-plus me-1"></i>Crear cuenta
+            </a>
+        </div>
+
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePassword() {
+        const input = document.getElementById('passwordInput');
+        const icono = document.getElementById('iconoOjo');
+        if (input.type === 'password') {
+        input.type = 'text';
+        icono.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+        input.type = 'password';
+        icono.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+        }
+
+        document.querySelector('form').addEventListener('submit', function () {
+        const btn = document.getElementById('btnLogin');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Ingresando...';
+        });
+    </script>
 </body>
 </html>

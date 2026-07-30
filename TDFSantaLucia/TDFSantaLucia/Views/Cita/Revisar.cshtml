@@ -2,55 +2,81 @@
 @{
     ViewData["Title"] = "Revisar Cita";
 }
-<div class="container mt-4">
-    <h2 class="mb-4">🔍 Revisar Cita</h2>
+
+<div class="container py-4" style="max-width:750px;">
+
+    <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
+        <i class="bi bi-calendar-check-fill me-2 text-primary"></i>Revisar Cita
+    </h2>
+
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger">@TempData["Error"]</div>
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
 
-    <div class="card shadow-sm p-4 mb-4">
-        <h5>📋 Datos del Cliente</h5>
+    <!-- Datos de la cita -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-3" style="color:#1a3c5e;">
+            <i class="bi bi-info-circle me-2"></i>Datos de la Cita
+        </h5>
         <hr />
-        <div class="row">
+        <div class="row g-3">
             <div class="col-md-6">
-                <p><strong>Servicio:</strong> @Model.Servicio</p>
-                <p><strong>Fecha:</strong> @Model.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
-                <p><strong>Observaciones:</strong> @Model.Observaciones</p>
+                <p class="text-muted small mb-1">SERVICIO</p>
+                <p class="fw-semibold">@Model.Servicio</p>
             </div>
             <div class="col-md-6">
-                <p>
-                    <strong>Estado actual:</strong>
-                    @if (Model.Estado == "Aceptada")
-                    {
-                        <span class="badge bg-success fs-6">✔ Aceptada</span>
-                    }
-                    else if (Model.Estado == "Cancelada")
-                    {
-                        <span class="badge bg-danger fs-6">✖ Cancelada</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning text-dark fs-6">⏳ En Proceso</span>
-                    }
-                </p>
-                @if (Model.Empleado_Id.HasValue)
+                <p class="text-muted small mb-1">FECHA</p>
+                <p class="fw-semibold">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+            <div class="col-md-6">
+                <p class="text-muted small mb-1">ESTADO</p>
+                @if (Model.Estado == "Aceptada")
                 {
-                    <p><strong>Empleado asignado:</strong> @Model.NombreEmpleado</p>
+                    <span class="badge bg-success fs-6">✔ Aceptada</span>
+                }
+                else if (Model.Estado == "Cancelada")
+                {
+                    <span class="badge bg-danger fs-6">✖ Cancelada</span>
                 }
                 else
                 {
-                    <p class="text-muted">Sin empleado asignado aún.</p>
+                    <span class="badge bg-warning text-dark fs-6">⏳ En Proceso</span>
                 }
             </div>
+            <div class="col-md-6">
+                <p class="text-muted small mb-1">EMPLEADO ASIGNADO</p>
+                @if (Model.Empleado_Id.HasValue)
+                {
+                    <p class="fw-semibold">@Model.NombreEmpleado</p>
+                }
+                else
+                {
+                    <p class="text-muted fst-italic">Sin empleado asignado aún.</p>
+                }
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Observaciones))
+            {
+                <div class="col-12">
+                    <p class="text-muted small mb-1">OBSERVACIONES</p>
+                    <p class="fw-semibold">@Model.Observaciones</p>
+                </div>
+            }
         </div>
     </div>
 
-    <div class="card shadow-sm p-4 mb-4">
-        <h5>👤 Asignar Empleado</h5>
-        <form asp-action="Asignar" asp-route-id="@Model.Cita_Id" method="post" class="row g-3 mt-1">
+    <!-- Asignar empleado -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-3" style="color:#1a3c5e;">
+            <i class="bi bi-person-check me-2"></i>Asignar Empleado
+        </h5>
+        <form asp-action="Asignar" asp-route-id="@Model.Cita_Id" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
             <div class="col-md-8">
-                <select name="empleadoId" class="form-select" required>
+                <select name="empleadoId" class="form-select rounded-3" required>
                     <option value="">Seleccione un empleado</option>
                     @foreach (var emp in Model.Empleados)
                     {
@@ -62,34 +88,46 @@
                 </select>
             </div>
             <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100">Asignar</button>
+                <button type="submit" class="btn btn-primary w-100 rounded-3">
+                    <i class="bi bi-person-check me-1"></i>Asignar
+                </button>
             </div>
         </form>
     </div>
 
-    <div class="card shadow-sm p-4 mb-4">
-        <h5>🔄 Cambiar Estado</h5>
+    <!-- Cambiar estado -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <h5 class="fw-bold mb-3" style="color:#1a3c5e;">
+            <i class="bi bi-arrow-repeat me-2"></i>Cambiar Estado
+        </h5>
         <div class="d-flex gap-3 mt-2">
             <form asp-action="CambiarEstado" asp-route-id="@Model.Cita_Id" method="post">
+                @Html.AntiForgeryToken()
                 <input type="hidden" name="estado" value="Aceptada" />
-                <button type="submit" class="btn btn-success"
-                        @(!Model.Empleado_Id.HasValue ? "disabled" : "")>
-                    ✔ Aceptar Cita
+                <button type="submit" class="btn btn-success rounded-3"
+                    @(!Model.Empleado_Id.HasValue ? "disabled" : "")>
+                    <i class="bi bi-check-circle me-1"></i>Aceptar Cita
                 </button>
             </form>
             <form asp-action="CambiarEstado" asp-route-id="@Model.Cita_Id" method="post">
+                @Html.AntiForgeryToken()
                 <input type="hidden" name="estado" value="Cancelada" />
-                <button type="submit" class="btn btn-danger"
+                <button type="submit" class="btn btn-danger rounded-3"
                         onclick="return confirm('¿Seguro que desea cancelar esta cita?')">
-                    ✖ Cancelar Cita
+                    <i class="bi bi-x-circle me-1"></i>Cancelar Cita
                 </button>
             </form>
         </div>
         @if (!Model.Empleado_Id.HasValue)
         {
-            <small class="text-warning mt-2 d-block">⚠️ Debe asignar un empleado antes de aceptar la cita.</small>
+            <div class="alert alert-warning rounded-3 mt-3 mb-0 small">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Debe asignar un empleado antes de aceptar la cita.
+            </div>
         }
     </div>
 
-    <a asp-action="Index" class="btn btn-secondary">⬅ Volver</a>
+    <a asp-action="Index" class="btn btn-outline-secondary rounded-3">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
 </div>

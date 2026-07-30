@@ -4,184 +4,180 @@
     var todosLosProductos = ViewBag.TodosLosProductos as List<TDFSantaLucia.Models.Producto>;
     bool verTodos = ViewBag.VerTodos ?? false;
     ViewData["Title"] = "Historial de Movimientos";
+
+    var totalEntradas = Model.Where(m => m.Tipo_Movimiento == "ENTRADA").Sum(m => m.Cantidad);
+    var totalSalidas = Model.Where(m => m.Tipo_Movimiento == "SALIDA").Sum(m => m.Cantidad);
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>📋 Historial de Movimientos de Inventario</h2>
-    <a asp-controller="Inventario" asp-action="Index" class="btn btn-outline-secondary btn-sm">← Volver a Inventario</a>
-</div>
+<div class="container-fluid px-4 py-4">
 
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-2 align-items-end">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#1a3c5e;">
+                <i class="bi bi-clock-history me-2 text-primary"></i>Historial de Movimientos
+            </h2>
+            <p class="text-muted mb-0">Entradas y salidas del inventario</p>
+        </div>
+        <a asp-controller="Inventario" asp-action="Index"
+           class="btn btn-outline-secondary rounded-3">
+            <i class="bi bi-arrow-left me-1"></i>Volver a Inventario
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label mb-1 small fw-bold">Producto</label>
-                <select name="productoId" class="form-select form-select-sm">
-                    <option value="0">-- Seleccionar --</option>
-                    <option value="-1" selected="@(verTodos ? "selected" : null)">📋 Todos los productos</option>
+                <label class="form-label fw-semibold text-muted small">PRODUCTO</label>
+                <select name="productoId" class="form-select rounded-3">
+                    <option value="0">— Seleccionar —</option>
+                    <option value="-1" selected="@(verTodos ? "selected" : null)">
+                        📋 Todos los productos
+                    </option>
                     @foreach (var p in todosLosProductos ?? new())
                     {
                         <option value="@p.Producto_Id"
                                 selected="@(!verTodos && producto?.Producto_Id == p.Producto_Id ? "selected" : null)">
-                            @p.Nombre @(p.Marca != null ? $"- {p.Marca}" : "")
+                            @p.Nombre @(p.Marca != null ? $"— {p.Marca}" : "")
                         </option>
                     }
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label mb-1 small fw-bold">Desde</label>
-                <input type="date" name="desde" class="form-control form-control-sm" value="@ViewBag.Desde" />
+                <label class="form-label fw-semibold text-muted small">DESDE</label>
+                <input type="date" name="desde" class="form-control rounded-3"
+                       value="@ViewBag.Desde" />
             </div>
             <div class="col-md-2">
-                <label class="form-label mb-1 small fw-bold">Hasta</label>
-                <input type="date" name="hasta" class="form-control form-control-sm" value="@ViewBag.Hasta" />
+                <label class="form-label fw-semibold text-muted small">HASTA</label>
+                <input type="date" name="hasta" class="form-control rounded-3"
+                       value="@ViewBag.Hasta" />
             </div>
             <div class="col-md-2">
-                <label class="form-label mb-1 small fw-bold">Tipo</label>
-                <select name="tipoFiltro" class="form-select form-select-sm">
+                <label class="form-label fw-semibold text-muted small">TIPO</label>
+                <select name="tipoFiltro" class="form-select rounded-3">
                     <option value="TODOS" selected="@(ViewBag.TipoFiltro == "TODOS")">Todos</option>
                     <option value="ENTRADA" selected="@(ViewBag.TipoFiltro == "ENTRADA")">Entradas</option>
                     <option value="SALIDA" selected="@(ViewBag.TipoFiltro == "SALIDA")">Salidas</option>
                 </select>
             </div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-primary btn-sm w-100">Buscar</button>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100 rounded-3">
+                    <i class="bi bi-search me-1"></i>Buscar
+                </button>
             </div>
         </form>
     </div>
+
+    @if (verTodos || producto != null)
+    {
+        <!-- Info del producto seleccionado -->
+        @if (!verTodos && producto != null)
+        {
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-box-seam-fill text-primary fs-4"></i>
+                    <div>
+                        <h5 class="fw-bold mb-0" style="color:#1a3c5e;">@producto.Nombre</h5>
+                        @if (!string.IsNullOrEmpty(producto.Marca))
+                        {
+                            <small class="text-muted">@producto.Marca</small>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- KPIs -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 text-center">
+                    <div class="card-body py-3">
+                        <p class="text-muted small mb-1">TOTAL MOVIMIENTOS</p>
+                        <strong class="fs-3">@Model.Count</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 text-center">
+                    <div class="card-body py-3">
+                        <p class="text-muted small mb-1">UNIDADES INGRESADAS</p>
+                        <strong class="fs-3 text-success">@totalEntradas</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 text-center">
+                    <div class="card-body py-3">
+                        <p class="text-muted small mb-1">UNIDADES SALIDAS</p>
+                        <strong class="fs-3 text-danger">@totalSalidas</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        @if (Model.Any())
+        {
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Fecha</th>
+                                @if (verTodos)
+                                {
+                                    <th>Producto</th>
+                                }
+                                <th class="text-center">Tipo</th>
+                                <th class="text-center">Cantidad</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model)
+                            {
+                                var esEntrada = m.Tipo_Movimiento == "ENTRADA";
+                                <tr class="@(esEntrada ? "table-success" : "table-danger")">
+                                    <td class="small text-muted">
+                                        @m.Fecha_Movimiento.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                    @if (verTodos)
+                                    {
+                                        <td class="fw-semibold">@(m.Producto?.Nombre ?? "—")</td>
+                                    }
+                                    <td class="text-center">
+                                        <span class="badge @(esEntrada ? "bg-success" : "bg-danger")">
+                                            <i class="bi @(esEntrada ? "bi-arrow-down-circle" : "bi-arrow-up-circle") me-1"></i>
+                                            @m.Tipo_Movimiento
+                                        </span>
+                                    </td>
+                                    <td class="text-center fw-bold">@m.Cantidad</td>
+                                    <td class="text-muted small">@m.Descripcion</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+                <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+                <p class="text-muted mb-0">No hay movimientos para los filtros seleccionados.</p>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+            <i class="bi bi-clock-history display-4 text-muted mb-3"></i>
+            <h5 class="text-muted">Selecciona un producto para ver su historial</h5>
+            <p class="text-muted small mb-0">
+                Elige un producto o "Todos los productos" en el filtro de arriba y haz clic en Buscar.
+            </p>
+        </div>
+    }
+
 </div>
-
-@if (verTodos)
-{
-    var totalEntradas = Model.Where(m => m.Tipo_Movimiento == "ENTRADA").Sum(m => m.Cantidad);
-    var totalSalidas = Model.Where(m => m.Tipo_Movimiento == "SALIDA").Sum(m => m.Cantidad);
-
-    <div class="row g-2 mb-3">
-        <div class="col-md-4">
-            <div class="card text-center bg-light">
-                <div class="card-body py-2">
-                    <div class="small text-muted">Total movimientos</div>
-                    <strong class="fs-5">@Model.Count</strong>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center bg-light">
-                <div class="card-body py-2">
-                    <div class="small text-muted">Unidades ingresadas</div>
-                    <strong class="fs-5 text-success">@totalEntradas</strong>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center bg-light">
-                <div class="card-body py-2">
-                    <div class="small text-muted">Unidades salidas</div>
-                    <strong class="fs-5 text-danger">@totalSalidas</strong>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @if (Model.Any())
-    {
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover table-sm">
-                <thead class="table-dark">
-                    <tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Descripción</th></tr>
-                </thead>
-                <tbody>
-                    @foreach (var m in Model)
-                    {
-                        <tr class="@(m.Tipo_Movimiento == "ENTRADA" ? "table-success" : "table-danger")">
-                            <td>@m.Fecha_Movimiento.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td>@(m.Producto?.Nombre ?? "—")</td>
-                            <td><span class="badge @(m.Tipo_Movimiento == "ENTRADA" ? "bg-success" : "bg-danger")">@m.Tipo_Movimiento</span></td>
-                            <td><strong>@m.Cantidad</strong></td>
-                            <td>@m.Descripcion</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info">No hay movimientos para los filtros seleccionados.</div>
-    }
-}
-else if (producto != null)
-{
-    <div class="card mb-3 border-primary">
-        <div class="card-body py-2">
-            <strong>Producto:</strong> @producto.Nombre
-            @if (!string.IsNullOrEmpty(producto.Marca))
-            {
-                <span> — @producto.Marca</span>
-            }
-        </div>
-    </div>
-
-    var totalEntradasP = Model.Where(m => m.Tipo_Movimiento == "ENTRADA").Sum(m => m.Cantidad);
-    var totalSalidasP = Model.Where(m => m.Tipo_Movimiento == "SALIDA").Sum(m => m.Cantidad);
-
-    <div class="row g-2 mb-3">
-        <div class="col-md-4">
-            <div class="card text-center bg-light">
-                <div class="card-body py-2">
-                    <div class="small text-muted">Total movimientos</div>
-                    <strong class="fs-5">@Model.Count</strong>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center bg-light">
-                <div class="card-body py-2">
-                    <div class="small text-muted">Unidades ingresadas</div>
-                    <strong class="fs-5 text-success">@totalEntradasP</strong>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-center bg-light">
-                <div class="card-body py-2">
-                    <div class="small text-muted">Unidades salidas</div>
-                    <strong class="fs-5 text-danger">@totalSalidasP</strong>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @if (Model.Any())
-    {
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover table-sm">
-                <thead class="table-dark">
-                    <tr><th>Fecha</th><th>Tipo</th><th>Cantidad</th><th>Descripción</th></tr>
-                </thead>
-                <tbody>
-                    @foreach (var m in Model)
-                    {
-                        <tr class="@(m.Tipo_Movimiento == "ENTRADA" ? "table-success" : "table-danger")">
-                            <td>@m.Fecha_Movimiento.ToString("dd/MM/yyyy HH:mm")</td>
-                            <td><span class="badge @(m.Tipo_Movimiento == "ENTRADA" ? "bg-success" : "bg-danger")">@m.Tipo_Movimiento</span></td>
-                            <td><strong>@m.Cantidad</strong></td>
-                            <td>@m.Descripcion</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info">No hay movimientos para los filtros seleccionados.</div>
-    }
-}
-else
-{
-    <div class="alert alert-info d-flex align-items-center gap-2">
-        <i class="bi bi-arrow-up-circle fs-4"></i>
-        <div>Elegí un producto (o "Todos los productos") en el filtro de arriba y hacé clic en <strong>Buscar</strong>.</div>
-    </div>
-}

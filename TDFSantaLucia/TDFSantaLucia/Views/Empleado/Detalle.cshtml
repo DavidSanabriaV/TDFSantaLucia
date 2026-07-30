@@ -1,51 +1,87 @@
 ﻿@model TDFSantaLucia.Models.EmpleadoViewModel
-
 @{
     ViewData["Title"] = "Detalle Empleado";
 }
 
-<div class="container mt-4">
+<div class="container py-4" style="max-width:750px;">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
 
-    <h2 class="mb-4">👤 Detalle del Empleado</h2>
+            <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
+                <i class="bi bi-person-fill me-2 text-primary"></i>Detalle del Empleado
+            </h2>
 
-    <div class="card shadow-sm p-4" style="max-width: 700px;">
-
-        <h5 class="card-title">
-            @Model.Nombre
-            @Model.Primer_Apellido
-            @Model.Segundo_Apellido
-        </h5>
-        <hr />
-        <div class="row">
-
-            <div class="col-md-6">
-                <p><strong>Cédula:</strong>@Model.Cedula</p>
-                <p><strong>Correo:</strong>@Model.Email</p>
-                <p><strong>Teléfono:</strong> @Model.Telefono</p>
-                <p> <strong>Dirección:</strong>@Model.Direccion_Exacta</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>Username:</strong>@Model.UserName</p>
-                <p><strong>Rol:</strong>@Model.rol</p>
-                <p><strong>Puesto:</strong>@Model.Puesto</p>
-                <p><strong>Salario Bruto:</strong> ₡ @Model.SalarioBruto?.ToString("0.##")</p>
-                <p><strong>Salario Neto:</strong>₡ @Model.SalarioNeto?.ToString("0.##")</p>
-                <p><strong>Estado:</strong>
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center
+                    justify-content-center fw-bold"
+                     style="width:56px;height:56px;font-size:22px;flex-shrink:0;">
+                    @Model.Nombre?[0].ToString().ToUpper()
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0" style="color:#1a3c5e;">
+                        @Model.Nombre @Model.Primer_Apellido @Model.Segundo_Apellido
+                    </h4>
+                    <small class="text-muted">@Model.UserName — @Model.rol</small>
+                </div>
+                <div class="ms-auto">
                     @if (Model.Estado)
                     {
-                        <span class="badge bg-success"> Activo</span>
+                        <span class="badge bg-success fs-6">Activo</span>
                     }
                     else
                     {
-                        <span class="badge bg-danger">Inactivo</span>
+                        <span class="badge bg-danger fs-6">Inactivo</span>
                     }
-                </p>
+                </div>
             </div>
-        </div>
-        <div class="d-flex justify-content-between mt-3">
-            <a asp-action="Index"class="btn btn-secondary">⬅ Volver</a>
-            <a asp-action="Editar"asp-route-id="@Model.Empleado_Id"class="btn btn-warning">✏️ Editar</a>
+
+            <hr />
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">CÉDULA</p>
+                    <p class="fw-semibold">@(Model.Cedula ?? "—")</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">CORREO</p>
+                    <p class="fw-semibold">@(Model.Email ?? "—")</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">TELÉFONO</p>
+                    <p class="fw-semibold">@(Model.Telefono ?? "—")</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">DIRECCIÓN</p>
+                    <p class="fw-semibold">@(Model.Direccion_Exacta ?? "—")</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="text-muted small mb-1">PUESTO</p>
+                    <p class="fw-semibold">@(Model.Puesto ?? "—")</p>
+                </div>
+                <div class="col-md-3">
+                    <p class="text-muted small mb-1">SALARIO BRUTO</p>
+                    <p class="fw-semibold text-success">
+                        ₡@Model.SalarioBruto?.ToString("N2")
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <p class="text-muted small mb-1">SALARIO NETO</p>
+                    <p class="fw-semibold text-primary">
+                        ₡@Model.SalarioNeto?.ToString("N2")
+                    </p>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary rounded-3">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+                <a asp-action="Editar" asp-route-id="@Model.Empleado_Id"
+                   class="btn btn-warning rounded-3 text-white">
+                    <i class="bi bi-pencil me-1"></i>Editar
+                </a>
+            </div>
+
         </div>
     </div>
 </div>
-

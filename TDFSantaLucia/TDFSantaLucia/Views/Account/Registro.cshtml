@@ -1,5 +1,4 @@
 ﻿@model TDFSantaLucia.Models.RegisterViewModel
-
 @{
     ViewData["Title"] = "Crear Cuenta";
     Layout = null;
@@ -7,356 +6,240 @@
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Farmacia Santa Lucía</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+            body {
+                min-height: 100vh;
+                background: linear-gradient(135deg, #1a3c5e 0%, #243C8F 60%, #0dcaf0 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem 0;
+            }
 
-    <title>Crear Cuenta - Farmacia Santa Lucía</title>
+            .registro-card {
+                width: 100%;
+                max-width: 620px;
+                border-radius: 1.5rem;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            }
 
-    <link rel="stylesheet"
-          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+            .login-logo {
+                width: 90px;
+                height: 90px;
+                object-fit: contain;
+                border-radius: 50%;
+            }
 
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet">
-
-    <link rel="stylesheet" href="~/css/site.css" />
-
-    
-
+            input[type="password"]::-ms-reveal,
+            input[type="password"]::-ms-clear,
+            input::-ms-reveal,
+            input::-ms-clear {
+                display: none;
+            }
+    </style>
 </head>
-
-<body class="auth-body">
-
-    <div class="register-card card p-4 p-md-5 mx-3">
+<body>
+    <div class="registro-card card border-0 p-4 p-md-5">
 
         <div class="text-center mb-4">
-
-            <img src="~/images/fotoL.jpg"
-                 alt="Logo"
-                 class="login-logo mb-3" />
-
-            <h4 class="fw-bold"
-                style="color:#1a3c5e;">
-                Crear Cuenta
-            </h4>
-
-            <p class="text-muted small mb-0">
-                Completa tus datos para registrarte
-            </p>
-
+            <img src="~/images/fotoL.jpg" alt="Logo" class="login-logo mb-3" />
+            <h4 class="fw-bold mb-0" style="color:#1a3c5e;">Farmacia Santa Lucía</h4>
+            <p class="text-muted small">Completa tus datos para registrarte</p>
         </div>
 
-        <div asp-validation-summary="ModelOnly"
-             class="alert alert-danger rounded-3 small">
-        </div>
+        @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
+        {
+            <div class="alert alert-danger rounded-3 small mb-4">
+                <h6 class="fw-bold mb-2">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Por favor corrija los errores:
+                </h6>
+                <ul class="mb-0">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
 
-        <form asp-action="Registro"
-              asp-controller="Account"
-              method="post">
-
+        <form asp-action="Registro" asp-controller="Account" method="post">
             @Html.AntiForgeryToken()
 
-            <p class="section-title">
-                <i class="bi bi-person-fill me-2"></i>
-                Datos Personales
+            <p class="fw-bold text-muted small mb-2">
+                <i class="bi bi-person-fill me-1"></i>DATOS PERSONALES
             </p>
+            <hr class="mt-0 mb-3" />
 
             <div class="row g-3 mb-4">
 
                 <div class="col-md-4">
-
-                    <label asp-for="Nombre"
-                           class="form-label fw-semibold small text-muted">
-                        NOMBRE
-                    </label>
-
-                    <input asp-for="Nombre"
-                           class="form-control"
+                    <label asp-for="Nombre" class="form-label fw-semibold">Nombre</label>
+                    <input asp-for="Nombre" class="form-control rounded-3"
                            placeholder="Nombre" />
-
-                    <span asp-validation-for="Nombre"
-                          class="text-danger small">
-                    </span>
-
+                    <span asp-validation-for="Nombre" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
-
-                    <label asp-for="Primer_Apellido"
-                           class="form-label fw-semibold small text-muted">
-                        PRIMER APELLIDO
-                    </label>
-
-                    <input asp-for="Primer_Apellido"
-                           class="form-control"
+                    <label asp-for="Primer_Apellido" class="form-label fw-semibold">Primer Apellido</label>
+                    <input asp-for="Primer_Apellido" class="form-control rounded-3"
                            placeholder="Primer apellido" />
-
-                    <span asp-validation-for="Primer_Apellido"
-                          class="text-danger small">
-                    </span>
-
+                    <span asp-validation-for="Primer_Apellido" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-4">
-
-                    <label asp-for="Segundo_Apellido"
-                           class="form-label fw-semibold small text-muted">
-                        SEGUNDO APELLIDO
-                    </label>
-
-                    <input asp-for="Segundo_Apellido"
-                           class="form-control"
+                    <label asp-for="Segundo_Apellido" class="form-label fw-semibold">Segundo Apellido</label>
+                    <input asp-for="Segundo_Apellido" class="form-control rounded-3"
                            placeholder="Segundo apellido" />
-
-                    <span asp-validation-for="Segundo_Apellido"
-                          class="text-danger small">
-                    </span>
-
+                    <span asp-validation-for="Segundo_Apellido" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-
-                    <label asp-for="Cedula"
-                           class="form-label">
-                    </label>
-
+                    <label asp-for="Cedula" class="form-label fw-semibold">Cédula</label>
                     <input asp-for="Cedula"
-                           class="form-control"
+                           class="form-control rounded-3"
                            maxlength="9"
-                           placeholder="Cédula"
+                           placeholder="000000000"
                            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,9)" />
-
-                    <span asp-validation-for="Cedula"
-                          class="text-danger">
-                    </span>
-
+                    <span asp-validation-for="Cedula" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-
-                    <label asp-for="Telefono"
-                           class="form-label">
-                    </label>
-
+                    <label asp-for="Telefono" class="form-label fw-semibold">Teléfono</label>
                     <input asp-for="Telefono"
-                           class="form-control"
+                           class="form-control rounded-3"
                            maxlength="8"
-                           placeholder="Teléfono"
+                           placeholder="00000000"
                            oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,8)" />
-
-                    <span asp-validation-for="Telefono"
-                          class="text-danger">
-                    </span>
-
+                    <span asp-validation-for="Telefono" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-
-                    <label asp-for="Fecha_Nacimiento"
-                           class="form-label fw-semibold small text-muted">
-                        FECHA DE NACIMIENTO
-                    </label>
-
+                    <label asp-for="Fecha_Nacimiento" class="form-label fw-semibold">Fecha Nacimiento</label>
                     <input asp-for="Fecha_Nacimiento"
                            type="date"
-                           class="form-control"
+                           class="form-control rounded-3"
                            max="@DateTime.Today.ToString("yyyy-MM-dd")" />
-
-                    <span asp-validation-for="Fecha_Nacimiento"
-                          class="text-danger small">
-                    </span>
-
+                    <span asp-validation-for="Fecha_Nacimiento" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-
-                    <label asp-for="Direccion_Exacta"
-                           class="form-label fw-semibold small text-muted">
-                        DIRECCIÓN
-                    </label>
-
-                    <input asp-for="Direccion_Exacta"
-                           class="form-control"
-                           placeholder="Dirección" />
-
+                    <label asp-for="Direccion_Exacta" class="form-label fw-semibold">Dirección</label>
+                    <input asp-for="Direccion_Exacta" class="form-control rounded-3"
+                           placeholder="Provincia, cantón, señas..." />
                 </div>
 
             </div>
 
-            <p class="section-title">
-                <i class="bi bi-lock-fill me-2"></i>
-                Datos de Acceso
+            <p class="fw-bold text-muted small mb-2">
+                <i class="bi bi-lock-fill me-1"></i>DATOS DE ACCESO
             </p>
+            <hr class="mt-0 mb-3" />
 
             <div class="row g-3 mb-4">
 
-                <div class="col-md-12">
-
-                    <label asp-for="Email"
-                           class="form-label fw-semibold small text-muted">
-                        CORREO ELECTRÓNICO
-                    </label>
-
+                <div class="col-12">
+                    <label asp-for="Email" class="form-label fw-semibold">Correo electrónico</label>
                     <div class="input-group">
-
-                        <input asp-for="Email"
-                               class="form-control"
-                               placeholder="correo@ejemplo.com" />
-
-                        <span class="input-group-text">
+                        <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-envelope text-muted"></i>
                         </span>
-
+                        <input asp-for="Email"
+                               type="email"
+                               class="form-control border-start-0 ps-0 rounded-end-3"
+                               placeholder="correo@ejemplo.com" />
                     </div>
-
-                    <span asp-validation-for="Email"
-                          class="text-danger small">
-                    </span>
-
+                    <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-
-                    <label asp-for="Password"
-                           class="form-label fw-semibold small text-muted">
-                        CONTRASEÑA
-                    </label>
-
+                    <label asp-for="Password" class="form-label fw-semibold">Contraseña</label>
                     <div class="input-group">
-
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-lock text-muted"></i>
+                        </span>
                         <input asp-for="Password"
                                type="password"
-                               class="form-control"
+                               class="form-control border-start-0 ps-0"
                                id="passInput"
-                               placeholder="••••••••" />
-
-                        <span class="input-group-text"
-                              onclick="togglePass('passInput','eyePass')">
-
-                            <i class="bi bi-eye"
-                                   id="eyePass">
-                            </i>
-
-                        </span>
-
+                               placeholder="••••••••"
+                               autocomplete="new-password" />
+                        <button type="button"
+                                class="btn btn-outline-secondary rounded-end-3"
+                                onclick="togglePass('passInput','eyePass')">
+                            <i class="bi bi-eye" id="eyePass"></i>
+                        </button>
                     </div>
-
-                    <span asp-validation-for="Password"
-                          class="text-danger small">
-                    </span>
-
+                    <span asp-validation-for="Password" class="text-danger small"></span>
                 </div>
 
                 <div class="col-md-6">
-
-                    <label asp-for="ConfirmarPassword"
-                           class="form-label fw-semibold small text-muted">
-                        CONFIRMAR CONTRASEÑA
-                    </label>
-
+                    <label asp-for="ConfirmarPassword" class="form-label fw-semibold">Confirmar Contraseña</label>
                     <div class="input-group">
-
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-lock-fill text-muted"></i>
+                        </span>
                         <input asp-for="ConfirmarPassword"
                                type="password"
-                               class="form-control"
+                               class="form-control border-start-0 ps-0"
                                id="passConfirm"
-                               placeholder="••••••••" />
-
-                        <span class="input-group-text"
-                              onclick="togglePass('passConfirm','eyeConfirm')">
-
-                            <i class="bi bi-eye"
-                                   id="eyeConfirm">
-                            </i>
-
-                        </span>
-
+                               placeholder="••••••••"
+                               autocomplete="new-password" />
+                        <button type="button"
+                                class="btn btn-outline-secondary rounded-end-3"
+                                onclick="togglePass('passConfirm','eyeConfirm')">
+                            <i class="bi bi-eye" id="eyeConfirm"></i>
+                        </button>
                     </div>
-
-                    <span asp-validation-for="ConfirmarPassword"
-                          class="text-danger small">
-                    </span>
-
+                    <span asp-validation-for="ConfirmarPassword" class="text-danger small"></span>
                 </div>
 
             </div>
 
-            <button type="submit"
-                    class="btn btn-registrar btn-primary w-100 text-white mb-3">
-
-                <i class="bi bi-person-check me-2"></i>
-                Crear Cuenta
-
+            <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2 mb-3"
+                    id="btnRegistro">
+                <i class="bi bi-person-check me-1"></i>Crear Cuenta
             </button>
 
             <div class="text-center">
-
-                <small class="text-muted">
-
+                <p class="text-muted small mb-0">
                     ¿Ya tienes cuenta?
-
-                    <a asp-action="Login"
-                           asp-controller="Account"
-                           class="fw-semibold"
-                           style="color:#1a3c5e;">
-
+                    <a asp-action="Login" asp-controller="Account"
+                       class="fw-semibold" style="color:#1a3c5e;">
                         Inicia sesión
-
                     </a>
-
-                </small>
-
+                </p>
             </div>
 
         </form>
-
     </div>
 
-    <script>
-
-            function togglePass(inputId, iconId) {
-
-                const input = document.getElementById(inputId);
-                const icon = document.getElementById(iconId);
-
-                if (input.type === 'password') {
-
-                    input.type = 'text';
-
-                    icon.classList.replace('bi-eye', 'bi-eye-slash');
-
-                }
-                else {
-
-                    input.type = 'password';
-
-                    icon.classList.replace('bi-eye-slash', 'bi-eye');
-
-                }
-            }
-
-    </script>
-
-    <style>
-
-            input[type="password"]::-ms-reveal,
-            input[type="password"]::-ms-clear {
-                display: none;
-            }
-
-    </style>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function togglePass(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon  = document.getElementById(iconId);
+        if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+        input.type = 'password';
+        icon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+        }
 
+        document.querySelector('form').addEventListener('submit', function () {
+        const btn = document.getElementById('btnRegistro');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creando cuenta...';
+        });
+    </script>
 </body>
-
 </html>

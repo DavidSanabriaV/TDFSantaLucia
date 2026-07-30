@@ -1,42 +1,102 @@
 ﻿@model TDFSantaLucia.Models.CitaViewModel
-
 @{
     ViewData["Title"] = "Agendar Cita";
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4">📅 Agendar Cita</h2>
+<div class="container py-4" style="max-width:650px;">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
 
-    <form asp-action="Agendar" method="post" class="card p-4 shadow-sm">
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <h2 class="fw-bold mb-4" style="color:#243C8F;">
+                <i class="bi bi-calendar-plus-fill me-2"></i>Agendar Cita
+            </h2>
 
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label asp-for="Servicio" class="form-label">Servicio</label>
-                <input asp-for="Servicio" class="form-control" />
-                <span asp-validation-for="Servicio" class="text-danger"></span>
-            </div>
+            @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
+            {
+                <div class="alert alert-danger rounded-3 mb-4">
+                    <h6 class="fw-bold mb-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Por favor corrija los siguientes errores:
+                    </h6>
+                    <ul class="mb-0">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
 
-            <div class="col-md-6">
-                <label asp-for="Fecha" class="form-label">Fecha y Hora</label>
-                <input asp-for="Fecha" type="datetime-local" class="form-control"
-                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
-                <span asp-validation-for="Fecha" class="text-danger"></span>
-            </div>
+            <form asp-action="Agendar" method="post">
+                @Html.AntiForgeryToken()
 
-            <div class="col-md-12">
-                <label asp-for="Observaciones" class="form-label">Observaciones</label>
-                <textarea asp-for="Observaciones" class="form-control" rows="3"></textarea>
-            </div>
+                <div class="row g-3">
+
+                    <div class="col-12">
+                        <label asp-for="Servicio" class="form-label fw-semibold">Servicio</label>
+                        <input asp-for="Servicio" class="form-control rounded-3"
+                               placeholder="Ej: Consulta farmacéutica, Toma de presión..." />
+                        <span asp-validation-for="Servicio" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Fecha" class="form-label fw-semibold">Fecha y Hora</label>
+                        <input asp-for="Fecha" type="datetime-local" class="form-control rounded-3"
+                               min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                        <span asp-validation-for="Fecha" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Observaciones" class="form-label fw-semibold">
+                            Observaciones
+                            <span class="text-muted fw-normal small">(opcional)</span>
+                        </label>
+                        <textarea asp-for="Observaciones" class="form-control rounded-3"
+                                  rows="3"
+                                  placeholder="Agrega cualquier información relevante para tu cita..."
+                                  id="txtObservaciones"
+                                  maxlength="500"
+                                  oninput="contarCaracteres(this)"></textarea>
+                        <div class="d-flex justify-content-end">
+                            <small id="contadorObs" class="text-muted">0 / 500</small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="alert alert-info rounded-3 mt-3 small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Tu cita quedará en estado <strong>En Proceso</strong> hasta que un empleado la revise y confirme.
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="MisCitas" class="btn btn-outline-secondary rounded-3">
+                        <i class="bi bi-arrow-left me-1"></i>Volver
+                    </a>
+                    <button type="submit" class="btn btn-success rounded-3" id="btnAgendar">
+                        <i class="bi bi-calendar-check me-1"></i>Agendar Cita
+                    </button>
+                </div>
+
+            </form>
         </div>
-
-        <div class="d-flex justify-content-between mt-4">
-            <a asp-action="MisCitas" class="btn btn-secondary">⬅ Volver</a>
-            <button type="submit" class="btn btn-success">📅 Agendar</button>
-        </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function contarCaracteres(textarea) {
+            const contador = document.getElementById('contadorObs');
+            contador.textContent = `${textarea.value.length} / 500`;
+        }
+
+        // Inicializar contador
+        contarCaracteres(document.getElementById('txtObservaciones'));
+
+        document.querySelector('form').addEventListener('submit', function () {
+            const btn = document.getElementById('btnAgendar');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Agendando...';
+        });
+    </script>
 }

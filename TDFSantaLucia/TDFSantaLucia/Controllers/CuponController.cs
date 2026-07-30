@@ -33,7 +33,6 @@ namespace TDFSantaLucia.Controllers
                 .FirstOrDefaultAsync(c => c.Usuario_ID == usuario.Id);
         }
 
-
         [HttpGet("")]
         [Authorize(Roles = "Admin,Empleado")]
         public IActionResult Index()
@@ -144,6 +143,13 @@ namespace TDFSantaLucia.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Asignar(int cuponId, int clienteId)
         {
+            // ── Fix: validar que se haya seleccionado un cliente ──────────
+            if (clienteId <= 0)
+            {
+                TempData["ErrorCupon"] = "Debes seleccionar un cliente antes de asignar.";
+                return RedirectToAction("Detalle", new { id = cuponId });
+            }
+
             var (exito, error) = _cuponService.AsignarCuponACliente(cuponId, clienteId);
             TempData[exito ? "ExitoCupon" : "ErrorCupon"] =
                 exito ? "Cupón asignado correctamente." : error;
@@ -159,7 +165,6 @@ namespace TDFSantaLucia.Controllers
             TempData[exito ? "ExitoCupon" : "ErrorCupon"] = mensaje;
             return RedirectToAction("Detalle", new { id = cuponId });
         }
-
 
         [HttpGet("mis-cupones")]
         [Authorize(Roles = "Cliente")]
@@ -198,8 +203,8 @@ namespace TDFSantaLucia.Controllers
             return Json(new
             {
                 exito,
-                descuento = descuento,
-                totalFinal = totalFinal,
+                descuento,
+                totalFinal,
                 clienteCuponId,
                 mensaje = "Cupón aplicado correctamente."
             });

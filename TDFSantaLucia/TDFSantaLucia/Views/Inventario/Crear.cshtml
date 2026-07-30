@@ -3,114 +3,124 @@
     ViewData["Title"] = "Nuevo Lote";
 }
 
-<h2 class="mb-4">📦 Registrar Nuevo Lote</h2>
+<div class="container py-4" style="max-width:750px;">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
 
-@if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
-{
-    <div class="alert alert-danger">
-        <h6 class="fw-bold">Por favor corrija los siguientes errores:</h6>
-        <ul class="mb-0">
-            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
+                <i class="bi bi-box-seam-fill me-2 text-primary"></i>Registrar Nuevo Lote
+            </h2>
+
+            @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
             {
-                <li>@error.ErrorMessage</li>
+                <div class="alert alert-danger rounded-3 mb-4">
+                    <h6 class="fw-bold mb-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Por favor corrija los siguientes errores:
+                    </h6>
+                    <ul class="mb-0">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
             }
-        </ul>
-    </div>
-}
 
-<div class="card border-0 shadow-sm" style="max-width: 750px;">
-    <div class="card-body p-4">
-        @using (Html.BeginForm("Crear", "Inventario", FormMethod.Post, new { @class = "row g-3" }))
-        {
-            @Html.AntiForgeryToken()
-            @Html.HiddenFor(m => m.Producto_Id, new { id = "productoIdHidden" })
+            @using (Html.BeginForm("Crear", "Inventario", FormMethod.Post, new { @class = "row g-3" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.Producto_Id, new { id = "productoIdHidden" })
 
-            @* Buscador de producto *@
-            <div class="col-md-12">
-                <label class="form-label fw-semibold">Producto</label>
+                <div class="col-md-12">
+                    <label class="form-label fw-semibold">Producto</label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="buscadorProducto"
+                               class="form-control border-start-0 ps-0 rounded-end-3"
+                               placeholder="Buscar por nombre o marca..."
+                               autocomplete="off" />
+                    </div>
 
-                <input type="text" id="buscadorProducto" class="form-control mb-2"
-                       placeholder="🔍 Buscar por nombre o marca..."
-                       autocomplete="off" />
+                    <div id="listaProductos"
+                         class="rounded-3 border"
+                         style="max-height:220px;overflow-y:auto;background:white;">
+                        @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Productos)
+                        {
+                            var sinStock = item.Text.Contains("⚠️ Sin stock");
+                            <div class="producto-item px-3 py-2"
+                                 style="cursor:pointer;border-bottom:1px solid #f0f0f0;"
+                                 data-id="@item.Value"
+                                 data-nombre="@item.Text">
+                                <div class="fw-semibold @(sinStock ? "text-muted" : "")">@item.Text</div>
+                            </div>
+                        }
+                    </div>
 
-                <div id="listaProductos"
-                     style="max-height:220px; overflow-y:auto; border:1px solid #dee2e6;
-                            border-radius:10px; background:white;">
-                    @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Productos)
-                    {
-                        var sinStock = item.Text.Contains("⚠️ Sin stock");
-                        <div class="producto-item px-3 py-2"
-                             style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
-                             data-id="@item.Value"
-                             data-nombre="@item.Text">
-                            <div class="fw-semibold @(sinStock ? "text-muted" : "")">@item.Text</div>
-                        </div>
-                    }
+                    <div id="productoSeleccionado" class="mt-2" style="display:none;">
+                        <span class="badge bg-success px-3 py-2 fs-6" id="productoNombreBadge"></span>
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarProducto">
+                            <i class="bi bi-x me-1"></i>Cambiar
+                        </button>
+                    </div>
+
+                    @Html.ValidationMessageFor(m => m.Producto_Id, "", new { @class = "text-danger small" })
                 </div>
 
-                <div id="productoSeleccionado" class="mt-2" style="display:none;">
-                    <span class="badge bg-success px-3 py-2 fs-6" id="productoNombreBadge"></span>
-                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" id="btnLimpiarProducto">
-                        ✕ Cambiar
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Numero_Lote, "Número de Lote", new { @class = "form-label fw-semibold" })
+                    @Html.TextBoxFor(m => m.Numero_Lote, new { @class = "form-control rounded-3", placeholder = "Ej: LOT-2025-001" })
+                    @Html.ValidationMessageFor(m => m.Numero_Lote, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Proveedor, new { @class = "form-label fw-semibold" })
+                    @Html.TextBoxFor(m => m.Proveedor, new { @class = "form-control rounded-3", placeholder = "Nombre del proveedor" })
+                    @Html.ValidationMessageFor(m => m.Proveedor, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Cantidad_Disponible, "Cantidad Disponible", new { @class = "form-label fw-semibold" })
+                    @Html.TextBoxFor(m => m.Cantidad_Disponible, new { @class = "form-control rounded-3", type = "number", min = "0" })
+                    @Html.ValidationMessageFor(m => m.Cantidad_Disponible, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Cantidad_Minima, "Cantidad Mínima (alerta stock)", new { @class = "form-label fw-semibold" })
+                    @Html.TextBoxFor(m => m.Cantidad_Minima, new { @class = "form-control rounded-3", type = "number", min = "0" })
+                    @Html.ValidationMessageFor(m => m.Cantidad_Minima, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Fecha_Ingreso, "Fecha de Ingreso", new { @class = "form-label fw-semibold" })
+                    @Html.TextBoxFor(m => m.Fecha_Ingreso, "{0:yyyy-MM-dd}", new { @class = "form-control rounded-3", type = "date" })
+                    @Html.ValidationMessageFor(m => m.Fecha_Ingreso, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.Fecha_Vencimiento, "Fecha de Vencimiento", new { @class = "form-label fw-semibold" })
+                    @Html.TextBoxFor(m => m.Fecha_Vencimiento, "{0:yyyy-MM-dd}", new { @class = "form-control rounded-3", type = "date" })
+                    @Html.ValidationMessageFor(m => m.Fecha_Vencimiento, "", new { @class = "text-danger small" })
+                </div>
+
+                <div class="col-12 d-flex justify-content-between mt-2">
+                    @Html.ActionLink("Cancelar", "Index", "Inventario", null, new { @class = "btn btn-outline-secondary rounded-3" })
+                    <button type="submit" class="btn btn-success rounded-3" id="btnGuardar">
+                        <i class="bi bi-save me-1"></i>Guardar
                     </button>
                 </div>
-
-                @Html.ValidationMessageFor(m => m.Producto_Id, "", new { @class = "text-danger small" })
-            </div>
-
-            <div class="col-md-6">
-                @Html.LabelFor(m => m.Numero_Lote, "Número de Lote", new { @class = "form-label fw-semibold" })
-                @Html.TextBoxFor(m => m.Numero_Lote, new { @class = "form-control", placeholder = "Ej: LOT-2025-001" })
-                @Html.ValidationMessageFor(m => m.Numero_Lote, "", new { @class = "text-danger small" })
-            </div>
-
-            <div class="col-md-6">
-                @Html.LabelFor(m => m.Proveedor, new { @class = "form-label fw-semibold" })
-                @Html.TextBoxFor(m => m.Proveedor, new { @class = "form-control", placeholder = "Nombre del proveedor" })
-                @Html.ValidationMessageFor(m => m.Proveedor, "", new { @class = "text-danger small" })
-            </div>
-
-            <div class="col-md-6">
-                @Html.LabelFor(m => m.Cantidad_Disponible, "Cantidad Disponible", new { @class = "form-label fw-semibold" })
-                @Html.TextBoxFor(m => m.Cantidad_Disponible, new { @class = "form-control", type = "number", min = "0" })
-                @Html.ValidationMessageFor(m => m.Cantidad_Disponible, "", new { @class = "text-danger small" })
-            </div>
-
-            <div class="col-md-6">
-                @Html.LabelFor(m => m.Cantidad_Minima, "Cantidad Mínima (alerta stock)", new { @class = "form-label fw-semibold" })
-                @Html.TextBoxFor(m => m.Cantidad_Minima, new { @class = "form-control", type = "number", min = "0" })
-                @Html.ValidationMessageFor(m => m.Cantidad_Minima, "", new { @class = "text-danger small" })
-            </div>
-
-            <div class="col-md-6">
-                @Html.LabelFor(m => m.Fecha_Ingreso, "Fecha de Ingreso", new { @class = "form-label fw-semibold" })
-                @Html.TextBoxFor(m => m.Fecha_Ingreso, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-                @Html.ValidationMessageFor(m => m.Fecha_Ingreso, "", new { @class = "text-danger small" })
-            </div>
-
-            <div class="col-md-6">
-                @Html.LabelFor(m => m.Fecha_Vencimiento, "Fecha de Vencimiento", new { @class = "form-label fw-semibold" })
-                @Html.TextBoxFor(m => m.Fecha_Vencimiento, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
-                @Html.ValidationMessageFor(m => m.Fecha_Vencimiento, "", new { @class = "text-danger small" })
-            </div>
-
-            <div class="col-12 d-flex gap-2 mt-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Guardar
-                </button>
-                @Html.ActionLink("Cancelar", "Index", "Inventario", null, new { @class = "btn btn-secondary" })
-            </div>
-        }
+            }
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        const items   = Array.from(document.querySelectorAll('.producto-item'));
-        const byId    = id => document.getElementById(id);
+        const items = Array.from(document.querySelectorAll('.producto-item'));
+        const byId  = id => document.getElementById(id);
 
-        // Filtrar lista al escribir
         byId('buscadorProducto').addEventListener('input', function () {
             const texto = this.value.toLowerCase();
             items.forEach(i => {
@@ -118,14 +128,11 @@
             });
         });
 
-        // Hover
         items.forEach(i => {
             i.addEventListener('mouseenter', () => i.style.background = '#f0f7ff');
             i.addEventListener('mouseleave', () => i.style.background = 'white');
-
-            // Seleccionar producto
             i.addEventListener('click', () => {
-                byId('productoIdHidden').value       = i.dataset.id;
+                byId('productoIdHidden').value          = i.dataset.id;
                 byId('productoNombreBadge').textContent = i.dataset.nombre;
                 byId('productoSeleccionado').style.display = 'block';
                 byId('listaProductos').style.display       = 'none';
@@ -133,7 +140,6 @@
             });
         });
 
-        // Limpiar selección
         byId('btnLimpiarProducto').addEventListener('click', () => {
             byId('productoIdHidden').value             = '';
             byId('buscadorProducto').value             = '';
@@ -141,6 +147,12 @@
             byId('listaProductos').style.display       = '';
             byId('buscadorProducto').style.display     = '';
             items.forEach(i => i.style.display = '');
+        });
+
+        document.querySelector('form').addEventListener('submit', function () {
+            const btn = document.getElementById('btnGuardar');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
         });
     </script>
 }

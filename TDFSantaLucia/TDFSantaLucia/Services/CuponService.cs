@@ -82,6 +82,10 @@ namespace TDFSantaLucia.Services
 
         public (bool exito, string? error) AsignarCuponACliente(int cuponId, int clienteId)
         {
+            // ── Fix: validar cliente seleccionado ─────────────────────────
+            if (clienteId <= 0)
+                return (false, "Debes seleccionar un cliente.");
+
             var cupon = _repo.ObtenerPorId(cuponId);
             if (cupon == null) return (false, "Cupón no encontrado.");
             if (!cupon.Estado || cupon.Fecha_Expiracion.Date < DateTime.Today)

@@ -3,337 +3,474 @@
     ViewData["Title"] = "Dashboard - Farmacia Santa Lucía";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>📊 Dashboard Administrativo</h2>
-    <span class="text-muted small">🔄 KPIs se actualizan cada 60 segundos</span>
-</div>
+<div class="container-fluid px-4 py-4">
 
-<div class="card mb-4">
-    <div class="card-body py-2">
-        <form method="get" class="row g-2 align-items-end">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#1a3c5e;">
+                <i class="bi bi-graph-up-arrow me-2 text-primary"></i>Dashboard Administrativo
+            </h2>
+            <p class="text-muted mb-0 small">
+                <i class="bi bi-arrow-repeat me-1"></i>KPIs se actualizan cada 60 segundos
+            </p>
+        </div>
+        <a asp-action="Historial" asp-controller="Dashboard"
+           class="btn btn-outline-primary rounded-3">
+            <i class="bi bi-clock-history me-1"></i>Historial
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
-                <label class="form-label mb-1 small fw-bold">Fecha inicio</label>
-                <input type="date" name="fechaInicio" class="form-control form-control-sm"
+                <label class="form-label fw-semibold text-muted small">FECHA INICIO</label>
+                <input type="date" name="fechaInicio" class="form-control rounded-3"
                        value="@Model.FechaInicio.ToString("yyyy-MM-dd")" />
             </div>
             <div class="col-md-3">
-                <label class="form-label mb-1 small fw-bold">Fecha fin</label>
-                <input type="date" name="fechaFin" class="form-control form-control-sm"
+                <label class="form-label fw-semibold text-muted small">FECHA FIN</label>
+                <input type="date" name="fechaFin" class="form-control rounded-3"
                        value="@Model.FechaFin.ToString("yyyy-MM-dd")" />
             </div>
             <div class="col-md-2">
-                <button type="submit" class="btn btn-primary btn-sm w-100">Filtrar</button>
+                <button type="submit" class="btn btn-primary w-100 rounded-3">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
             </div>
             <div class="col-md-2">
-                <a asp-action="Index" asp-controller="Dashboard" class="btn btn-outline-secondary btn-sm w-100">Limpiar</a>
+                <a asp-action="Index" asp-controller="Dashboard"
+                   class="btn btn-outline-secondary w-100 rounded-3">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar
+                </a>
             </div>
             <div class="col-md-2">
-                <a asp-action="Historial" asp-controller="Dashboard" class="btn btn-outline-primary btn-sm w-100">📋 Historial</a>
+                <a href="/dashboard/exportar-ventas-csv?fechaInicio=@Model.FechaInicio.ToString("yyyy-MM-dd")&fechaFin=@Model.FechaFin.ToString("yyyy-MM-dd")"
+                   class="btn btn-success w-100 rounded-3">
+                    <i class="bi bi-download me-1"></i>CSV Ventas
+                </a>
             </div>
         </form>
-        <div class="row g-2 mt-1">
-            <div class="col-md-3">
-                <a href="/dashboard/exportar-ventas-csv?fechaInicio=@Model.FechaInicio.ToString("yyyy-MM-dd")&fechaFin=@Model.FechaFin.ToString("yyyy-MM-dd")"
-                   class="btn btn-success btn-sm w-100">⬇ CSV Top Ventas</a>
-            </div>
-        </div>
     </div>
-</div>
 
-<!-- KPIs principales -->
-<div class="row g-3 mb-3">
-    <div class="col-md-3">
-        <div class="card text-white bg-success h-100">
-            <div class="card-body">
-                <p class="card-text small mb-1">Ingreso por Ventas</p>
-                <h3 class="mb-0" id="kpi-ingreso">₡@Model.TotalIngresoVentas.ToString("N0")</h3>
-                <p class="mb-0 mt-2 small opacity-75">@Model.FechaInicio.ToString("dd/MM") - @Model.FechaFin.ToString("dd/MM/yyyy")</p>
+    <!-- KPIs principales -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100" style="background:linear-gradient(135deg,#198754,#20c997);color:white;">
+                <div class="card-body p-4">
+                    <p class="small mb-1 opacity-75">INGRESO POR VENTAS</p>
+                    <h3 class="fw-bold mb-0" id="kpi-ingreso">₡@Model.TotalIngresoVentas.ToString("N0")</h3>
+                    <p class="mb-0 mt-2 small opacity-75">
+                        @Model.FechaInicio.ToString("dd/MM") — @Model.FechaFin.ToString("dd/MM/yyyy")
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100" style="background:linear-gradient(135deg,#0d6efd,#0dcaf0);color:white;">
+                <div class="card-body p-4">
+                    <p class="small mb-1 opacity-75">FACTURAS / UNIDADES</p>
+                    <h3 class="fw-bold mb-0">
+                        <span id="kpi-facturas">@Model.TotalFacturas</span> /
+                        <span id="kpi-unidades">@Model.TotalUnidadesVendidas</span>
+                    </h3>
+                    <p class="mb-0 mt-2 small opacity-75">
+                        Ticket promedio: ₡<span id="kpi-ticket">@Model.TicketPromedio.ToString("N0")</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100"
+                 style="background:linear-gradient(135deg,@(Model.TotalStockBajo > 0 ? "#dc3545,#fd7e14" : "#6c757d,#adb5bd"));color:white;">
+                <div class="card-body p-4">
+                    <p class="small mb-1 opacity-75">STOCK BAJO / POR VENCER</p>
+                    <h3 class="fw-bold mb-0">
+                        <span id="kpi-stock">@Model.TotalStockBajo</span> /
+                        <span id="kpi-vencer">@Model.TotalProximosVencer</span>
+                    </h3>
+                    <a href="#alertasInventario" class="text-white small opacity-75">Ver detalle ↓</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100" style="background:linear-gradient(135deg,#0dcaf0,#0d6efd);color:white;">
+                <div class="card-body p-4">
+                    <p class="small mb-1 opacity-75">PRODUCTO TOP</p>
+                    <h5 class="fw-bold mb-0" id="kpi-top-nombre">
+                        @(Model.ProductoMasVendido?.Nombre ?? "Sin datos")
+                    </h5>
+                    <p class="mb-0 mt-2 small opacity-75">
+                        <span id="kpi-top-qty">@(Model.ProductoMasVendido?.CantidadVendida ?? 0)</span> unidades
+                    </p>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-primary h-100">
-            <div class="card-body">
-                <p class="card-text small mb-1">Facturas / Unidades</p>
-                <h3 class="mb-0"><span id="kpi-facturas">@Model.TotalFacturas</span> / <span id="kpi-unidades">@Model.TotalUnidadesVendidas</span></h3>
-                <p class="mb-0 mt-2 small opacity-75">Ticket promedio: ₡<span id="kpi-ticket">@Model.TicketPromedio.ToString("N0")</span></p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white @(Model.TotalStockBajo > 0 ? "bg-danger" : "bg-secondary") h-100">
-            <div class="card-body">
-                <p class="card-text small mb-1">Stock Bajo / Por Vencer</p>
-                <h3 class="mb-0"><span id="kpi-stock">@Model.TotalStockBajo</span> / <span id="kpi-vencer">@Model.TotalProximosVencer</span></h3>
-                <a href="#alertasInventario" class="text-white small">Ver detalle ↓</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info h-100">
-            <div class="card-body">
-                <p class="card-text small mb-1">Producto Top</p>
-                <h5 class="mb-0" id="kpi-top-nombre">@(Model.ProductoMasVendido?.Nombre ?? "Sin datos")</h5>
-                <p class="mb-0 mt-2 small opacity-75"><span id="kpi-top-qty">@(Model.ProductoMasVendido?.CantidadVendida ?? 0)</span> unidades</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- KPIs secundarios: farmacia -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card text-center @(Model.TotalRecetasPorVencer > 0 ? "border-warning" : "")">
-            <div class="card-body py-2">
-                <div class="small text-muted">Recetas por vencer (@Model.DiasAlertaReceta d)</div>
-                <strong class="fs-4" id="kpi-recetas">@Model.TotalRecetasPorVencer</strong>
+    <!-- KPIs secundarios -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center @(Model.TotalRecetasPorVencer > 0 ? "border-warning border-2" : "")">
+                <div class="card-body py-3">
+                    <p class="text-muted small mb-1">RECETAS POR VENCER (@Model.DiasAlertaReceta d)</p>
+                    <strong class="fs-3" id="kpi-recetas">@Model.TotalRecetasPorVencer</strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center">
+                <div class="card-body py-3">
+                    <p class="text-muted small mb-1">CITAS HOY / PENDIENTES</p>
+                    <strong class="fs-3">
+                        <span id="kpi-citas-hoy">@Model.TotalCitasHoy</span> /
+                        <span id="kpi-citas-pend">@Model.TotalCitasPendientes</span>
+                    </strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center">
+                <div class="card-body py-3">
+                    <p class="text-muted small mb-1">TRATAMIENTOS ACTIVOS</p>
+                    <strong class="fs-3" id="kpi-tratamientos">@Model.TotalTratamientosActivos</strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 text-center">
+                <div class="card-body py-3">
+                    <p class="text-muted small mb-1">CUPONES ACTIVOS / USADOS</p>
+                    <strong class="fs-3">
+                        <span id="kpi-cupones">@Model.TotalCuponesActivos</span> /
+                        @Model.TotalCuponesUtilizadosPeriodo
+                    </strong>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body py-2">
-                <div class="small text-muted">Citas hoy / pendientes</div>
-                <strong class="fs-4"><span id="kpi-citas-hoy">@Model.TotalCitasHoy</span> / <span id="kpi-citas-pend">@Model.TotalCitasPendientes</span></strong>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body py-2">
-                <div class="small text-muted">Tratamientos activos</div>
-                <strong class="fs-4" id="kpi-tratamientos">@Model.TotalTratamientosActivos</strong>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card text-center">
-            <div class="card-body py-2">
-                <div class="small text-muted">Cupones activos / usados</div>
-                <strong class="fs-4"><span id="kpi-cupones">@Model.TotalCuponesActivos</span> / @Model.TotalCuponesUtilizadosPeriodo</strong>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Gráficos -->
-<div class="row g-3 mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header fw-bold">📉 Tendencia de Ventas en el Periodo</div>
-            <div class="card-body" style="position:relative;height:250px;">
+    <!-- Gráfico tendencia -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3" style="color:#1a3c5e;">
+                <i class="bi bi-graph-down-arrow me-2 text-primary"></i>Tendencia de Ventas en el Periodo
+            </h5>
+            <div style="position:relative;height:250px;">
                 <canvas id="chartTendencia"></canvas>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header fw-bold">📈 Facturación Mensual @DateTime.Now.Year</div>
-            <div class="card-body" style="position:relative;height:300px;">
-                <canvas id="chartMensual"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-header fw-bold">🏅 Top 5 Productos</div>
-            <div class="card-body" style="position:relative;height:300px;">
-                <canvas id="chartTop5"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card h-100">
-            <div class="card-header fw-bold">🗂 Ventas por Categoría</div>
-            <div class="card-body" style="position:relative;height:300px;">
-                <canvas id="chartCategoria"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Tablas de alertas -->
-<div class="row g-3 mb-4" id="alertasInventario">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header fw-bold text-danger">⚠️ Stock Bajo</div>
-            @if (Model.ProductosStockBajo.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light"><tr><th>Producto</th><th>Disponible</th><th>Mínimo</th><th>Lote</th></tr></thead>
-                        <tbody>
-                            @foreach (var p in Model.ProductosStockBajo)
-                            {
-                                <tr class="table-danger">
-                                    <td>@p.ProductoNombre @(p.Marca != null ? $"- {p.Marca}" : "")</td>
-                                    <td><strong>@p.CantidadDisponible</strong></td>
-                                    <td>@p.CantidadMinima</td>
-                                    <td>@(p.NumeroLote ?? "—")</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+    <!-- Gráficos secundarios -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" style="color:#1a3c5e;">
+                        <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Facturación Mensual @DateTime.Now.Year
+                    </h5>
+                    <div style="position:relative;height:300px;">
+                        <canvas id="chartMensual"></canvas>
+                    </div>
                 </div>
-            }
-            else
-            {
-                <div class="card-body text-success">✅ Todos los productos tienen stock suficiente.</div>
-            }
+            </div>
         </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header fw-bold text-warning">⏳ Próximos a Vencer (@Model.DiasAlertaVencimientoProducto días)</div>
-            @if (Model.ProductosProximosVencer.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light"><tr><th>Producto</th><th>Lote</th><th>Cantidad</th><th>Vence</th></tr></thead>
-                        <tbody>
-                            @foreach (var p in Model.ProductosProximosVencer)
-                            {
-                                <tr class="@(p.DiasParaVencer <= 7 ? "table-danger" : "table-warning")">
-                                    <td>@p.ProductoNombre</td>
-                                    <td>@(p.NumeroLote ?? "—")</td>
-                                    <td>@p.CantidadDisponible</td>
-                                    <td>@p.FechaVencimiento.ToString("dd/MM/yyyy") <span class="text-muted small">(@p.DiasParaVencer d)</span></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" style="color:#1a3c5e;">
+                        <i class="bi bi-trophy-fill me-2 text-warning"></i>Top 5 Productos
+                    </h5>
+                    <div style="position:relative;height:300px;">
+                        <canvas id="chartTop5"></canvas>
+                    </div>
                 </div>
-            }
-            else
-            {
-                <div class="card-body text-success">✅ Sin lotes próximos a vencer.</div>
-            }
+            </div>
         </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header fw-bold text-primary">💊 Recetas por Vencer (@Model.DiasAlertaReceta días)</div>
-            @if (Model.RecetasPorVencer.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light"><tr><th>Medicamento</th><th>Cliente</th><th>Vence</th></tr></thead>
-                        <tbody>
-                            @foreach (var r in Model.RecetasPorVencer)
-                            {
-                                <tr class="@(r.DiasParaVencer <= 5 ? "table-danger" : "")">
-                                    <td>@r.Medicamento</td>
-                                    <td>@r.ClienteNombre</td>
-                                    <td>@r.FechaVencimiento.ToString("dd/MM/yyyy") <span class="text-muted small">(@r.DiasParaVencer d)</span></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" style="color:#1a3c5e;">
+                        <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Ventas por Categoría
+                    </h5>
+                    <div style="position:relative;height:300px;">
+                        <canvas id="chartCategoria"></canvas>
+                    </div>
                 </div>
-            }
-            else
-            {
-                <div class="card-body text-success">✅ Sin recetas próximas a vencer.</div>
-            }
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header fw-bold text-info">📅 Citas de Hoy</div>
-            @if (Model.CitasHoy.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light"><tr><th>Hora</th><th>Servicio</th><th>Cliente</th><th>Empleado</th><th>Estado</th></tr></thead>
-                        <tbody>
-                            @foreach (var c in Model.CitasHoy)
-                            {
-                                <tr>
-                                    <td>@c.Fecha.ToString("HH:mm")</td>
-                                    <td>@c.Servicio</td>
-                                    <td>@c.ClienteNombre</td>
-                                    <td>@c.EmpleadoNombre</td>
-                                    <td><span class="badge bg-secondary">@c.Estado</span></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="card-body text-muted">No hay citas agendadas para hoy.</div>
-            }
-        </div>
-    </div>
-</div>
-
-<!-- Top productos detalle -->
-<div class="card mb-4">
-    <div class="card-header fw-bold">🏅 Top Productos (detalle)</div>
-    <div class="table-responsive">
-        <table class="table table-sm table-hover mb-0">
-            <thead class="table-light"><tr><th>#</th><th>Producto</th><th>Unidades</th><th>Ingreso</th></tr></thead>
-            <tbody>
-                @{
-                    int rank = 1;
-                }
-                @foreach (var p in Model.TopProductos)
-                {
-                    <tr>
-                        <td><strong>@rank</strong></td>
-                        <td>@p.Nombre</td>
-                        <td>@p.CantidadVendida</td>
-                        <td>₡@p.IngresoGenerado.ToString("N0")</td>
-                    </tr>
-                    rank++;
-                }
-                @if (!Model.TopProductos.Any())
-                {
-                    <tr><td colspan="4" class="text-center text-muted">Sin ventas en el periodo</td></tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Puntos -->
-<div class="row g-3 mb-4">
-    <div class="col-md-6">
-        <div class="card text-center bg-light">
-            <div class="card-body py-3">
-                <div class="small text-muted">Puntos otorgados en el periodo</div>
-                <strong class="fs-4 text-success" id="kpi-puntos-otorg">@Model.TotalPuntosOtorgadosPeriodo</strong>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card text-center bg-light">
-            <div class="card-body py-3">
-                <div class="small text-muted">Puntos canjeados en el periodo</div>
-                <strong class="fs-4 text-danger" id="kpi-puntos-canj">@Model.TotalPuntosCanjeadosPeriodo</strong>
+
+    <!-- Alertas inventario -->
+    <div class="row g-3 mb-4" id="alertasInventario">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-0">
+                    <div class="p-4 pb-2">
+                        <h5 class="fw-bold mb-0 text-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>Stock Bajo
+                        </h5>
+                    </div>
+                    @if (Model.ProductosStockBajo.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th class="text-center">Disponible</th>
+                                        <th class="text-center">Mínimo</th>
+                                        <th>Lote</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var p in Model.ProductosStockBajo)
+                                    {
+                                        <tr class="table-danger">
+                                            <td class="fw-semibold">@p.ProductoNombre @(p.Marca != null ? $"- {p.Marca}" : "")</td>
+                                            <td class="text-center"><strong>@p.CantidadDisponible</strong></td>
+                                            <td class="text-center">@p.CantidadMinima</td>
+                                            <td>@(p.NumeroLote ?? "—")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-success">
+                            <i class="bi bi-check-circle me-1"></i>Todos los productos tienen stock suficiente.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-0">
+                    <div class="p-4 pb-2">
+                        <h5 class="fw-bold mb-0 text-warning">
+                            <i class="bi bi-hourglass-split me-2"></i>Próximos a Vencer (@Model.DiasAlertaVencimientoProducto días)
+                        </h5>
+                    </div>
+                    @if (Model.ProductosProximosVencer.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Lote</th>
+                                        <th class="text-center">Cantidad</th>
+                                        <th>Vence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var p in Model.ProductosProximosVencer)
+                                    {
+                                        <tr class="@(p.DiasParaVencer <= 7 ? "table-danger" : "table-warning")">
+                                            <td class="fw-semibold">@p.ProductoNombre</td>
+                                            <td>@(p.NumeroLote ?? "—")</td>
+                                            <td class="text-center">@p.CantidadDisponible</td>
+                                            <td>
+                                                @p.FechaVencimiento.ToString("dd/MM/yyyy")
+                                                <span class="text-muted small">(@p.DiasParaVencer d)</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-success">
+                            <i class="bi bi-check-circle me-1"></i>Sin lotes próximos a vencer.
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Recetas y citas -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-0">
+                    <div class="p-4 pb-2">
+                        <h5 class="fw-bold mb-0 text-primary">
+                            <i class="bi bi-file-medical-fill me-2"></i>Recetas por Vencer (@Model.DiasAlertaReceta días)
+                        </h5>
+                    </div>
+                    @if (Model.RecetasPorVencer.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Medicamento</th>
+                                        <th>Cliente</th>
+                                        <th>Vence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in Model.RecetasPorVencer)
+                                    {
+                                        <tr class="@(r.DiasParaVencer <= 5 ? "table-danger" : "")">
+                                            <td class="fw-semibold">@r.Medicamento</td>
+                                            <td>@r.ClienteNombre</td>
+                                            <td>
+                                                @r.FechaVencimiento.ToString("dd/MM/yyyy")
+                                                <span class="text-muted small">(@r.DiasParaVencer d)</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-success">
+                            <i class="bi bi-check-circle me-1"></i>Sin recetas próximas a vencer.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-0">
+                    <div class="p-4 pb-2">
+                        <h5 class="fw-bold mb-0" style="color:#0dcaf0;">
+                            <i class="bi bi-calendar-event-fill me-2"></i>Citas de Hoy
+                        </h5>
+                    </div>
+                    @if (Model.CitasHoy.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Servicio</th>
+                                        <th>Cliente</th>
+                                        <th>Empleado</th>
+                                        <th class="text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var c in Model.CitasHoy)
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold">@c.Fecha.ToString("HH:mm")</td>
+                                            <td>@c.Servicio</td>
+                                            <td>@c.ClienteNombre</td>
+                                            <td>@c.EmpleadoNombre</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-secondary">@c.Estado</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-muted">
+                            <i class="bi bi-calendar-x me-1"></i>No hay citas agendadas para hoy.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top productos detalle -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-0">
+            <div class="p-4 pb-2">
+                <h5 class="fw-bold mb-0" style="color:#1a3c5e;">
+                    <i class="bi bi-trophy-fill me-2 text-warning"></i>Top Productos (detalle)
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Producto</th>
+                            <th class="text-center">Unidades</th>
+                            <th class="text-end">Ingreso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int rank = 1;
+                        }
+                        @foreach (var p in Model.TopProductos)
+                        {
+                            <tr>
+                                <td><strong>@rank</strong></td>
+                                <td class="fw-semibold">@p.Nombre</td>
+                                <td class="text-center">@p.CantidadVendida</td>
+                                <td class="text-end text-success fw-bold">₡@p.IngresoGenerado.ToString("N0")</td>
+                            </tr>
+                            rank++;
+                        }
+                        @if (!Model.TopProductos.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">Sin ventas en el periodo</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Puntos -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 text-center">
+                <div class="card-body py-4">
+                    <p class="text-muted small mb-1">PUNTOS OTORGADOS EN EL PERIODO</p>
+                    <strong class="fs-2 text-success" id="kpi-puntos-otorg">
+                        @Model.TotalPuntosOtorgadosPeriodo
+                    </strong>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 text-center">
+                <div class="card-body py-4">
+                    <p class="text-muted small mb-1">PUNTOS CANJEADOS EN EL PERIODO</p>
+                    <strong class="fs-2 text-danger" id="kpi-puntos-canj">
+                        @Model.TotalPuntosCanjeadosPeriodo
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
-        const meses      = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResumenMensual.Select(r => r.Mes)));
-        const ingresos   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResumenMensual.Select(r => r.IngresoVentas)));
-        const facturas   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResumenMensual.Select(r => r.CantidadFacturas)));
-        const topNombres = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopProductos.Select(t => t.Nombre)));
-        const topQty     = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopProductos.Select(t => t.CantidadVendida)));
-        const catNombres = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasPorCategoria.Select(c => c.Categoria)));
-        const catIngreso = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasPorCategoria.Select(c => c.IngresoGenerado)));
-        const diasFechas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasDiarias.Select(v => v.Fecha)));
+        const meses       = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResumenMensual.Select(r => r.Mes)));
+        const ingresos    = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResumenMensual.Select(r => r.IngresoVentas)));
+        const facturas    = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResumenMensual.Select(r => r.CantidadFacturas)));
+        const topNombres  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopProductos.Select(t => t.Nombre)));
+        const topQty      = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TopProductos.Select(t => t.CantidadVendida)));
+        const catNombres  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasPorCategoria.Select(c => c.Categoria)));
+        const catIngreso  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasPorCategoria.Select(c => c.IngresoGenerado)));
+        const diasFechas  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasDiarias.Select(v => v.Fecha)));
         const diasIngreso = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasDiarias.Select(v => v.Ingreso)));
 
         new Chart(document.getElementById('chartTendencia'), {
@@ -355,7 +492,7 @@
         options: {
         responsive: true, maintainAspectRatio: false,
         scales: {
-        y: { beginAtZero: true, position: 'left' },
+        y:  { beginAtZero: true, position: 'left' },
         y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } }
         }
         }
@@ -363,44 +500,51 @@
 
         new Chart(document.getElementById('chartTop5'), {
         type: 'doughnut',
-        data: { labels: topNombres.length ? topNombres : ['Sin datos'],
-        datasets: [{ data: topQty.length ? topQty : [1], backgroundColor: ['#198754','#0d6efd','#ffc107','#dc3545','#0dcaf0'] }] },
+        data: {
+        labels: topNombres.length ? topNombres : ['Sin datos'],
+        datasets: [{ data: topQty.length ? topQty : [1],
+        backgroundColor: ['#198754','#0d6efd','#ffc107','#dc3545','#0dcaf0'] }]
+        },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
 
         new Chart(document.getElementById('chartCategoria'), {
         type: 'pie',
-        data: { labels: catNombres.length ? catNombres : ['Sin datos'],
-        datasets: [{ data: catIngreso.length ? catIngreso : [1], backgroundColor: ['#6f42c1','#20c997','#fd7e14','#e83e8c','#0dcaf0','#adb5bd'] }] },
+        data: {
+        labels: catNombres.length ? catNombres : ['Sin datos'],
+        datasets: [{ data: catIngreso.length ? catIngreso : [1],
+        backgroundColor: ['#6f42c1','#20c997','#fd7e14','#e83e8c','#0dcaf0','#adb5bd'] }]
+        },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
 
         function refrescarKPIs() {
         const params = new URLSearchParams({
         fechaInicio: '@Model.FechaInicio.ToString("yyyy-MM-dd")',
-        fechaFin: '@Model.FechaFin.ToString("yyyy-MM-dd")'
+        fechaFin:    '@Model.FechaFin.ToString("yyyy-MM-dd")'
         });
         fetch('/dashboard/kpis?' + params)
         .then(r => r.json())
         .then(d => {
-        document.getElementById('kpi-ingreso').innerText = '₡' + d.totalIngresoVentas;
-        document.getElementById('kpi-facturas').innerText = d.totalFacturas;
-        document.getElementById('kpi-unidades').innerText = d.totalUnidadesVendidas;
-        document.getElementById('kpi-ticket').innerText = d.ticketPromedio;
-        document.getElementById('kpi-stock').innerText = d.stockBajoCount;
-        document.getElementById('kpi-vencer').innerText = d.proximosVencerCount;
-        document.getElementById('kpi-recetas').innerText = d.recetasPorVencerCount;
-        document.getElementById('kpi-citas-hoy').innerText = d.citasHoyCount;
-        document.getElementById('kpi-citas-pend').innerText = d.citasPendientesCount;
-        document.getElementById('kpi-tratamientos').innerText = d.tratamientosActivosCount;
-        document.getElementById('kpi-cupones').innerText = d.cuponesActivosCount;
-        document.getElementById('kpi-puntos-otorg').innerText = d.puntosOtorgados;
-        document.getElementById('kpi-puntos-canj').innerText = d.puntosCanjeados;
-        document.getElementById('kpi-top-nombre').innerText = d.productoTopNombre;
-        document.getElementById('kpi-top-qty').innerText = d.productoTopCantidad;
+        document.getElementById('kpi-ingreso').innerText        = '₡' + d.totalIngresoVentas;
+        document.getElementById('kpi-facturas').innerText       = d.totalFacturas;
+        document.getElementById('kpi-unidades').innerText       = d.totalUnidadesVendidas;
+        document.getElementById('kpi-ticket').innerText         = d.ticketPromedio;
+        document.getElementById('kpi-stock').innerText          = d.stockBajoCount;
+        document.getElementById('kpi-vencer').innerText         = d.proximosVencerCount;
+        document.getElementById('kpi-recetas').innerText        = d.recetasPorVencerCount;
+        document.getElementById('kpi-citas-hoy').innerText      = d.citasHoyCount;
+        document.getElementById('kpi-citas-pend').innerText     = d.citasPendientesCount;
+        document.getElementById('kpi-tratamientos').innerText   = d.tratamientosActivosCount;
+        document.getElementById('kpi-cupones').innerText        = d.cuponesActivosCount;
+        document.getElementById('kpi-puntos-otorg').innerText   = d.puntosOtorgados;
+        document.getElementById('kpi-puntos-canj').innerText    = d.puntosCanjeados;
+        document.getElementById('kpi-top-nombre').innerText     = d.productoTopNombre;
+        document.getElementById('kpi-top-qty').innerText        = d.productoTopCantidad;
         })
         .catch(console.error);
         }
+
         setInterval(refrescarKPIs, 60000);
     </script>
 }

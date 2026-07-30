@@ -3,110 +3,123 @@
     ViewData["Title"] = "Nuevo Expediente";
 }
 
-<h2 class="mb-4">📋 Nuevo Expediente</h2>
+<div class="container py-4" style="max-width:650px;">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
 
-@if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
-{
-    <div class="alert alert-danger rounded-3">
-        <h6 class="fw-bold mb-2">
-            <i class="bi bi-exclamation-triangle me-1"></i> Por favor corrija los siguientes errores:
-        </h6>
-        <ul class="mb-0">
-            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
+                <i class="bi bi-folder-plus me-2 text-primary"></i>Nuevo Expediente
+            </h2>
+
+            @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
             {
-                <li>@error.ErrorMessage</li>
+                <div class="alert alert-danger rounded-3 mb-4">
+                    <h6 class="fw-bold mb-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Por favor corrija los siguientes errores:
+                    </h6>
+                    <ul class="mb-0">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
             }
-        </ul>
-    </div>
-}
 
-<div class="card border-0 shadow-sm" style="max-width: 600px;">
-    <div class="card-body p-4">
-        @using (Html.BeginForm("Crear", "Expediente", FormMethod.Post, new { @class = "row g-3" }))
-        {
-            @Html.AntiForgeryToken()
+            @using (Html.BeginForm("Crear", "Expediente", FormMethod.Post, new { @class = "row g-3" }))
+            {
+                @Html.AntiForgeryToken()
 
-            <div class="col-12">
-                <label class="form-label fw-semibold">Cliente</label>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Cliente</label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="buscadorCliente"
+                               class="form-control border-start-0 ps-0 rounded-end-3"
+                               placeholder="Buscar cliente..."
+                               autocomplete="off" />
+                    </div>
 
-                <input type="text" id="buscadorCliente" class="form-control rounded-3 mb-2"
-                       placeholder="🔍 Buscar cliente..."
-                       autocomplete="off" />
+                    <div id="listaClientes" class="rounded-3 border"
+                         style="max-height:220px;overflow-y:auto;background:white;">
+                        @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Clientes)
+                        {
+                            <div class="cliente-item px-3 py-2"
+                                 style="cursor:pointer;border-bottom:1px solid #f0f0f0;"
+                                 data-id="@item.Value"
+                                 data-nombre="@item.Text">
+                                <div class="fw-semibold">@item.Text</div>
+                            </div>
+                        }
+                    </div>
 
-                <div id="listaClientes"
-                     style="max-height:220px; overflow-y:auto; border:1px solid #dee2e6;
-                                border-radius:10px; background:white;">
-                    @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Clientes)
+                    <div id="clienteSeleccionado" class="mt-2" style="display:none;">
+                        <span class="badge bg-success px-3 py-2 fs-6" id="clienteNombreBadge"></span>
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarCliente">
+                            <i class="bi bi-x me-1"></i>Cambiar
+                        </button>
+                    </div>
+
+                    <input type="hidden" name="Cliente_Id" id="clienteIdHidden" />
+                    @Html.ValidationMessage("Cliente_Id", "", new { @class = "text-danger small d-block mt-1" })
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Empleado responsable</label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="buscadorEmpleado"
+                               class="form-control border-start-0 ps-0 rounded-end-3"
+                               placeholder="Buscar empleado..."
+                               autocomplete="off" />
+                    </div>
+
+                    <div id="listaEmpleados" class="rounded-3 border"
+                         style="max-height:220px;overflow-y:auto;background:white;">
+                        @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Empleados)
+                        {
+                            <div class="empleado-item px-3 py-2"
+                                 style="cursor:pointer;border-bottom:1px solid #f0f0f0;"
+                                 data-id="@item.Value"
+                                 data-nombre="@item.Text">
+                                <div class="fw-semibold">@item.Text</div>
+                            </div>
+                        }
+                    </div>
+
+                    <div id="empleadoSeleccionado" class="mt-2" style="display:none;">
+                        <span class="badge bg-success px-3 py-2 fs-6" id="empleadoNombreBadge"></span>
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarEmpleado">
+                            <i class="bi bi-x me-1"></i>Cambiar
+                        </button>
+                    </div>
+
+                    <input type="hidden" name="Empleado_Id" id="empleadoIdHidden" />
+                    @Html.ValidationMessage("Empleado_Id", "", new { @class = "text-danger small d-block mt-1" })
+                </div>
+
+                <div class="col-12">
+                    @Html.LabelFor(m => m.Descripcion, new { @class = "form-label fw-semibold" })
+                    @Html.TextAreaFor(m => m.Descripcion, 4, 0, new
                     {
-                        <div class="cliente-item px-3 py-2"
-                             style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
-                             data-id="@item.Value"
-                             data-nombre="@item.Text">
-                            <div class="fw-semibold">@item.Text</div>
-                        </div>
-                    }
-                </div>
-
-                <div id="clienteSeleccionado" class="mt-2" style="display:none;">
-                    <span class="badge bg-success px-3 py-2 fs-6" id="clienteNombreBadge"></span>
-                    <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarCliente">
-                        ✕ Cambiar
-                    </button>
-                </div>
-
-                <input type="hidden" name="Cliente_Id" id="clienteIdHidden" />
-                @Html.ValidationMessage("Cliente_Id", "", new { @class = "invalid-feedback d-block" })
-            </div>
-
-            <div class="col-12">
-                <label class="form-label fw-semibold">Empleado responsable</label>
-
-                <input type="text" id="buscadorEmpleado" class="form-control rounded-3 mb-2"
-                       placeholder="🔍 Buscar empleado..."
-                       autocomplete="off" />
-
-                <div id="listaEmpleados"
-                     style="max-height:220px; overflow-y:auto; border:1px solid #dee2e6;
-                                border-radius:10px; background:white;">
-                    @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Empleados)
-                    {
-                        <div class="empleado-item px-3 py-2"
-                             style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
-                             data-id="@item.Value"
-                             data-nombre="@item.Text">
-                            <div class="fw-semibold">@item.Text</div>
-                        </div>
-                    }
-                </div>
-
-                <div id="empleadoSeleccionado" class="mt-2" style="display:none;">
-                    <span class="badge bg-success px-3 py-2 fs-6" id="empleadoNombreBadge"></span>
-                    <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarEmpleado">
-                        ✕ Cambiar
-                    </button>
-                </div>
-
-                <input type="hidden" name="Empleado_Id" id="empleadoIdHidden" />
-                @Html.ValidationMessage("Empleado_Id", "", new { @class = "invalid-feedback d-block" })
-            </div>
-
-            <div class="col-12">
-                @Html.LabelFor(m => m.Descripcion, new { @class = "form-label fw-semibold" })
-                @Html.TextAreaFor(m => m.Descripcion, 4, 0, new
-                {
-                    @class = "form-control" + (ViewData.ModelState["Descripcion"]?.Errors.Any() == true ? " is-invalid" : ""),
+                        @class = "form-control rounded-3" + (ViewData.ModelState["Descripcion"]?.Errors.Any() == true ? " is-invalid" : ""),
                         placeholder = "Descripción general del expediente (opcional)..."
-                        })
-            @Html.ValidationMessageFor(m => m.Descripcion, "", new { @class = "invalid-feedback" })
-        </div>
+                    })
+                    @Html.ValidationMessageFor(m => m.Descripcion, "", new { @class = "invalid-feedback" })
+                </div>
 
-        <div class="col-12 d-flex gap-2 mt-2">
-            <button type="submit" class="btn btn-primary" id="btnGuardar">
-                <i class="bi bi-save"></i> Guardar
-            </button>
-            @Html.ActionLink("Cancelar", "Index", "Expediente", null, new { @class = "btn btn-secondary" })
+                <div class="col-12 d-flex justify-content-between mt-2">
+                    @Html.ActionLink("Cancelar", "Index", "Expediente", null, new { @class = "btn btn-outline-secondary rounded-3" })
+                    <button type="submit" class="btn btn-success rounded-3" id="btnGuardar">
+                        <i class="bi bi-save me-1"></i>Guardar
+                    </button>
+                </div>
+            }
         </div>
-                }
     </div>
 </div>
 
@@ -115,6 +128,7 @@
     <script>
         const byId = id => document.getElementById(id);
 
+        // ── Cliente ──────────────────────────────────────────────────────
         const itemsCliente = Array.from(document.querySelectorAll('.cliente-item'));
 
         byId('buscadorCliente').addEventListener('input', function () {
@@ -127,7 +141,6 @@
         itemsCliente.forEach(i => {
             i.addEventListener('mouseenter', () => i.style.background = '#f0f7ff');
             i.addEventListener('mouseleave', () => i.style.background = 'white');
-
             i.addEventListener('click', () => {
                 byId('clienteIdHidden').value          = i.dataset.id;
                 byId('clienteNombreBadge').textContent = i.dataset.nombre;
@@ -146,6 +159,7 @@
             itemsCliente.forEach(i => i.style.display = '');
         });
 
+        // ── Empleado ─────────────────────────────────────────────────────
         const itemsEmpleado = Array.from(document.querySelectorAll('.empleado-item'));
 
         byId('buscadorEmpleado').addEventListener('input', function () {
@@ -158,7 +172,6 @@
         itemsEmpleado.forEach(i => {
             i.addEventListener('mouseenter', () => i.style.background = '#f0f7ff');
             i.addEventListener('mouseleave', () => i.style.background = 'white');
-
             i.addEventListener('click', () => {
                 byId('empleadoIdHidden').value          = i.dataset.id;
                 byId('empleadoNombreBadge').textContent = i.dataset.nombre;
@@ -175,6 +188,12 @@
             byId('listaEmpleados').style.display       = '';
             byId('buscadorEmpleado').style.display     = '';
             itemsEmpleado.forEach(i => i.style.display = '');
+        });
+
+        document.querySelector('form').addEventListener('submit', function () {
+            const btn = document.getElementById('btnGuardar');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
         });
     </script>
 }
