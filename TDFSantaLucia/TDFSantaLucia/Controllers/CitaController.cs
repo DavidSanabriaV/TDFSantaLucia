@@ -69,7 +69,7 @@ namespace TDFSantaLucia.Controllers
             return View(citas);
         }
 
-        [Authorize(Roles = "Admin,Empleado")]
+        [Authorize(Roles = "Cliente")]
         [HttpGet("detallecliente/{id:int}")]
         public IActionResult DetalleCliente(int id)
         {
