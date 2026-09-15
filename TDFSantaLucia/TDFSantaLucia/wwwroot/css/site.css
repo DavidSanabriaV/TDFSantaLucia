@@ -7,7 +7,31 @@
     --texto: #1F2937;
     --gris: #F4F7FB;
     --blanco: #FFFFFF;
+    --dash-primario: #2F5D8A;
+    --dash-primario-hover: #244864;
+    --dash-secundario: #4B5A94;
+    --dash-secundario-hover: #3A4677;
+    --dash-advertencia: #C1892E;
+    --dash-advertencia-hover: #9C6F22;
+    --dash-peligro: #B23A3A;
+    --dash-peligro-hover: #8F2E2E;
 }
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+    font-size: 15px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    color: var(--texto);
+    overflow-x: hidden;
+    margin-bottom: 0;
 
 *, *::before, *::after {
     box-sizing: border-box;
@@ -280,6 +304,7 @@ body {
     font-size: 15px;
     margin-bottom: 0;
 }
+
 #section-farmacia-santa-lucia {
     padding-top: 0;
     padding-bottom: 0;
@@ -903,6 +928,8 @@ section,
 
     .btn-primary:hover,
     .btn-success:hover {
+        background-color: #1a2d6f;
+        border-color: #1a2d6f;
         transform: translateY(-2px);
     }
 
