@@ -144,6 +144,24 @@
                     </div>
 
                 </div>
+                
+                <h6 class="fw-bold text-muted mb-3 mt-4">CONTACTOS DE EMERGENCIA</h6>
+                <div id="contactosContainer"></div>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-3 mb-3" id="btnAgregarContacto">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar contacto
+                </button>
+
+                <h6 class="fw-bold text-muted mb-3 mt-4">ALERGIAS</h6>
+                <div id="alergiasContainer"></div>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-3 mb-3" id="btnAgregarAlergia">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar alergia
+                </button>
+
+                <h6 class="fw-bold text-muted mb-3 mt-4">ENFERMEDADES</h6>
+                <div id="enfermedadesContainer"></div>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-3 mb-3" id="btnAgregarEnfermedad">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar enfermedad
+                </button>
 
                 <div class="d-flex justify-content-between mt-4">
                     <a asp-action="Index" class="btn btn-outline-secondary rounded-3">
@@ -179,6 +197,83 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
     });
+
+
+        function crearFilaContacto(idx) {
+        const div = document.createElement('div');
+        div.className = 'row g-3 align-items-end mb-2 fila-dinamica';
+        div.innerHTML = `
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small">Nombre</label>
+                <input type="text" name="ContactosEmergencia[${idx}].Nombre" class="form-control rounded-3" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small">Teléfono</label>
+                <input type="text" name="ContactosEmergencia[${idx}].Telefono" class="form-control rounded-3"
+                       maxlength="8" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small">Parentesco</label>
+                <input type="text" name="ContactosEmergencia[${idx}].Parentesco" class="form-control rounded-3" />
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-3 btn-quitar-fila">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        return div;
+    }
+
+    function crearFilaSimple(idx, listName) {
+        const div = document.createElement('div');
+        div.className = 'row g-3 align-items-end mb-2 fila-dinamica';
+        div.innerHTML = `
+            <div class="col-md-10">
+                <input type="text" name="${listName}[${idx}].Descripcion" class="form-control rounded-3" required />
+            </div>
+            <div class="col-md-1">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-3 btn-quitar-fila">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        return div;
+    }
+
+    function reindexar(containerId, esContacto, listName) {
+        const filas = document.querySelectorAll(`#${containerId} .fila-dinamica`);
+        filas.forEach((fila, idx) => {
+            fila.querySelectorAll('input').forEach(input => {
+                const campo = input.name.split('.').pop();
+                input.name = esContacto
+                    ? `ContactosEmergencia[${idx}].${campo}`
+                    : `${listName}[${idx}].${campo}`;
+            });
+        });
+    }
+
+    function configurarLista(containerId, btnId, esContacto, listName) {
+        const container = document.getElementById(containerId);
+        const btn = document.getElementById(btnId);
+
+        btn.addEventListener('click', () => {
+            const idx = container.querySelectorAll('.fila-dinamica').length;
+            const fila = esContacto ? crearFilaContacto(idx) : crearFilaSimple(idx, listName);
+            container.appendChild(fila);
+        });
+
+        container.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-quitar-fila')) {
+                e.target.closest('.fila-dinamica').remove();
+                reindexar(containerId, esContacto, listName);
+            }
+        });
+    }
+
+    configurarLista('contactosContainer', 'btnAgregarContacto', true);
+    configurarLista('alergiasContainer', 'btnAgregarAlergia', false, 'Alergias');
+    configurarLista('enfermedadesContainer', 'btnAgregarEnfermedad', false, 'Enfermedades');
 </script>
 
 <style>
@@ -191,3 +286,4 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+

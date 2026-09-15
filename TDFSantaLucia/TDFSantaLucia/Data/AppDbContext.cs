@@ -35,7 +35,9 @@ namespace TDFSantaLucia.Data
         public DbSet<LikeArticulo> LikesArticulos { get; set; }
         public DbSet<ChatbotOpcion> ChatbotOpciones { get; set; }
         public DbSet<MovimientoInventario> MovimientosInventario { get; set; }
-
+        public DbSet<ContactoEmergencia> ContactosEmergencia { get; set; }
+        public DbSet<Alergia> Alergias { get; set; }
+        public DbSet<Enfermedad> Enfermedades { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

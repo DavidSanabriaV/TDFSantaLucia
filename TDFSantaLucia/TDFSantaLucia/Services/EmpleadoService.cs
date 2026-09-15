@@ -2,6 +2,7 @@
 using TDFSantaLucia.Constants;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Repositories;
+using static TDFSantaLucia.Models.EmpleadoViewModel;
 
 namespace TDFSantaLucia.Services
 {
@@ -104,7 +105,24 @@ namespace TDFSantaLucia.Services
                 Puesto = empleado.Puesto,
                 SalarioBruto = empleado.SalarioBruto,
                 SalarioNeto = empleado.SalarioNeto,
-                Estado = empleado.Estado
+                Estado = empleado.Estado,
+                ContactosEmergencia = empleado.ContactosEmergencia.Select(c => new ContactoEmergenciaViewModel
+                 {
+                     ContactoEmergencia_Id = c.ContactoEmergencia_Id,
+                     Nombre = c.Nombre,
+                     Telefono = c.Telefono,
+                     Parentesco = c.Parentesco
+                 }).ToList(),
+                Alergias = empleado.Alergias.Select(a => new AlergiaViewModel
+                {
+                    Alergia_Id = a.Alergia_Id,
+                    Descripcion = a.Descripcion
+                }).ToList(),
+                Enfermedades = empleado.Enfermedades.Select(e => new EnfermedadViewModel
+                {
+                    Enfermedad_Id = e.Enfermedad_Id,
+                    Descripcion = e.Descripcion
+                }).ToList()
             };
         }
 
@@ -178,7 +196,21 @@ namespace TDFSantaLucia.Services
                 Puesto = model.Puesto?.Trim(),
                 SalarioBruto = model.SalarioBruto,
                 SalarioNeto = CalcularSalarioNeto(model.SalarioBruto ?? 0),
-                Estado = model.Estado
+                Estado = model.Estado,
+                ContactosEmergencia = model.ContactosEmergencia.Select(c => new ContactoEmergencia
+                {
+                    Nombre = c.Nombre.Trim(),
+                    Telefono = c.Telefono.Trim(),
+                    Parentesco = c.Parentesco?.Trim()
+                }).ToList(),
+                Alergias = model.Alergias.Select(a => new Alergia
+                {
+                    Descripcion = a.Descripcion.Trim()
+                }).ToList(),
+                Enfermedades = model.Enfermedades.Select(e => new Enfermedad
+                {
+                    Descripcion = e.Descripcion.Trim()
+                }).ToList()
             };
 
             _repository.Agregar(empleado);
@@ -267,7 +299,21 @@ namespace TDFSantaLucia.Services
                 Puesto = model.Puesto?.Trim(),
                 SalarioBruto = model.SalarioBruto,
                 SalarioNeto = CalcularSalarioNeto(model.SalarioBruto ?? 0),
-                Estado = model.Estado
+                Estado = model.Estado,
+                ContactosEmergencia = model.ContactosEmergencia.Select(c => new ContactoEmergencia
+                {
+                    Nombre = c.Nombre.Trim(),
+                    Telefono = c.Telefono.Trim(),
+                    Parentesco = c.Parentesco?.Trim()
+                }).ToList(),
+                Alergias = model.Alergias.Select(a => new Alergia
+                {
+                    Descripcion = a.Descripcion.Trim()
+                }).ToList(),
+                Enfermedades = model.Enfermedades.Select(e => new Enfermedad
+                {
+                    Descripcion = e.Descripcion.Trim()
+                }).ToList()
             };
 
             _repository.Actualizar(empleado);
@@ -275,29 +321,55 @@ namespace TDFSantaLucia.Services
             return (true, null);
         }
 
-        public async Task<bool> EliminarEmpleadoAsync(int id)
+        public async Task<bool> DesactivarEmpleadoAsync(int id)
         {
             var empleado = _repository.ObtenerPorId(id);
             if (empleado == null) return false;
 
             if (empleado.Horarios?.Any() == true)
-                throw new InvalidOperationException("No se puede eliminar un empleado con horarios asignados.");
+                throw new InvalidOperationException("No se puede desactivar un empleado con horarios asignados.");
 
-            if (empleado.Citas?.Any() == true)
-                throw new InvalidOperationException("No se puede eliminar un empleado con citas asignadas.");
+            var tieneCitaPendiente = empleado.Citas?
+                .Any(c => c.Fecha >= DateTime.Now && c.Estado != "Cancelada") == true;
 
-            if (empleado.Expedientes?.Any() == true)
-                throw new InvalidOperationException("No se puede eliminar un empleado con expedientes asignados.");
+            if (tieneCitaPendiente)
+                throw new InvalidOperationException("No se puede desactivar el empleado hasta que la cita agendada haya pasado.");
 
-            var usuarioId = empleado.Usuario_ID;
+            _repository.Desactivar(id);
 
-            _repository.Eliminar(id);
-
-            if (!string.IsNullOrWhiteSpace(usuarioId))
+            if (!string.IsNullOrWhiteSpace(empleado.Usuario_ID))
             {
-                var usuario = await _userManager.FindByIdAsync(usuarioId);
+                var usuario = await _userManager.FindByIdAsync(empleado.Usuario_ID);
                 if (usuario != null)
-                    await _userManager.DeleteAsync(usuario);
+                {
+                    usuario.Estado = false;
+                    await _userManager.UpdateAsync(usuario);
+
+                    await _userManager.SetLockoutEnabledAsync(usuario, true);
+                    await _userManager.SetLockoutEndDateAsync(usuario, DateTimeOffset.MaxValue);
+                }
+            }
+
+            return true;
+        }
+
+        public async Task<bool> ActivarEmpleadoAsync(int id)
+        {
+            var empleado = _repository.ObtenerPorId(id);
+            if (empleado == null) return false;
+
+            _repository.Activar(id);
+
+            if (!string.IsNullOrWhiteSpace(empleado.Usuario_ID))
+            {
+                var usuario = await _userManager.FindByIdAsync(empleado.Usuario_ID);
+                if (usuario != null)
+                {
+                    usuario.Estado = true;
+                    await _userManager.UpdateAsync(usuario);
+
+                    await _userManager.SetLockoutEndDateAsync(usuario, null);
+                }
             }
 
             return true;
