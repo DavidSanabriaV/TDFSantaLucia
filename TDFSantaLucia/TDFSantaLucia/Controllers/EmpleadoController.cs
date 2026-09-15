@@ -11,7 +11,7 @@ namespace TDFSantaLucia.Controllers
         private readonly IEmpleadoService _empleadoService;
 
 
-    public EmpleadoController(IEmpleadoService empleadoService)
+        public EmpleadoController(IEmpleadoService empleadoService)
         {
             _empleadoService = empleadoService;
         }
@@ -24,8 +24,8 @@ namespace TDFSantaLucia.Controllers
         }
 
 
-    [HttpGet("detalle/{id:int}")]
-    public async Task<IActionResult> Detalle(int id)
+        [HttpGet("detalle/{id:int}")]
+        public async Task<IActionResult> Detalle(int id)
         {
             var model = await _empleadoService.ObtenerEmpleadoViewModelAsync(id);
 
@@ -51,7 +51,18 @@ namespace TDFSantaLucia.Controllers
             {
                 ModelState.AddModelError(nameof(model.password), "La contraseña es obligatoria.");
             }
-
+            if (model.ContactosEmergencia == null || !model.ContactosEmergencia.Any())
+            {
+                ModelState.AddModelError("", "Debe agregar al menos un contacto de emergencia.");
+            }
+            if (model.Alergias == null || !model.Alergias.Any())
+            {
+                ModelState.AddModelError("", "Debe agregar al menos una alergia (si no tiene, indique 'Ninguna').");
+            }
+            if (model.Enfermedades == null || !model.Enfermedades.Any())
+            {
+                ModelState.AddModelError("", "Debe agregar al menos una enfermedad (si no tiene, indique 'Ninguna').");
+            }
             if (!ModelState.IsValid)
             {
                 ViewBag.Roles = _empleadoService.ObtenerRoles();
@@ -110,13 +121,17 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost("eliminar/{id:int}")]
-        public async Task<IActionResult> Eliminar(int id)
+        [HttpPost("desactivar/{id:int}")]
+        public async Task<IActionResult> Desactivar(int id)
         {
             try
             {
-                await _empleadoService.EliminarEmpleadoAsync(id);
-                TempData["ExitoEmpleado"] = "Empleado eliminado correctamente.";
+                var resultado = await _empleadoService.DesactivarEmpleadoAsync(id);
+
+                if (resultado)
+                    TempData["ExitoEmpleado"] = "Empleado desactivado correctamente.";
+                else
+                    TempData["ErrorEmpleado"] = "No se encontró el empleado.";
             }
             catch (InvalidOperationException ex)
             {
@@ -125,6 +140,18 @@ namespace TDFSantaLucia.Controllers
 
             return RedirectToAction("Index");
         }
-    }
 
-}
+        [HttpPost("activar/{id:int}")]
+        public async Task<IActionResult> Activar(int id)
+        {
+            var resultado = await _empleadoService.ActivarEmpleadoAsync(id);
+
+            if (resultado)
+                TempData["ExitoEmpleado"] = "Empleado activado correctamente.";
+            else
+                TempData["ErrorEmpleado"] = "No se encontró el empleado.";
+
+            return RedirectToAction("Index");
+        }
+    }
+    }

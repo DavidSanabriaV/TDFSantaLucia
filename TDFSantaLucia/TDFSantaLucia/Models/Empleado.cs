@@ -32,5 +32,8 @@ namespace TDFSantaLucia.Models
         public List<HorarioEmpleado> Horarios { get; set; } = new();
         public List<Cita> Citas { get; set; } = new();
         public List<Expediente> Expedientes { get; set; } = new();
+        public List<ContactoEmergencia> ContactosEmergencia { get; set; } = new();
+        public List<Alergia> Alergias { get; set; } = new();
+        public List<Enfermedad> Enfermedades { get; set; } = new();
     }
 }

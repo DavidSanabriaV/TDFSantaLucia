@@ -48,5 +48,39 @@ namespace TDFSantaLucia.Models
         public decimal? SalarioNeto { get; set; }
 
         public bool Estado { get; set; } = true;
+
+        public class ContactoEmergenciaViewModel
+        {
+            public int ContactoEmergencia_Id { get; set; }
+
+            [Required(ErrorMessage = "El nombre del contacto es obligatorio")]
+            public string Nombre { get; set; }
+
+            [Required(ErrorMessage = "El teléfono del contacto es obligatorio")]
+            [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe tener exactamente 8 números")]
+            public string Telefono { get; set; }
+
+            public string? Parentesco { get; set; }
+        }
+
+        public class AlergiaViewModel
+        {
+            public int Alergia_Id { get; set; }
+
+            [Required(ErrorMessage = "La descripción de la alergia es obligatoria")]
+            public string Descripcion { get; set; }
+        }
+
+        public class EnfermedadViewModel
+        {
+            public int Enfermedad_Id { get; set; }
+
+            [Required(ErrorMessage = "La descripción de la enfermedad es obligatoria")]
+            public string Descripcion { get; set; }
+        }
+
+        public List<ContactoEmergenciaViewModel> ContactosEmergencia { get; set; } = new();
+        public List<AlergiaViewModel> Alergias { get; set; } = new();
+        public List<EnfermedadViewModel> Enfermedades { get; set; } = new();
     }
 }

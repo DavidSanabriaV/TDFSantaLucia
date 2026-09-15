@@ -13,7 +13,8 @@ namespace TDFSantaLucia.Services
 
         Task<(bool success, string? error)> ActualizarEmpleadoAsync(EmpleadoViewModel model);
 
-        Task<bool> EliminarEmpleadoAsync(int id);
+        Task<bool> DesactivarEmpleadoAsync(int id);
+        Task<bool> ActivarEmpleadoAsync(int id);
 
         decimal CalcularSalarioNeto(decimal bruto);
 

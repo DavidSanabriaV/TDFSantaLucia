@@ -150,7 +150,85 @@
                     </div>
 
                 </div>
+                <h6 class="fw-bold text-muted mb-3 mt-4">CONTACTOS DE EMERGENCIA</h6>
+                <div id="contactosContainer">
+                    @for (int i = 0; i < Model.ContactosEmergencia.Count; i++)
+                    {
+                        <div class="row g-3 align-items-end mb-2 fila-dinamica">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Nombre</label>
+                                <input type="text" name="ContactosEmergencia[@i].Nombre"
+                                       value="@Model.ContactosEmergencia[i].Nombre"
+                                       class="form-control rounded-3" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold small">Teléfono</label>
+                                <input type="text" name="ContactosEmergencia[@i].Telefono"
+                                       value="@Model.ContactosEmergencia[i].Telefono"
+                                       class="form-control rounded-3" maxlength="8"
+                                       oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)" required />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold small">Parentesco</label>
+                                <input type="text" name="ContactosEmergencia[@i].Parentesco"
+                                       value="@Model.ContactosEmergencia[i].Parentesco"
+                                       class="form-control rounded-3" />
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-3 btn-quitar-fila">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-3 mb-3" id="btnAgregarContacto">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar contacto
+                </button>
 
+                <h6 class="fw-bold text-muted mb-3 mt-4">ALERGIAS</h6>
+                <div id="alergiasContainer">
+                    @for (int i = 0; i < Model.Alergias.Count; i++)
+                    {
+                        <div class="row g-3 align-items-end mb-2 fila-dinamica">
+                            <div class="col-md-10">
+                                <input type="text" name="Alergias[@i].Descripcion"
+                                       value="@Model.Alergias[i].Descripcion"
+                                       class="form-control rounded-3" required />
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-3 btn-quitar-fila">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-3 mb-3" id="btnAgregarAlergia">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar alergia
+                </button>
+
+                <h6 class="fw-bold text-muted mb-3 mt-4">ENFERMEDADES</h6>
+                <div id="enfermedadesContainer">
+                    @for (int i = 0; i < Model.Enfermedades.Count; i++)
+                    {
+                        <div class="row g-3 align-items-end mb-2 fila-dinamica">
+                            <div class="col-md-10">
+                                <input type="text" name="Enfermedades[@i].Descripcion"
+                                       value="@Model.Enfermedades[i].Descripcion"
+                                       class="form-control rounded-3" required />
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-3 btn-quitar-fila">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-3 mb-3" id="btnAgregarEnfermedad">
+                    <i class="bi bi-plus-circle me-1"></i>Agregar enfermedad
+                </button>
                 <div class="d-flex justify-content-between mt-4">
                     <a asp-action="Index" class="btn btn-outline-secondary rounded-3">
                         <i class="bi bi-arrow-left me-1"></i>Volver

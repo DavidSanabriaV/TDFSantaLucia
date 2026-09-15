@@ -71,7 +71,58 @@
                     </p>
                 </div>
             </div>
+            <hr />
 
+            <h6 class="fw-bold text-muted mb-3">CONTACTOS DE EMERGENCIA</h6>
+            @if (Model.ContactosEmergencia.Any())
+            {
+                <ul class="list-group mb-4">
+                    @foreach (var c in Model.ContactosEmergencia)
+                    {
+                        <li class="list-group-item">
+                            <strong>@c.Nombre</strong> — @c.Telefono
+                            @if (!string.IsNullOrWhiteSpace(c.Parentesco))
+                            {
+                                <span class="text-muted"> (@c.Parentesco)</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted mb-4">No hay contactos de emergencia registrados.</p>
+            }
+
+            <h6 class="fw-bold text-muted mb-3">ALERGIAS</h6>
+            @if (Model.Alergias.Any())
+            {
+                <ul class="list-group mb-4">
+                    @foreach (var a in Model.Alergias)
+                    {
+                        <li class="list-group-item">@a.Descripcion</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted mb-4">No hay alergias registradas.</p>
+            }
+
+            <h6 class="fw-bold text-muted mb-3">ENFERMEDADES</h6>
+            @if (Model.Enfermedades.Any())
+            {
+                <ul class="list-group mb-4">
+                    @foreach (var e in Model.Enfermedades)
+                    {
+                        <li class="list-group-item">@e.Descripcion</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted mb-4">No hay enfermedades registradas.</p>
+            }
             <div class="d-flex justify-content-between mt-4">
                 <a asp-action="Index" class="btn btn-outline-secondary rounded-3">
                     <i class="bi bi-arrow-left me-1"></i>Volver
