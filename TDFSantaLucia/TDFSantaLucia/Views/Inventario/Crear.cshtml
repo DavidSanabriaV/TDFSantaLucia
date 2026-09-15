@@ -33,7 +33,7 @@
 
                 <div class="col-md-12">
                     <label class="form-label fw-semibold">Producto</label>
-                    <div class="input-group mb-2">
+                    <div class="input-group mb-2" id="inputBuscador">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-search text-muted"></i>
                         </span>
@@ -58,10 +58,16 @@
                         }
                     </div>
 
-                    <div id="productoSeleccionado" class="mt-2" style="display:none;">
-                        <span class="badge bg-success px-3 py-2 fs-6" id="productoNombreBadge"></span>
-                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarProducto">
-                            <i class="bi bi-x me-1"></i>Cambiar
+                    <div id="productoSeleccionado"
+                         class="mt-2 d-flex align-items-center gap-2"
+                         style="display:none !important;">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span class="fw-semibold" id="productoNombreBadge"></span>
+                        <button type="button"
+                                class="btn btn-sm rounded-3 ms-1"
+                                style="background-color:#fde8cc; color:#d4620a; border:none;"
+                                id="btnLimpiarProducto">
+                            <i class="bi bi-arrow-repeat me-1"></i>Cambiar
                         </button>
                     </div>
 
@@ -105,8 +111,10 @@
                 </div>
 
                 <div class="col-12 d-flex justify-content-between mt-2">
-                    @Html.ActionLink("Cancelar", "Index", "Inventario", null, new { @class = "btn btn-outline-secondary rounded-3" })
-                    <button type="submit" class="btn btn-success rounded-3" id="btnGuardar">
+                    @Html.ActionLink("Cancelar", "Index", "Inventario", null,
+                        new { @class = "btn rounded-3", style = "background-color:#d0e8f5; color:#2a7ab5; border:none;" })
+                    <button type="submit" class="btn rounded-3" id="btnGuardar"
+                            style="background-color:#d4edda; color:#2d7a4f; border:none;">
                         <i class="bi bi-save me-1"></i>Guardar
                     </button>
                 </div>
@@ -134,9 +142,9 @@
             i.addEventListener('click', () => {
                 byId('productoIdHidden').value          = i.dataset.id;
                 byId('productoNombreBadge').textContent = i.dataset.nombre;
-                byId('productoSeleccionado').style.display = 'block';
+                byId('productoSeleccionado').style.display = 'flex';
                 byId('listaProductos').style.display       = 'none';
-                byId('buscadorProducto').style.display     = 'none';
+                byId('inputBuscador').style.display        = 'none';
             });
         });
 
@@ -145,7 +153,7 @@
             byId('buscadorProducto').value             = '';
             byId('productoSeleccionado').style.display = 'none';
             byId('listaProductos').style.display       = '';
-            byId('buscadorProducto').style.display     = '';
+            byId('inputBuscador').style.display        = '';
             items.forEach(i => i.style.display = '');
         });
 
