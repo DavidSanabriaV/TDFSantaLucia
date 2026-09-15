@@ -23,6 +23,7 @@
     padding: 0;
 }
 
+html {
     font-size: 15px;
     scroll-behavior: smooth;
 }
@@ -30,8 +31,11 @@
 body {
     font-family: 'DM Sans', 'Segoe UI', sans-serif;
     color: var(--texto);
+    background: #F7FAFD;
     overflow-x: hidden;
     margin-bottom: 0;
+}
+
 
 *, *::before, *::after {
     box-sizing: border-box;
