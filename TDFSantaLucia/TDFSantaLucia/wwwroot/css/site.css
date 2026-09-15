@@ -1865,3 +1865,8 @@ h1, h2, h3, h4, h5 {
         opacity: 1;
     }
 }
+.sidebar-user .small,
+.sidebar-user .fw-semibold,
+.sidebar-user span {
+    color: #fff !important;
+}
