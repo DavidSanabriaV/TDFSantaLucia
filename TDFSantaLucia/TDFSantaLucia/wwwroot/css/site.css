@@ -23,7 +23,7 @@ html {
 body {
     font-family: 'DM Sans', 'Segoe UI', sans-serif;
     color: var(--texto);
-    background: radial-gradient(circle at top left, rgba(0,168,216,.08), transparent 25%), radial-gradient(circle at bottom right, rgba(247,164,0,.08), transparent 25%), #F7FAFD;
+    background: #F7FAFD;
     overflow-x: hidden;
     margin-bottom: 0;
 }
@@ -156,7 +156,7 @@ body {
 
 /* ── Menu navbar ── */
 .menu-navbar {
-    background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+    background: var(--azul-oscuro);
     border-bottom: 4px solid var(--amarillo);
     box-shadow: 0 6px 22px rgba(0,0,0,.12);
 }
@@ -318,7 +318,7 @@ body {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(0,168,216,.12) 0%, transparent 55%);
+            background: rgba(0,168,216,.10);
             pointer-events: none;
         }
 
@@ -369,7 +369,7 @@ body {
     #section-farmacia-santa-lucia .fsl-btn {
         display: inline-block;
         margin-top: 20px;
-        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+        background: var(--azul-oscuro);
         color: #fff !important;
         font-size: 0.78rem;
         font-weight: 700;
@@ -544,7 +544,7 @@ body {
     grid-template-columns: 1fr 1fr;
     min-height: 100vh;
     max-height: 920px;
-    background: linear-gradient(135deg, #f0f6ff 0%, #fffbf0 100%);
+    background: #f0f6ff;
     padding: 80px 80px 60px;
     gap: 60px;
     align-items: center;
@@ -620,7 +620,7 @@ body {
 
 .hero-btn {
     display: inline-block;
-    background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+    background: var(--azul-oscuro);
     color: #fff;
     font-size: 0.75rem;
     font-weight: 600;
@@ -725,7 +725,7 @@ body {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, rgba(0,168,216,0.10) 0%, transparent 55%);
+        background: rgba(0,168,216,0.10);
         pointer-events: none;
     }
 
@@ -774,7 +774,7 @@ body {
     .sobre-content a {
         display: inline-block;
         margin-top: 20px;
-        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+        background: var(--azul-oscuro);
         color: #fff;
         font-size: 0.75rem;
         font-weight: 700;
@@ -898,7 +898,7 @@ section,
 
 .btn-primary,
 .btn-success {
-    background: linear-gradient(135deg, var(--azul), var(--azul-oscuro));
+    background: var(--azul-oscuro);
 }
 
     .btn-primary:hover,
@@ -907,12 +907,12 @@ section,
     }
 
 .btn-warning {
-    background: linear-gradient(135deg, var(--amarillo), #ffcb57);
+    background: var(--amarillo);
     color: white;
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: #dc2626;
 }
 
 .form-control,
@@ -943,7 +943,7 @@ section,
     .table thead,
     .table thead.table-dark,
     .table-dark {
-        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul)) !important;
+        background: var(--azul-oscuro) !important;
         color: white !important;
     }
 
@@ -1185,7 +1185,7 @@ h1, h2, h3, h4, h5 {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(var(--azul), var(--morado));
+    background: var(--azul);
     border-radius: 20px;
 }
 
@@ -1391,7 +1391,7 @@ h1, h2, h3, h4, h5 {
     width: 58px;
     height: 58px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+    background: var(--azul-oscuro);
     border: none;
     color: white;
     font-size: 1.6rem;
@@ -1425,7 +1425,7 @@ h1, h2, h3, h4, h5 {
     }
 
 .chatbot-header {
-    background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+    background: var(--azul-oscuro);
     color: white;
     padding: 14px 16px;
     display: flex;
@@ -1474,7 +1474,7 @@ h1, h2, h3, h4, h5 {
     }
 
     .chat-burbuja.usuario {
-        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+        background: var(--azul-oscuro);
         color: white;
         align-self: flex-end;
         border-bottom-right-radius: 4px;
@@ -1526,7 +1526,7 @@ h1, h2, h3, h4, h5 {
         }
 
     #chatbotInput button {
-        background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));
+        background: var(--azul-oscuro);
         color: white;
         border: none;
         border-radius: 50%;
