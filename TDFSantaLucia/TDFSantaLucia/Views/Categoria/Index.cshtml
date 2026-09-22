@@ -8,7 +8,8 @@
         nombre = c.Nombre,
         descripcion = c.Descripcion ?? "",
         estado = c.Estado,
-        totalProductos = c.Productos.Count
+        totalProductos = c.Productos.Count,
+        productosActivos = c.Productos.Count(p => p.Estado)
     });
 }
 
@@ -138,11 +139,22 @@
                                class="btn btn-warning btn-sm">
                                 <i class="bi bi-pencil"></i> Editar
                             </a>
-                            <a href="/categoria/eliminar/@c.Categoria_Id"
-                               class="btn btn-danger btn-sm"
-                               onclick="return confirmarEliminar(event, '@c.Nombre', @c.Productos.Count, @c.Categoria_Id)">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </a>
+                            @if (c.Estado)
+                            {
+                                <a href="/categoria/desactivar/@c.Categoria_Id"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirmarCambioEstado(event, '@c.Nombre', @c.Productos.Count(p => p.Estado), @c.Categoria_Id, false)">
+                                    <i class="bi bi-slash-circle"></i> Desactivar
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="/categoria/activar/@c.Categoria_Id"
+                                   class="btn btn-success btn-sm"
+                                   onclick="return confirmarCambioEstado(event, '@c.Nombre', 0, @c.Categoria_Id, true)">
+                                    <i class="bi bi-check-circle"></i> Activar
+                                </a>
+                            }
                         </td>
                     </tr>
                     fila++;
@@ -214,6 +226,13 @@
                 const estadoBadge     = c.estado ? `<span class="badge bg-success">Activo</span>` : `<span class="badge bg-danger">Inactivo</span>`;
                 const nombreResaltado = resaltar(c.nombre, texto);
                 const descResaltada   = resaltar(c.descripcion || '—', texto);
+                const botonEstado     = c.estado
+                    ? `<a href="/categoria/desactivar/${c.categoria_Id}" class="btn btn-danger btn-sm"
+                           onclick="return confirmarCambioEstado(event, '${escapeJs(c.nombre)}', ${c.productosActivos}, ${c.categoria_Id}, false)">
+                           <i class="bi bi-slash-circle"></i> Desactivar</a>`
+                    : `<a href="/categoria/activar/${c.categoria_Id}" class="btn btn-success btn-sm"
+                           onclick="return confirmarCambioEstado(event, '${escapeJs(c.nombre)}', 0, ${c.categoria_Id}, true)">
+                           <i class="bi bi-check-circle"></i> Activar</a>`;
 
                 filas += `
                     <tr>
@@ -225,10 +244,7 @@
                         <td class="text-center">
                             <a href="/categoria/detalle/${c.categoria_Id}" class="btn btn-info btn-sm text-white"><i class="bi bi-eye"></i> Ver</a>
                             <a href="/categoria/editar/${c.categoria_Id}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
-                            <a href="/categoria/eliminar/${c.categoria_Id}" class="btn btn-danger btn-sm"
-                               onclick="return confirmarEliminar(event, '${escapeJs(c.nombre)}', ${c.totalProductos}, ${c.categoria_Id})">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </a>
+                            ${botonEstado}
                         </td>
                     </tr>`;
             });
@@ -267,14 +283,19 @@
             return (str ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         }
 
-        function confirmarEliminar(e, nombre, totalProductos, id) {
+        function confirmarCambioEstado(e, nombre, productosActivos, id, activar) {
             e.preventDefault();
-            if (totalProductos > 0) { alert(`⚠️ No se puede eliminar "${nombre}" porque tiene ${totalProductos} producto(s) asociado(s).`); return false; }
-            if (!confirm(`¿Está seguro de eliminar la categoría "${nombre}"?`)) return false;
+            if (!activar && productosActivos > 0) {
+                alert(`⚠️ No se puede desactivar "${nombre}" porque tiene ${productosActivos} producto(s) activo(s) asociado(s).`);
+                return false;
+            }
+            const accion = activar ? 'activar' : 'desactivar';
+            if (!confirm(`¿Está seguro de ${accion} la categoría "${nombre}"?`)) return false;
+
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             const form  = document.createElement('form');
             form.method = 'POST';
-            form.action = `/categoria/eliminar/${id}`;
+            form.action = `/categoria/${activar ? 'activar' : 'desactivar'}/${id}`;
             const inp   = document.createElement('input');
             inp.type = 'hidden'; inp.name = '__RequestVerificationToken'; inp.value = token;
             form.appendChild(inp);

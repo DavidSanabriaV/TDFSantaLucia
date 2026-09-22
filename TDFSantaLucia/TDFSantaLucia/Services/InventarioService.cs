@@ -162,25 +162,35 @@ namespace TDFSantaLucia.Services
             return (true, null);
         }
 
-        public (bool exito, string? error) Eliminar(int id)
+        public (bool exito, string? error) CambiarEstado(int id, bool nuevoEstado)
         {
             var inventario = _repo.ObtenerPorId(id);
             if (inventario == null)
                 return (false, "El lote de inventario no existe.");
 
-            if (inventario.Cantidad_Disponible > 0)
-                return (false, $"No se puede eliminar un lote con {inventario.Cantidad_Disponible} unidades disponibles. Primero vacie el stock.");
+            if (inventario.Estado == nuevoEstado)
+                return (false, nuevoEstado
+                    ? "El lote ya se encuentra activo."
+                    : "El lote ya se encuentra inactivo.");
+
+            if (!nuevoEstado && inventario.Cantidad_Disponible > 0)
+                return (false, $"No se puede desactivar un lote con {inventario.Cantidad_Disponible} unidades disponibles. Primero vacie el stock.");
 
             var productoId = inventario.Producto_Id;
-            _repo.Eliminar(id);
+            _repo.CambiarEstado(id, nuevoEstado);
 
             var lotesConStock = _repo.ObtenerPorProducto(productoId)
                 .Any(i => i.Estado && i.Cantidad_Disponible > 0);
 
-            if (!lotesConStock)
+            var producto = _productoRepo.ObtenerPorId(productoId);
+            if (producto != null)
             {
-                var producto = _productoRepo.ObtenerPorId(productoId);
-                if (producto != null && producto.Estado)
+                if (lotesConStock && !producto.Estado)
+                {
+                    producto.Estado = true;
+                    _productoRepo.Actualizar(producto);
+                }
+                else if (!lotesConStock && producto.Estado)
                 {
                     producto.Estado = false;
                     _productoRepo.Actualizar(producto);

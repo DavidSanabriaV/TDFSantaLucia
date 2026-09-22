@@ -67,12 +67,12 @@ namespace TDFSantaLucia.Repositories
             _db.SaveChanges();
         }
 
-        public void Eliminar(int id)
+        public void CambiarEstado(int id, bool nuevoEstado)
         {
             var cupon = _db.Cupones.Find(id);
             if (cupon != null)
             {
-                _db.Cupones.Remove(cupon);
+                cupon.Estado = nuevoEstado;
                 _db.SaveChanges();
             }
         }

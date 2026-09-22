@@ -51,12 +51,12 @@ namespace TDFSantaLucia.Repositories
             _context.SaveChanges();
         }
 
-        public void Eliminar(int id)
+        public void CambiarEstado(int id, bool nuevoEstado)
         {
             var categoria = _context.Categorias.Find(id);
             if (categoria != null)
             {
-                _context.Categorias.Remove(categoria);
+                categoria.Estado = nuevoEstado;
                 _context.SaveChanges();
             }
         }

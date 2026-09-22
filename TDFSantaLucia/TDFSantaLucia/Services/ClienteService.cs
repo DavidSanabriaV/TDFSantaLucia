@@ -161,36 +161,36 @@ namespace TDFSantaLucia.Services
             return (true, null);
         }
 
-        public async Task<(bool exito, string? error)> EliminarClienteAsync(int id)
+        public async Task<(bool exito, string? error)> CambiarEstadoAsync(int id, bool nuevoEstado)
         {
             var cliente = _clienteRepo.ObtenerPorId(id);
             if (cliente == null)
                 return (false, "Cliente no encontrado.");
 
-            if (cliente.Pedidos?.Any() == true)
-                return (false, "No se puede eliminar un cliente con pedidos registrados.");
+            var usuario = await _userManager.FindByIdAsync(cliente.Usuario_ID);
+            if (usuario == null)
+                return (false, "Usuario no encontrado.");
 
-            if (cliente.Facturas?.Any() == true)
-                return (false, "No se puede eliminar un cliente con facturas registradas.");
+            if (usuario.Estado == nuevoEstado)
+                return (false, nuevoEstado
+                    ? "El cliente ya se encuentra activo."
+                    : "El cliente ya se encuentra inactivo.");
 
-            if (cliente.Citas?.Any() == true)
-                return (false, "No se puede eliminar un cliente con citas asignadas.");
-
-            if (cliente.Expedientes?.Any() == true)
-                return (false, "No se puede eliminar un cliente con expedientes registrados.");
-
-            if (cliente.Tratamientos?.Any() == true)
-                return (false, "No se puede eliminar un cliente con tratamientos registrados.");
-
-            var usuarioId = cliente.Usuario_ID;
-            _clienteRepo.Eliminar(id);
-
-            if (!string.IsNullOrWhiteSpace(usuarioId))
+            if (!nuevoEstado)
             {
-                var usuario = await _userManager.FindByIdAsync(usuarioId);
-                if (usuario != null)
-                    await _userManager.DeleteAsync(usuario);
+                var pedidosPendientes = cliente.Pedidos?.Count(p => p.Estado == "Pendiente") ?? 0;
+                if (pedidosPendientes > 0)
+                    return (false, $"No se puede desactivar el cliente porque tiene {pedidosPendientes} pedido(s) pendiente(s).");
+
+                var citasPendientes = cliente.Citas?.Count(c => c.Estado == "Pendiente") ?? 0;
+                if (citasPendientes > 0)
+                    return (false, $"No se puede desactivar el cliente porque tiene {citasPendientes} cita(s) pendiente(s).");
             }
+
+            usuario.Estado = nuevoEstado;
+            var resultado = await _userManager.UpdateAsync(usuario);
+            if (!resultado.Succeeded)
+                return (false, string.Join(", ", resultado.Errors.Select(e => e.Description)));
 
             return (true, null);
         }

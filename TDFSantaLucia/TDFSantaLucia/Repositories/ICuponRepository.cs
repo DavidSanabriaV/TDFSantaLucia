@@ -11,7 +11,7 @@ namespace TDFSantaLucia.Repositories
         ClienteCupon? ObtenerClienteCupon(int clienteId, int cuponId);
         void Agregar(Cupon cupon);
         void Actualizar(Cupon cupon);
-        void Eliminar(int id);
+        void CambiarEstado(int id, bool nuevoEstado);
         void AsignarCuponACliente(ClienteCupon clienteCupon);
         void MarcarComoUtilizado(int clienteCuponId);
     }

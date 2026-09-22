@@ -75,12 +75,12 @@ namespace TDFSantaLucia.Repositories
             _db.SaveChanges();
         }
 
-        public void Eliminar(int id)
+        public void CambiarEstado(int id, bool nuevoEstado)
         {
             var inventario = _db.Inventarios.Find(id);
             if (inventario != null)
             {
-                _db.Inventarios.Remove(inventario);
+                inventario.Estado = nuevoEstado;
                 _db.SaveChanges();
             }
         }

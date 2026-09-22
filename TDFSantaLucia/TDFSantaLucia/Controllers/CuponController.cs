@@ -127,14 +127,25 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost("eliminar/{id:int}")]
+        [HttpPost("activar/{id:int}")]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public IActionResult Eliminar(int id)
+        public IActionResult Activar(int id)
         {
-            var (exito, error) = _cuponService.EliminarCupon(id);
+            var (exito, error) = _cuponService.CambiarEstado(id, true);
             TempData[exito ? "ExitoCupon" : "ErrorCupon"] =
-                exito ? "Cupón eliminado." : error;
+                exito ? "Cupón activado correctamente." : error;
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost("desactivar/{id:int}")]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public IActionResult Desactivar(int id)
+        {
+            var (exito, error) = _cuponService.CambiarEstado(id, false);
+            TempData[exito ? "ExitoCupon" : "ErrorCupon"] =
+                exito ? "Cupón desactivado y sus asignaciones pendientes fueron removidas." : error;
             return RedirectToAction("Index");
         }
 
@@ -211,6 +222,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpGet("disponibles")]
+        [Authorize(Roles = "Cliente")]
         [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> Disponibles()
         {

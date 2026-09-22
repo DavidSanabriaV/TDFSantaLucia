@@ -47,16 +47,24 @@ namespace TDFSantaLucia.Services
             return (true, null);
         }
 
-        public (bool exito, string? error) EliminarCategoria(int id)
+        public (bool exito, string? error) CambiarEstado(int id, bool nuevoEstado)
         {
             var categoria = _repository.ObtenerPorId(id);
             if (categoria == null)
                 return (false, "La categoria no existe");
 
-            if (categoria.Productos.Any())
-                return (false, $"No se puede eliminar porque tiene {categoria.Productos.Count} producto(s) asociado(s)");
+            if (categoria.Estado == nuevoEstado)
+                return (false, nuevoEstado
+                    ? "La categoria ya se encuentra activa"
+                    : "La categoria ya se encuentra inactiva");
 
-            _repository.Eliminar(id);
+            if (!nuevoEstado && categoria.Productos.Any(p => p.Estado))
+            {
+                var totalActivos = categoria.Productos.Count(p => p.Estado);
+                return (false, $"No se puede desactivar porque tiene {totalActivos} producto(s) activo(s) asociado(s)");
+            }
+
+            _repository.CambiarEstado(id, nuevoEstado);
             return (true, null);
         }
     }

@@ -109,14 +109,28 @@
                                class="btn btn-warning btn-sm">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form asp-action="Eliminar" asp-route-id="@c.Cupon_Id"
-                                  method="post" style="display:inline"
-                                  onsubmit="return confirm('¿Eliminar este cupón?')">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            @if (c.Estado)
+                                {
+                                    <form asp-action="Desactivar" asp-route-id="@c.Cupon_Id"
+                                          method="post" style="display:inline"
+                                          onsubmit="return confirm('¿Desactivar este cupón?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-slash-circle"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Activar" asp-route-id="@c.Cupon_Id"
+                                          method="post" style="display:inline"
+                                          onsubmit="return confirm('¿Activar este cupón?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    </form>
+                                }
                         </td>
                     </tr>
                     fila++;

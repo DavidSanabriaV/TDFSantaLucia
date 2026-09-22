@@ -172,17 +172,7 @@
                                     </button>
                                 }
 
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <form asp-action="Eliminar" asp-route-id="@p.Pedido_Id"
-                                          method="post"
-                                          onsubmit="return confirm('¿Eliminar este pedido?')">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                }
+                               
                             </div>
                         </td>
                     </tr>

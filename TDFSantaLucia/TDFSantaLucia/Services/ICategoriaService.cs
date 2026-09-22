@@ -8,6 +8,6 @@ namespace TDFSantaLucia.Services
         Categoria? ObtenerDetalle(int id);
         (bool exito, string? error) CrearCategoria(Categoria categoria);
         (bool exito, string? error) ActualizarCategoria(int id, Categoria categoria);
-        (bool exito, string? error) EliminarCategoria(int id);
+        (bool exito, string? error) CambiarEstado(int id, bool nuevoEstado);
     }
 }

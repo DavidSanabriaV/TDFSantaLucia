@@ -257,13 +257,26 @@
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item"
-                                           href="/inventario/eliminar/@i.Inventario_Id"
-                                           onclick="return confirmarEliminar(event, '@i.Producto?.Nombre', @i.Cantidad_Disponible, @i.Inventario_Id)">
-                                            <i class="bi bi-trash me-2" style="color:#e57373;"></i>Eliminar
-                                        </a>
-                                    </li>
+                                    @if (i.Estado)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="/inventario/desactivar/@i.Inventario_Id"
+                                               onclick="return confirmarCambioEstado(event, '@i.Producto?.Nombre', @i.Cantidad_Disponible, @i.Inventario_Id, false)">
+                                                <i class="bi bi-slash-circle me-2" style="color:#e57373;"></i>Desactivar
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="/inventario/activar/@i.Inventario_Id"
+                                               onclick="return confirmarCambioEstado(event, '@i.Producto?.Nombre', 0, @i.Inventario_Id, true)">
+                                                <i class="bi bi-check-circle me-2" style="color:#74c476;"></i>Activar
+                                            </a>
+                                        </li>
+                                    }
                                 </ul>
                             </div>
                         </td>
@@ -388,6 +401,14 @@
                 else
                     vencHtml = `<span class="text-muted">${formatearFecha(i.fecha_Vencimiento)}</span>`;
 
+                const accionEstadoHtml = i.estado
+                    ? `<a class="dropdown-item" href="/inventario/desactivar/${i.inventario_Id}"
+                           onclick="return confirmarCambioEstado(event, '${escapeJs(i.producto)}', ${i.cantidad_Disponible}, ${i.inventario_Id}, false)">
+                           <i class="bi bi-slash-circle me-2" style="color:#e57373;"></i>Desactivar</a>`
+                    : `<a class="dropdown-item" href="/inventario/activar/${i.inventario_Id}"
+                           onclick="return confirmarCambioEstado(event, '${escapeJs(i.producto)}', 0, ${i.inventario_Id}, true)">
+                           <i class="bi bi-check-circle me-2" style="color:#74c476;"></i>Activar</a>`;
+
                 filas += `
                     <tr>
                         <td class="text-muted small">${index + 1}</td>
@@ -427,13 +448,7 @@
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item"
-                                           href="/inventario/eliminar/${i.inventario_Id}"
-                                           onclick="return confirmarEliminar(event, '${escapeJs(i.producto)}', ${i.cantidad_Disponible}, ${i.inventario_Id})">
-                                            <i class="bi bi-trash me-2" style="color:#e57373;"></i>Eliminar
-                                        </a>
-                                    </li>
+                                    <li>${accionEstadoHtml}</li>
                                 </ul>
                             </div>
                         </td>
@@ -498,19 +513,20 @@
             if (vencimiento !== '') $('#chipVencimientoLabel').text(`Vence en ${vencimiento} días`);
         }
 
-        function confirmarEliminar(e, nombre, cantidad, id) {
+        function confirmarCambioEstado(e, nombre, cantidad, id, activar) {
             e.preventDefault();
-            if (cantidad > 0) {
-                alert(`⚠️ No se puede eliminar el lote de "${nombre}" porque tiene ${cantidad} unidades disponibles.`);
+            if (!activar && cantidad > 0) {
+                alert(`⚠️ No se puede desactivar el lote de "${nombre}" porque tiene ${cantidad} unidades disponibles.`);
                 return false;
             }
-            if (!confirm(`¿Está seguro de eliminar este lote de "${nombre}"?`))
+            const accion = activar ? 'activar' : 'desactivar';
+            if (!confirm(`¿Está seguro de ${accion} este lote de "${nombre}"?`))
                 return false;
 
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             const form  = document.createElement('form');
             form.method = 'POST';
-            form.action = `/inventario/eliminar/${id}`;
+            form.action = `/inventario/${activar ? 'activar' : 'desactivar'}/${id}`;
             const inp   = document.createElement('input');
             inp.type    = 'hidden';
             inp.name    = '__RequestVerificationToken';

@@ -13,7 +13,7 @@ namespace TDFSantaLucia.Repositories
         bool ExisteNumeroLoteEnOtro(string numeroLote, int idExcluir);
         void Agregar(Inventario inventario);
         void Actualizar(Inventario inventario);
-        void Eliminar(int id);
+        void CambiarEstado(int id, bool nuevoEstado);
         void GuardarCambios();
 
     }

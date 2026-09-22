@@ -88,15 +88,28 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost("eliminar/{id:int}")]
+        [HttpPost("activar/{id:int}")]
         [ValidateAntiForgeryToken]
-        public IActionResult Eliminar(int id)
+        public IActionResult Activar(int id)
         {
-            var (exito, error) = _categoriaService.EliminarCategoria(id);
+            var (exito, error) = _categoriaService.CambiarEstado(id, true);
             if (!exito)
                 TempData["ErrorCategoria"] = error;
             else
-                TempData["ExitoCategoria"] = "Categoria eliminada correctamente";
+                TempData["ExitoCategoria"] = "Categoria activada correctamente";
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost("desactivar/{id:int}")]
+        [ValidateAntiForgeryToken]
+        public IActionResult Desactivar(int id)
+        {
+            var (exito, error) = _categoriaService.CambiarEstado(id, false);
+            if (!exito)
+                TempData["ErrorCategoria"] = error;
+            else
+                TempData["ExitoCategoria"] = "Categoria desactivada correctamente";
 
             return RedirectToAction("Index");
         }

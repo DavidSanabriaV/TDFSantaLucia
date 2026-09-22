@@ -13,7 +13,7 @@ namespace TDFSantaLucia.Services
         int ContarProximosAVencer(int diasAlerta = 30);
         (bool exito, string? error) Crear(Inventario inventario);
         (bool exito, string? error) Actualizar(int id, Inventario inventario);
-        (bool exito, string? error) Eliminar(int id);
+        (bool exito, string? error) CambiarEstado(int id, bool nuevoEstado);
         List<Producto> ObtenerProductos();
     }
 }

@@ -10,6 +10,6 @@ namespace TDFSantaLucia.Repositories
         bool ExisteNombreEnOtra(string nombre, int idExcluir);
         void Agregar(Categoria categoria);
         void Actualizar(Categoria categoria);
-        void Eliminar(int id);
+        void CambiarEstado(int id, bool nuevoEstado);
     }
 }

@@ -67,16 +67,27 @@ namespace TDFSantaLucia.Services
             _repo.Actualizar(cupon);
             return (true, null);
         }
-
-        public (bool exito, string? error) EliminarCupon(int id)
+        public (bool exito, string? error) CambiarEstado(int id, bool nuevoEstado)
         {
             var cupon = _repo.ObtenerPorId(id);
             if (cupon == null) return (false, "Cupón no encontrado.");
 
-            if (cupon.ClienteCupones.Any(cc => cc.Utilizado))
-                return (false, "No se puede eliminar un cupón que ya fue utilizado.");
+            if (cupon.Estado == nuevoEstado)
+                return (false, nuevoEstado
+                    ? "El cupón ya se encuentra activo."
+                    : "El cupón ya se encuentra inactivo.");
 
-            _repo.Eliminar(id);
+            if (!nuevoEstado)
+            {
+                var asignacionesPendientes = _db.ClientesCupones
+                    .Where(cc => cc.Cupon_Id == id && !cc.Utilizado)
+                    .ToList();
+
+                _db.ClientesCupones.RemoveRange(asignacionesPendientes);
+                _db.SaveChanges();
+            }
+
+            _repo.CambiarEstado(id, nuevoEstado);
             return (true, null);
         }
 

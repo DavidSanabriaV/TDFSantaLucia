@@ -96,14 +96,22 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpPost("eliminar/{id:int}")]
-        public async Task<IActionResult> Eliminar(int id)
+        [HttpPost("activar/{id:int}")]
+        public async Task<IActionResult> Activar(int id)
         {
-            var (exito, error) = await _clienteService.EliminarClienteAsync(id);
-            if (!exito)
-                TempData["ErrorCliente"] = error;
-            else
-                TempData["ExitoCliente"] = "Cliente eliminado correctamente.";
+            var (exito, error) = await _clienteService.CambiarEstadoAsync(id, true);
+            TempData[exito ? "ExitoCliente" : "ErrorCliente"] =
+                exito ? "Cliente activado correctamente." : error;
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost("desactivar/{id:int}")]
+        public async Task<IActionResult> Desactivar(int id)
+        {
+            var (exito, error) = await _clienteService.CambiarEstadoAsync(id, false);
+            TempData[exito ? "ExitoCliente" : "ErrorCliente"] =
+                exito ? "Cliente desactivado correctamente." : error;
 
             return RedirectToAction("Index");
         }
