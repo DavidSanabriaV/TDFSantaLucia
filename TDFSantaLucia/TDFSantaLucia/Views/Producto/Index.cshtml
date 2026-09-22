@@ -210,30 +210,44 @@
                                     </h4>
                                     <div class="d-grid gap-2">
                                         <a asp-action="Detalle" asp-route-id="@p.Producto_Id"
-                                           class="btn rounded-3 text-white"
-                                           style="background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));">
+                                           class="btn rounded-3"
+                                           style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
                                             <i class="bi bi-eye me-1"></i>Ver Detalle
                                         </a>
                                         @if (esAdminOEmpleado)
                                         {
                                             <a asp-action="Editar" asp-route-id="@p.Producto_Id"
-                                               class="btn btn-warning rounded-3 text-white">
+                                               class="btn rounded-3"
+                                               style="background-color:#fde8cc; color:#d4620a; border:none;">
                                                 <i class="bi bi-pencil-square me-1"></i>Editar
                                             </a>
                                         }
                                         @if (User.Identity?.IsAuthenticated == true)
                                         {
-                                            <button class="btn btn-primary rounded-3"
+                                            <button class="btn rounded-3"
+                                                    style="background-color:#d6e4f0; color:#1a3c5e; border:none;"
                                                     onclick="agregarAlCarrito(@p.Producto_Id, '@p.Nombre')">
                                                 <i class="bi bi-cart-plus me-1"></i>Agregar al carrito
                                             </button>
                                         }
                                         @if (User.IsInRole("Admin"))
                                         {
-                                            <button class="btn btn-danger rounded-3"
-                                                    onclick="eliminarProducto(@p.Producto_Id, '@p.Nombre')">
-                                                <i class="bi bi-trash me-1"></i>Eliminar
-                                            </button>
+                                            @if (p.Estado)
+                                            {
+                                                <button class="btn rounded-3"
+                                                        style="background-color:#fbdcdc; color:#c62828; border:none;"
+                                                        onclick="cambiarEstadoProducto(@p.Producto_Id, '@p.Nombre', 'desactivar')">
+                                                    <i class="bi bi-slash-circle me-1"></i>Desactivar
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn rounded-3"
+                                                        style="background-color:#d7f2dc; color:#1e7e34; border:none;"
+                                                        onclick="cambiarEstadoProducto(@p.Producto_Id, '@p.Nombre', 'activar')">
+                                                    <i class="bi bi-check-circle me-1"></i>Activar
+                                                </button>
+                                            }
                                         }
                                     </div>
                                 </div>
@@ -414,11 +428,11 @@
         function agregarAlCarrito(productoId, nombre) {
             @if (User.Identity?.IsAuthenticated != true)
             {
-                    <text>
-                            window.location.href = '/Account/Login?returnUrl=' +
-                                encodeURIComponent(window.location.pathname);
-                            return;
-                    </text>
+                            <text>
+                                            window.location.href = '/Account/Login?returnUrl=' +
+                                                encodeURIComponent(window.location.pathname);
+                                            return;
+                            </text>
             }
             const token = document.querySelector(
                 'input[name="__RequestVerificationToken"]').value;
@@ -443,14 +457,18 @@
             });
         }
 
-        function eliminarProducto(id, nombre) {
-            if (!confirm(`¿Desea eliminar "${nombre}"?`)) return;
+        function cambiarEstadoProducto(id, nombre, accion) {
+            const mensaje = accion === 'desactivar'
+                ? `¿Desea desactivar "${nombre}"?`
+                : `¿Desea activar "${nombre}"?`;
+
+            if (!confirm(mensaje)) return;
 
             const token = document.querySelector(
                 'input[name="__RequestVerificationToken"]').value;
             const form  = document.createElement('form');
             form.method = 'POST';
-            form.action = `/producto/eliminar/${id}`;
+            form.action = `/producto/${accion}/${id}`;
             const input = document.createElement('input');
             input.type  = 'hidden';
             input.name  = '__RequestVerificationToken';

@@ -144,7 +144,7 @@
                     </div>
 
                 </div>
-                
+
                 <h6 class="fw-bold text-muted mb-3 mt-4">CONTACTOS DE EMERGENCIA</h6>
                 <div id="contactosContainer"></div>
                 <button type="button" class="btn btn-outline-primary btn-sm rounded-3 mb-3" id="btnAgregarContacto">
@@ -164,10 +164,12 @@
                 </button>
 
                 <div class="d-flex justify-content-between mt-4">
-                    <a asp-action="Index" class="btn btn-outline-secondary rounded-3">
+                    <a asp-action="Index" class="btn rounded-3"
+                       style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
                         <i class="bi bi-arrow-left me-1"></i>Volver
                     </a>
-                    <button type="submit" class="btn btn-success rounded-3" id="btnGuardar">
+                    <button type="submit" class="btn rounded-3" id="btnGuardar"
+                            style="background-color:#d4edda; color:#2d7a4f; border:none;">
                         <i class="bi bi-save me-1"></i>Guardar
                     </button>
                 </div>
@@ -198,8 +200,7 @@
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
     });
 
-
-        function crearFilaContacto(idx) {
+    function crearFilaContacto(idx) {
         const div = document.createElement('div');
         div.className = 'row g-3 align-items-end mb-2 fila-dinamica';
         div.innerHTML = `
@@ -286,4 +287,3 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-

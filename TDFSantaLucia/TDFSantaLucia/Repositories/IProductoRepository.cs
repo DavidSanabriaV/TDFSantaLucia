@@ -9,7 +9,8 @@ namespace TDFSantaLucia.Repositories
         Producto? ObtenerPorId(int id);
         void Agregar(Producto entidad);
         void Actualizar(Producto entidad);
-        void Eliminar(int id);
+        void Desactivar(int id);
+        void Activar(int id);
         bool ExisteNombre(string nombre);
         bool ExisteNombreEnOtra(string nombre, int id);
     }

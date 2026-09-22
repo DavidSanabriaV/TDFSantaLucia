@@ -44,7 +44,7 @@
                 </div>
             }
 
-            <form asp-action="Editar" method="post">
+            <form asp-action="Editar" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Producto_Id" />
 
@@ -90,12 +90,15 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="Imagen_URL" class="form-label fw-semibold"></label>
-                        <input asp-for="Imagen_URL"
+                        <label class="form-label fw-semibold">Imagen del producto</label>
+                        <input type="file" name="ImagenArchivo" id="ImagenArchivo"
+                               accept=".jpg,.jpeg,.png,.webp"
                                class="form-control rounded-3" />
-                        <div id="previewImagen" class="mt-2 @(string.IsNullOrWhiteSpace(Model.Imagen_URL) ? "d-none" : "")">
+                        <small class="text-muted">Deja este campo vacío si no deseas cambiar la imagen actual.</small>
+                        <span asp-validation-for="Imagen_URL" class="text-danger d-block small mt-1"></span>
+                        <div id="previewImagen" class="mt-2">
                             <img id="imgPreview"
-                                 src="@Model.Imagen_URL"
+                                 src="@(string.IsNullOrWhiteSpace(Model.Imagen_URL) ? Url.Content("~/img/producto-default.png") : Model.Imagen_URL)"
                                  alt="Vista previa"
                                  class="rounded-3 border"
                                  style="max-height:120px; object-fit:cover;" />
@@ -109,7 +112,7 @@
                                   class="form-control rounded-3 @(ViewData.ModelState["Descripcion"]?.Errors.Any() == true ? "is-invalid" : "")"></textarea>
                         <span asp-validation-for="Descripcion" class="invalid-feedback"></span>
                         <small class="text-muted"><span id="contadorDesc">0</span> / 1000 caracteres</small>
-                    </div>  
+                    </div>
 
                     <div class="col-md-6">
                         <div class="form-check form-switch">
@@ -142,10 +145,13 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-3 mt-4">
-                    <a asp-action="Administrar" class="btn btn-outline-secondary rounded-3">
+                    <a asp-action="Administrar" class="btn rounded-3"
+                       style="background-color:#e2e6ea; color:#495057; border:none;">
                         <i class="bi bi-x-circle me-1"></i> Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary rounded-3" id="btnGuardar">
+                    <button type="submit" class="btn rounded-3"
+                            style="background-color:#d6e4f0; color:#1a3c5e; border:none;"
+                            id="btnGuardar">
                         <i class="bi bi-save me-1"></i> Actualizar Producto
                     </button>
                 </div>
@@ -158,20 +164,15 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        const imgInput    = document.getElementById('Imagen_URL');
-        const preview     = document.getElementById('previewImagen');
-        const imgPreview  = document.getElementById('imgPreview');
         const descripcion = document.getElementById('Descripcion');
         const contador    = document.getElementById('contadorDesc');
 
-        imgInput.addEventListener('input', function () {
-            const url = this.value.trim();
-            if (url) {
-                imgPreview.src = url;
-                preview.classList.remove('d-none');
-                imgPreview.onerror = () => preview.classList.add('d-none');
-            } else {
-                preview.classList.add('d-none');
+        document.getElementById('ImagenArchivo').addEventListener('change', function () {
+            const imgPreview = document.getElementById('imgPreview');
+            const file = this.files[0];
+
+            if (file) {
+                imgPreview.src = URL.createObjectURL(file);
             }
         });
 

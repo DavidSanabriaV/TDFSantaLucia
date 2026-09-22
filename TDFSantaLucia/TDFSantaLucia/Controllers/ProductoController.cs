@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +15,21 @@ namespace TDFSantaLucia.Controllers
         private readonly IProductoService _productoService;
         private readonly ICategoriaService _categoriaService;
         private readonly ICarritoService _carritoService;
+        private readonly IWebHostEnvironment _env;
+
+        private static readonly string[] ExtensionesPermitidas = { ".jpg", ".jpeg", ".png", ".webp" };
+        private const long TamanoMaximoBytes = 5 * 1024 * 1024; // 5 MB
 
         public ProductoController(
             IProductoService productoService,
             ICategoriaService categoriaService,
-            ICarritoService carritoService)
+            ICarritoService carritoService,
+            IWebHostEnvironment env)
         {
             _productoService = productoService;
             _categoriaService = categoriaService;
             _carritoService = carritoService;
+            _env = env;
         }
 
         [AllowAnonymous]
@@ -79,18 +86,21 @@ namespace TDFSantaLucia.Controllers
         [Authorize(Roles = "Admin,Empleado")]
         [HttpPost("crear")]
         [ValidateAntiForgeryToken]
-        public IActionResult Crear(
-            [Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
-            Producto producto)
+        public async Task<IActionResult> Crear(
+            [Bind("Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Receta")]
+            Producto producto,
+            IFormFile? ImagenArchivo)
         {
             if (_productoService.ExisteNombre(producto.Nombre?.Trim() ?? ""))
-                ModelState.AddModelError(
-                    "Nombre",
-                    "Ya existe un producto con ese nombre.");
+                ModelState.AddModelError("Nombre", "Ya existe un producto con ese nombre.");
+
+            string? extension = ValidarImagen(ImagenArchivo, requerida: true);
 
             if (ModelState.IsValid)
             {
                 producto.Estado = false;
+                producto.Imagen_URL = await GuardarImagenAsync(ImagenArchivo!, extension!);
+
                 _productoService.Crear(producto);
 
                 TempData["ExitoProducto"] =
@@ -122,39 +132,45 @@ namespace TDFSantaLucia.Controllers
         [Authorize(Roles = "Admin,Empleado")]
         [HttpPost("editar/{id:int}")]
         [ValidateAntiForgeryToken]
-        public IActionResult Editar(
+        public async Task<IActionResult> Editar(
             int id,
-            [Bind("Producto_Id,Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Imagen_URL,Receta")]
-            Producto producto)
+            [Bind("Producto_Id,Categoria_Id,Nombre,Descripcion,Precio,Marca,Estado,Receta")]
+            Producto producto,
+            IFormFile? ImagenArchivo)
         {
             if (id != producto.Producto_Id)
                 return NotFound();
 
+            var original = _productoService.ObtenerPorId(id);
+            if (original == null)
+                return NotFound();
+
             if (producto.Precio == 0)
             {
-                var original = _productoService.ObtenerPorId(id);
-
-                if (original != null)
-                {
-                    producto.Precio = original.Precio;
-                    ModelState.Remove("Precio");
-                }
+                producto.Precio = original.Precio;
+                ModelState.Remove("Precio");
             }
 
-            if (_productoService.ExisteNombreEnOtra(
-                producto.Nombre?.Trim() ?? "", id))
-            {
-                ModelState.AddModelError(
-                    "Nombre",
-                    "Ya existe otro producto con ese nombre.");
-            }
+            if (_productoService.ExisteNombreEnOtra(producto.Nombre?.Trim() ?? "", id))
+                ModelState.AddModelError("Nombre", "Ya existe otro producto con ese nombre.");
+
+            string? extension = ValidarImagen(ImagenArchivo, requerida: false);
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var (exito, error) =
-                        _productoService.Actualizar(producto);
+                    if (ImagenArchivo != null && ImagenArchivo.Length > 0)
+                    {
+                        producto.Imagen_URL = await GuardarImagenAsync(ImagenArchivo, extension!);
+                        EliminarImagenAnterior(original.Imagen_URL);
+                    }
+                    else
+                    {
+                        producto.Imagen_URL = original.Imagen_URL;
+                    }
+
+                    var (exito, error) = _productoService.Actualizar(producto);
 
                     if (!exito)
                     {
@@ -164,8 +180,7 @@ namespace TDFSantaLucia.Controllers
                         return View(producto);
                     }
 
-                    TempData["ExitoProducto"] =
-                        "Producto actualizado exitosamente.";
+                    TempData["ExitoProducto"] = "Producto actualizado exitosamente.";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -183,44 +198,40 @@ namespace TDFSantaLucia.Controllers
             return View(producto);
         }
 
-        [Authorize(Roles = "Admin,Empleado")]
-        [HttpPost("eliminar/{id:int}")]
+        [Authorize(Roles = "Admin")]
+        [HttpPost("desactivar/{id:int}")]
         [ValidateAntiForgeryToken]
-        public IActionResult EliminarConfirmado(int id)
+        public IActionResult Desactivar(int id)
         {
-            var producto = _productoService.ObtenerPorId(id);
+            var (exito, error) = _productoService.Desactivar(id);
 
-            if (producto == null)
-                return NotFound();
+            TempData[exito ? "ExitoProducto" : "ErrorProducto"] =
+                exito ? "Producto desactivado correctamente." : error;
 
-            var resultado = _productoService.Eliminar(id);
+            return RedirectToAction(nameof(Index));
+        }
 
-            if (!resultado.exito)
-            {
-                TempData["ErrorProducto"] = resultado.error;
-                return RedirectToAction(nameof(Index));
-            }
+        [Authorize(Roles = "Admin")]
+        [HttpPost("activar/{id:int}")]
+        [ValidateAntiForgeryToken]
+        public IActionResult Activar(int id)
+        {
+            var (exito, error) = _productoService.Activar(id);
 
-            TempData["ExitoProducto"] =
-                "Producto eliminado correctamente.";
+            TempData[exito ? "ExitoProducto" : "ErrorProducto"] =
+                exito ? "Producto activado correctamente." : error;
 
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost("agregaralcarrito")]
-        public IActionResult AgregarAlCarrito(
-            int productoId,
-            int cantidad = 1)
+        public IActionResult AgregarAlCarrito(int productoId, int cantidad = 1)
         {
             var producto = _productoService.ObtenerPorId(productoId);
 
             if (producto == null || !producto.Estado)
             {
-                return Json(new
-                {
-                    exito = false,
-                    mensaje = "Producto no disponible."
-                });
+                return Json(new { exito = false, mensaje = "Producto no disponible." });
             }
 
             _carritoService.AgregarItem(new CarritoItem
@@ -232,11 +243,7 @@ namespace TDFSantaLucia.Controllers
                 Imagen_URL = producto.Imagen_URL
             });
 
-            return Json(new
-            {
-                exito = true,
-                mensaje = $"{producto.Nombre} agregado al carrito."
-            });
+            return Json(new { exito = true, mensaje = $"{producto.Nombre} agregado al carrito." });
         }
 
         private void CargarCategorias(int? selectedId = null)
@@ -247,11 +254,61 @@ namespace TDFSantaLucia.Controllers
                 .OrderBy(c => c.Nombre)
                 .ToList();
 
-            ViewBag.Categorias = new SelectList(
-                categorias,
-                "Categoria_Id",
-                "Nombre",
-                selectedId);
+            ViewBag.Categorias = new SelectList(categorias, "Categoria_Id", "Nombre", selectedId);
+        }
+
+        private string? ValidarImagen(IFormFile? archivo, bool requerida)
+        {
+            if (archivo == null || archivo.Length == 0)
+            {
+                if (requerida)
+                    ModelState.AddModelError("Imagen_URL", "Debe seleccionar una imagen.");
+                return null;
+            }
+
+            var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+
+            if (!ExtensionesPermitidas.Contains(extension))
+            {
+                ModelState.AddModelError("Imagen_URL", "Formato no permitido. Use JPG, PNG o WEBP.");
+                return null;
+            }
+
+            if (archivo.Length > TamanoMaximoBytes)
+            {
+                ModelState.AddModelError("Imagen_URL", "La imagen no puede superar 5 MB.");
+                return null;
+            }
+
+            return extension;
+        }
+
+        private async Task<string> GuardarImagenAsync(IFormFile archivo, string extension)
+        {
+            var nombreArchivo = $"{Guid.NewGuid()}{extension}";
+            var carpeta = Path.Combine(_env.WebRootPath, "img", "productos");
+
+            Directory.CreateDirectory(carpeta);
+
+            var rutaCompleta = Path.Combine(carpeta, nombreArchivo);
+
+            using (var stream = new FileStream(rutaCompleta, FileMode.Create))
+            {
+                await archivo.CopyToAsync(stream);
+            }
+
+            return $"/img/productos/{nombreArchivo}";
+        }
+
+        private void EliminarImagenAnterior(string? rutaAnterior)
+        {
+            if (string.IsNullOrWhiteSpace(rutaAnterior)) return;
+            if (!rutaAnterior.StartsWith("/img/productos/")) return;
+
+            var rutaFisica = Path.Combine(_env.WebRootPath, rutaAnterior.TrimStart('/'));
+
+            if (System.IO.File.Exists(rutaFisica))
+                System.IO.File.Delete(rutaFisica);
         }
     }
 }
