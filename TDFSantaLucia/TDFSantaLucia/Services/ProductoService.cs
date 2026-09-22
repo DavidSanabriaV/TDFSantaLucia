@@ -1,6 +1,7 @@
 ﻿using TDFSantaLucia.Models;
 using TDFSantaLucia.Repositories;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TDFSantaLucia.Services
 {
@@ -8,6 +9,7 @@ namespace TDFSantaLucia.Services
     {
         private readonly IProductoRepository _repo;
         private readonly IInventarioRepository _inventarioRepo;
+
         public ProductoService(IProductoRepository repo, IInventarioRepository inventarioRepo)
         {
             _repo = repo;
@@ -17,6 +19,7 @@ namespace TDFSantaLucia.Services
         public List<Producto> ObtenerTodos() => _repo.ObtenerTodos();
         public Producto? ObtenerPorId(int id) => _repo.ObtenerPorId(id);
         public void Crear(Producto producto) => _repo.Agregar(producto);
+
         public (bool exito, string? error) Actualizar(Producto producto)
         {
             if (producto.Estado)
@@ -35,18 +38,34 @@ namespace TDFSantaLucia.Services
             _repo.Actualizar(producto);
             return (true, null);
         }
-        public (bool exito, string? error) Eliminar(int id)
+
+        public (bool exito, string? error) Desactivar(int id)
         {
-            try
-            {
-                _repo.Eliminar(id);
-                return (true, null);
-            }
-            catch
-            {
-                return (false, "No se puede eliminar el producto porque tiene stock o registros relacionados.");
-            }
+            var producto = _repo.ObtenerPorId(id);
+            if (producto == null)
+                return (false, "No se encontró el producto.");
+
+            _repo.Desactivar(id);
+            return (true, null);
         }
+
+        public (bool exito, string? error) Activar(int id)
+        {
+            var producto = _repo.ObtenerPorId(id);
+            if (producto == null)
+                return (false, "No se encontró el producto.");
+
+            var tieneStock = _inventarioRepo.ObtenerPorProducto(id)
+                .Any(i => i.Estado && i.Cantidad_Disponible > 0);
+
+            if (!tieneStock)
+                return (false, "No se puede activar el producto porque no tiene stock disponible. " +
+                              "Primero registre un lote con cantidad mayor a 0.");
+
+            _repo.Activar(id);
+            return (true, null);
+        }
+
         public bool ExisteAsync(int id) => _repo.ObtenerPorId(id) != null;
         public bool ExisteNombre(string nombre) => _repo.ExisteNombre(nombre);
         public bool ExisteNombreEnOtra(string n, int id) => _repo.ExisteNombreEnOtra(n, id);

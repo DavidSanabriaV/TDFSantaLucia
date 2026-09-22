@@ -28,7 +28,8 @@
                 </div>
             }
 
-            <form asp-action="Crear" method="post">
+            <<form asp-action="Crear" method="post" enctype="multipart/form-data">
+                form asp-action="Crear" method="post">
                 @Html.AntiForgeryToken()
 
                 <div class="row g-4">
@@ -92,15 +93,13 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="Imagen_URL" class="form-label fw-semibold"></label>
-                        <input asp-for="Imagen_URL"
-                               class="form-control rounded-3"
-                               placeholder="https://..." />
+                        <label class="form-label fw-semibold">Imagen del producto</label>
+                        <input type="file" name="ImagenArchivo" id="ImagenArchivo"
+                               accept=".jpg,.jpeg,.png,.webp"
+                               class="form-control rounded-3" />
+                        <span asp-validation-for="Imagen_URL" class="text-danger d-block small mt-1"></span>
                         <div id="previewImagen" class="mt-2 d-none">
-                            <img id="imgPreview"
-                                 src=""
-                                 alt="Vista previa"
-                                 class="rounded-3 border"
+                            <img id="imgPreview" src="" alt="Vista previa" class="rounded-3 border"
                                  style="max-height:120px; object-fit:cover;" />
                         </div>
                     </div>
@@ -129,10 +128,13 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-3 mt-4">
-                    <a asp-action="Administrar" class="btn btn-outline-secondary rounded-3">
+                    <a asp-action="Administrar" class="btn rounded-3"
+                       style="background-color:#e2e6ea; color:#495057; border:none;">
                         <i class="bi bi-x-circle me-1"></i> Cancelar
                     </a>
-                    <button type="submit" class="btn btn-primary rounded-3" id="btnGuardar">
+                    <button type="submit" class="btn rounded-3"
+                            style="background-color:#d6e4f0; color:#1a3c5e; border:none;"
+                            id="btnGuardar">
                         <i class="bi bi-save me-1"></i> Guardar Producto
                     </button>
                 </div>
@@ -145,21 +147,18 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        const imgInput    = document.getElementById('Imagen_URL');
-        const preview     = document.getElementById('previewImagen');
-        const imgPreview  = document.getElementById('imgPreview');
         const descripcion = document.getElementById('Descripcion');
         const contador    = document.getElementById('contadorDesc');
 
-        imgInput.addEventListener('input', function () {
-            const url = this.value.trim();
-            if (url) {
-                imgPreview.src = url;
-                preview.classList.remove('d-none');
-                imgPreview.onerror = () => preview.classList.add('d-none');
-            } else {
-                preview.classList.add('d-none');
+        document.getElementById('ImagenArchivo').addEventListener('change', function () {
+            const preview = document.getElementById('previewImagen');
+            const imgPreview = document.getElementById('imgPreview');
+            const file = this.files[0];
+
+            if (file) {
+                imgPreview.src = URL.createObjectURL(file);
             }
+            preview.classList.remove('d-none');
         });
 
         descripcion.addEventListener('input', function () {
@@ -172,7 +171,6 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
         });
-
 
         const byId = id => document.getElementById(id);
         const itemsCategoria = Array.from(document.querySelectorAll('.categoria-item'));
