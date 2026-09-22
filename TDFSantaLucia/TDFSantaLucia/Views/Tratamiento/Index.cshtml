@@ -35,8 +35,6 @@
                     data-bs-dismiss="alert"></button>
         </div>
     }
-
-    @* Alerta de recordatorios activos *@
     <div id="alertaRecordatorios"></div>
 
     @if (!Model.Any())
@@ -128,22 +126,33 @@
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2 mt-3">
-                        <a asp-action="Editar"
-                               asp-route-id="@t.Tratamiento_Id"
-                               class="btn btn-warning btn-sm rounded-3">
-                            <i class="bi bi-pencil me-1"></i>Editar
-                        </a>
-                        <form asp-action="Eliminar"
-                              asp-route-id="@t.Tratamiento_Id"
-                              method="post"
-                              onsubmit="return confirm('¿Eliminar este tratamiento?')">
-                            @Html.AntiForgeryToken()
-                            <button type="submit"
-                                    class="btn btn-danger btn-sm rounded-3">
-                                <i class="bi bi-trash me-1"></i>Eliminar
-                            </button>
-                        </form>
+                    <div class="dropdown mt-3">
+                        <button class="btn btn-outline-secondary btn-sm rounded-3 w-100"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical me-1"></i>Acciones
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow rounded-3 w-100">
+                            <li>
+                                <a class="dropdown-item"
+                                   asp-action="Editar"
+                                   asp-route-id="@t.Tratamiento_Id">
+                                    <i class="bi bi-pencil me-2" style="color:#fd8d3c;"></i>Editar
+                                </a>
+                            </li>
+                            <li>
+                                <form asp-action="Eliminar"
+                                      asp-route-id="@t.Tratamiento_Id"
+                                      method="post"
+                                      onsubmit="return confirm('¿Eliminar este tratamiento?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-trash me-2" style="color:#e57373;"></i>Eliminar
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -158,7 +167,6 @@
         const token = document.querySelector(
             'input[name="__RequestVerificationToken"]').value;
 
-        // Verificar recordatorios cada minuto
         function verificarRecordatorios() {
             fetch('/tratamiento/recordatorios')
                 .then(r => r.json())
@@ -167,26 +175,26 @@
                         document.getElementById('alertaRecordatorios');
                     contenedor.innerHTML = '';
 
-                    lista.forEach(function (r) {
+                    lista.forEach(function(r) {
                         const div = document.createElement('div');
                         div.className =
                             'alert alert-warning alert-dismissible ' +
                             'fade show rounded-3 d-flex align-items-center gap-2';
                         div.innerHTML = `
-                            <i class="bi bi-bell-fill fs-5"></i>
-                            <div>
-                                <strong>⏰ Recordatorio:</strong>
-                                Es hora de tomar
-                                <strong>${r.medicamento}</strong>
-                                ${r.dosis ? '— Dosis: ' + r.dosis : ''}.
-                                Hora programada: ${r.hora}
-                            </div>
-                            <button type="button" class="btn-close ms-auto"
-                                    data-bs-dismiss="alert"></button>`;
+                                    <i class="bi bi-bell-fill fs-5"></i>
+                                    <div>
+                                        <strong>⏰ Recordatorio:</strong>
+                                        Es hora de tomar
+                                        <strong>${r.medicamento}</strong>
+                                        ${r.dosis ? '— Dosis: ' + r.dosis : ''}.
+                                        Hora programada: ${r.hora}
+                                    </div>
+                                    <button type="button" class="btn-close ms-auto"
+                                            data-bs-dismiss="alert"></button>`;
                         contenedor.appendChild(div);
                     });
                 })
-                .catch(() => {});
+                .catch(() => { });
         }
 
         verificarRecordatorios();
@@ -197,13 +205,13 @@
                 method: 'POST',
                 headers: { 'RequestVerificationToken': token }
             })
-            .then(r => r.json())
-            .then(d => {
-                if (!d.exito) {
-                    checkbox.checked = !checkbox.checked;
-                    alert(d.error ?? 'Error al cambiar alertas.');
-                }
-            });
+                .then(r => r.json())
+                .then(d => {
+                    if (!d.exito) {
+                        checkbox.checked = !checkbox.checked;
+                        alert(d.error ?? 'Error al cambiar alertas.');
+                    }
+                });
         }
     </script>
 }

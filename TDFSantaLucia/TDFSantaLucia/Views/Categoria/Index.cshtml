@@ -13,6 +13,13 @@
     });
 }
 
+
+<style>
+    .table-responsive {
+        overflow: visible !important;
+    }
+</style>
+
 <div class="container-fluid px-4 py-4">
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
@@ -131,30 +138,49 @@
                             }
                         </td>
                         <td class="text-center">
-                            <a asp-action="Detalle" asp-route-id="@c.Categoria_Id"
-                               class="btn btn-info btn-sm text-white">
-                                <i class="bi bi-eye"></i> Ver
-                            </a>
-                            <a asp-action="Editar" asp-route-id="@c.Categoria_Id"
-                               class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil"></i> Editar
-                            </a>
-                            @if (c.Estado)
-                            {
-                                <a href="/categoria/desactivar/@c.Categoria_Id"
-                                   class="btn btn-danger btn-sm"
-                                   onclick="return confirmarCambioEstado(event, '@c.Nombre', @c.Productos.Count(p => p.Estado), @c.Categoria_Id, false)">
-                                    <i class="bi bi-slash-circle"></i> Desactivar
-                                </a>
-                            }
-                            else
-                            {
-                                <a href="/categoria/activar/@c.Categoria_Id"
-                                   class="btn btn-success btn-sm"
-                                   onclick="return confirmarCambioEstado(event, '@c.Nombre', 0, @c.Categoria_Id, true)">
-                                    <i class="bi bi-check-circle"></i> Activar
-                                </a>
-                            }
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm rounded-3"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow rounded-3">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-action="Detalle" asp-route-id="@c.Categoria_Id">
+                                            <i class="bi bi-eye me-2" style="color:#6baed6;"></i>Ver detalle
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-action="Editar" asp-route-id="@c.Categoria_Id">
+                                            <i class="bi bi-pencil me-2" style="color:#fd8d3c;"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    @if (c.Estado)
+                                    {
+                                        <li>
+                                            <a href="/categoria/desactivar/@c.Categoria_Id"
+                                               class="dropdown-item"
+                                               onclick="return confirmarCambioEstado(event, '@c.Nombre', @c.Productos.Count(p => p.Estado), @c.Categoria_Id, false)">
+                                                <i class="bi bi-slash-circle me-2" style="color:#e57373;"></i>Desactivar
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a href="/categoria/activar/@c.Categoria_Id"
+                                               class="dropdown-item"
+                                               onclick="return confirmarCambioEstado(event, '@c.Nombre', 0, @c.Categoria_Id, true)">
+                                                <i class="bi bi-check-circle me-2" style="color:#74c476;"></i>Activar
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
                         </td>
                     </tr>
                     fila++;
@@ -179,7 +205,7 @@
     <script>
         const todasLasCategorias = @Html.Raw(
                     System.Text.Json.JsonSerializer.Serialize(todasParaJs)
-            );
+                                    );
 
         const $buscador          = $('#buscador');
         const $filtroEstado      = $('#filtroEstado');
@@ -228,25 +254,25 @@
                 const descResaltada   = resaltar(c.descripcion || '—', texto);
                 const botonEstado     = c.estado
                     ? `<a href="/categoria/desactivar/${c.categoria_Id}" class="btn btn-danger btn-sm"
-                           onclick="return confirmarCambioEstado(event, '${escapeJs(c.nombre)}', ${c.productosActivos}, ${c.categoria_Id}, false)">
-                           <i class="bi bi-slash-circle"></i> Desactivar</a>`
+                                   onclick="return confirmarCambioEstado(event, '${escapeJs(c.nombre)}', ${c.productosActivos}, ${c.categoria_Id}, false)">
+                                   <i class="bi bi-slash-circle"></i> Desactivar</a>`
                     : `<a href="/categoria/activar/${c.categoria_Id}" class="btn btn-success btn-sm"
-                           onclick="return confirmarCambioEstado(event, '${escapeJs(c.nombre)}', 0, ${c.categoria_Id}, true)">
-                           <i class="bi bi-check-circle"></i> Activar</a>`;
+                                   onclick="return confirmarCambioEstado(event, '${escapeJs(c.nombre)}', 0, ${c.categoria_Id}, true)">
+                                   <i class="bi bi-check-circle"></i> Activar</a>`;
 
                 filas += `
-                    <tr>
-                        <td class="text-muted small">${index + 1}</td>
-                        <td class="fw-semibold">${nombreResaltado}</td>
-                        <td class="text-muted">${descResaltada}</td>
-                        <td class="text-center"><span class="badge bg-secondary">${c.totalProductos}</span></td>
-                        <td class="text-center">${estadoBadge}</td>
-                        <td class="text-center">
-                            <a href="/categoria/detalle/${c.categoria_Id}" class="btn btn-info btn-sm text-white"><i class="bi bi-eye"></i> Ver</a>
-                            <a href="/categoria/editar/${c.categoria_Id}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
-                            ${botonEstado}
-                        </td>
-                    </tr>`;
+                            <tr>
+                                <td class="text-muted small">${index + 1}</td>
+                                <td class="fw-semibold">${nombreResaltado}</td>
+                                <td class="text-muted">${descResaltada}</td>
+                                <td class="text-center"><span class="badge bg-secondary">${c.totalProductos}</span></td>
+                                <td class="text-center">${estadoBadge}</td>
+                                <td class="text-center">
+                                    <a href="/categoria/detalle/${c.categoria_Id}" class="btn btn-info btn-sm text-white"><i class="bi bi-eye"></i> Ver</a>
+                                    <a href="/categoria/editar/${c.categoria_Id}" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+                                    ${botonEstado}
+                                </td>
+                            </tr>`;
             });
 
             $tabla.html(filas);

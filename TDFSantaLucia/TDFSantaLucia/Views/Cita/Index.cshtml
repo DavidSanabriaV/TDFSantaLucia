@@ -3,6 +3,13 @@
     ViewData["Title"] = "Gestión de Citas";
 }
 
+
+<style>
+    .table-responsive {
+        overflow: visible !important;
+    }
+</style>
+
 <div class="container-fluid px-4 py-4">
 
     @if (TempData["ErrorCita"] != null)
@@ -75,16 +82,29 @@
                             <span class="text-muted">Sin asignar</span>
                         }
                     </td>
-                    <td>
-                        <a asp-action="Revisar" asp-route-id="@cita.Cita_Id"
-                           class="btn btn-primary btn-sm rounded-3">
-                            <i class="bi bi-zoom-in me-1"></i>Revisar
-                        </a>
-                        <a asp-action="Detalle" asp-route-id="@cita.Cita_Id"
-                           class="btn btn-info btn-sm rounded-3">
-                            <i class="bi bi-eye me-1"></i>Ver
-                        </a>
-                        
+                    <td class="text-center">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm rounded-3"
+                                    type="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow rounded-3">
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-action="Revisar" asp-route-id="@cita.Cita_Id">
+                                        <i class="bi bi-zoom-in me-2" style="color:#6baed6;"></i>Revisar
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-action="Detalle" asp-route-id="@cita.Cita_Id">
+                                        <i class="bi bi-eye me-2" style="color:#6baed6;"></i>Ver detalle
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </td>
                 </tr>
             }
