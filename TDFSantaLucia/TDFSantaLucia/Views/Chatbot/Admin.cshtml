@@ -13,30 +13,38 @@
     };
 }
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0" style="color:#243C8F;">
-            <i class="bi bi-robot me-2"></i>Opciones del Chatbot
-        </h2>
-        <a asp-action="Crear" class="btn btn-primary rounded-3">
+<style>
+    .table-responsive {
+        overflow: visible !important;
+    }
+</style>
+
+<div class="container-fluid px-4 py-4">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1" style="color:#1a3c5e;">
+                <i class="bi bi-robot me-2 text-primary"></i>Opciones del Chatbot
+            </h2>
+            <p class="text-muted mb-0">Gestiona los botones y respuestas del chatbot</p>
+        </div>
+        <a asp-action="Crear" class="btn btn-success rounded-3 shadow-sm">
             <i class="bi bi-plus-circle me-1"></i>Nueva Opción
         </a>
     </div>
 
     @if (TempData["ExitoChatbot"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show rounded-3">
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4">
             <i class="bi bi-check-circle me-2"></i>@TempData["ExitoChatbot"]
-            <button type="button" class="btn-close"
-                    data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
     @if (TempData["ErrorChatbot"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show rounded-3">
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4">
             <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorChatbot"]
-            <button type="button" class="btn-close"
-                    data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
@@ -44,8 +52,8 @@
         <table class="table table-hover align-middle">
             <thead class="table-dark">
                 <tr>
-                    <th style="width:60px;">Orden</th>
-                    <th style="width:60px;">Icono</th>
+                    <th style="width:60px;" class="text-center">Orden</th>
+                    <th style="width:60px;" class="text-center">Icono</th>
                     <th>Texto del botón</th>
                     <th>Acción / Respuesta</th>
                     <th class="text-center">Estado</th>
@@ -56,64 +64,65 @@
                 @foreach (var o in Model)
                 {
                     <tr>
-                        <td class="text-center fw-bold text-muted">
-                            @o.Orden
-                        </td>
+                        <td class="text-center fw-bold text-muted">@o.Orden</td>
                         <td class="text-center">
-                            <i class="bi @o.Icono fs-4"
-                               style="color:#243C8F;"></i>
+                            <i class="bi @o.Icono fs-4" style="color:#243C8F;"></i>
                         </td>
                         <td class="fw-semibold">@o.Texto</td>
                         <td>
-                            @if (!string.IsNullOrEmpty(o.Intent) &&
-                                 intentLabels.ContainsKey(o.Intent))
+                            @if (!string.IsNullOrEmpty(o.Intent) && intentLabels.ContainsKey(o.Intent))
                             {
-                                <span class="badge rounded-pill"
-                                      style="background:#243C8F;">
+                                <span class="badge rounded-pill" style="background:#243C8F;">
                                     @intentLabels[o.Intent]
                                 </span>
-                                <small class="text-muted ms-1">
-                                    acción automática
-                                </small>
+                                <small class="text-muted ms-1">acción automática</small>
                             }
                             else
                             {
                                 <span class="text-muted small"
-                                      style="max-width:280px;
-                                    display:inline-block;
-                                    white-space:nowrap;
-                                    overflow:hidden;
-                                    text-overflow:ellipsis;">
+                                      style="max-width:280px;display:inline-block;
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                                     @o.Respuesta
                                 </span>
                             }
                         </td>
                         <td class="text-center">
-                            <span class="badge @(o.Activo
-                                                                  ? "bg-success" : "bg-secondary")">
-                                @(o.Activo ? "Activo" : "Inactivo")
-                            </span>
+                            @if (o.Activo)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Inactivo</span>
+                            }
                         </td>
                         <td class="text-center">
-                            <div class="d-flex gap-1 justify-content-center">
-                                <a asp-action="Editar"
-                                   asp-route-id="@o.Opcion_Id"
-                                   class="btn btn-warning btn-sm text-white"
-                                   title="Editar">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form asp-action="Eliminar"
-                                      asp-route-id="@o.Opcion_Id"
-                                      method="post"
-                                      onsubmit="return confirm(
-                                    '¿Eliminar esta opción?')">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit"
-                                            class="btn btn-danger btn-sm"
-                                            title="Eliminar">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm rounded-3"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu shadow rounded-3">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-action="Editar" asp-route-id="@o.Opcion_Id">
+                                            <i class="bi bi-pencil me-2" style="color:#fd8d3c;"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-action="Eliminar" asp-route-id="@o.Opcion_Id"
+                                              method="post"
+                                              onsubmit="return confirm('¿Eliminar esta opción?')">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-trash me-2" style="color:#e57373;"></i>Eliminar
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </div>
                         </td>
                     </tr>
@@ -121,4 +130,5 @@
             </tbody>
         </table>
     </div>
+
 </div>
