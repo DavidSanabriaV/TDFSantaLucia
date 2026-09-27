@@ -1,25 +1,26 @@
 ﻿@model List<TDFSantaLucia.Models.Cliente>
 @{
     ViewData["Title"] = "Clientes";
+
+    var todosParaJs = Model.Select(c => new
+    {
+        cliente_Id = c.Cliente_Id,
+        nombre = $"{c.Usuario?.Nombre} {c.Usuario?.Primer_Apellido} {c.Usuario?.Segundo_Apellido}".Trim(),
+        cedula = c.Usuario?.Cedula ?? "",
+        correo = c.Usuario?.Email ?? "",
+        telefono = c.Usuario?.Telefono ?? "",
+        puntos = c.Puntos_Acumulados,
+        estado = c.Usuario != null && c.Usuario.Estado
+    });
 }
 
+<style>
+    .table-responsive {
+        overflow: visible !important;
+    }
+</style>
+
 <div class="container-fluid px-4 py-4">
-
-    @if (TempData["ExitoCliente"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle me-2"></i>@TempData["ExitoCliente"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (TempData["ErrorCliente"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorCliente"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
 
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
@@ -29,24 +30,37 @@
             </h2>
             <p class="text-muted mb-0">Gestiona y consulta la información de clientes</p>
         </div>
-        <a asp-action="Crear" class="btn btn-primary rounded-3 shadow-sm">
+        <a asp-action="Crear" class="btn btn-success rounded-3 shadow-sm">
             <i class="bi bi-person-plus me-1"></i> Nuevo Cliente
         </a>
     </div>
 
+    @if (TempData["ExitoCliente"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4">
+            <i class="bi bi-check-circle me-2"></i>@TempData["ExitoCliente"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorCliente"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorCliente"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4">
             <div class="row g-3 align-items-end">
-
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <label class="form-label fw-semibold text-muted small">BUSCAR</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-search text-muted"></i>
                         </span>
-                        <input id="searchInput"
+                        <input type="text" id="buscador"
                                class="form-control border-start-0 ps-0"
-                               type="search"
                                placeholder="Nombre, cédula o correo..." />
                         <button class="btn btn-outline-secondary" id="btnLimpiarTexto"
                                 type="button" style="display:none;">
@@ -54,7 +68,6 @@
                         </button>
                     </div>
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label fw-semibold text-muted small">ESTADO</label>
                     <select id="filtroEstado" class="form-select rounded-3">
@@ -63,7 +76,6 @@
                         <option value="false">Inactivo</option>
                     </select>
                 </div>
-
                 <div class="col-md-3">
                     <label class="form-label fw-semibold text-muted small">ORDENAR POR</label>
                     <select id="ordenar" class="form-select rounded-3">
@@ -74,121 +86,119 @@
                         <option value="puntos-asc">Puntos menor → mayor</option>
                     </select>
                 </div>
-
                 <div class="col-md-2">
-                    <button id="btnLimpiarFiltros"
-                            class="btn btn-outline-secondary w-100 rounded-3"
-                            style="display:none;">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar filtros
+                    <button id="btnLimpiarFiltros" class="btn btn-outline-secondary w-100 rounded-3" style="display:none;">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
                     </button>
                 </div>
+            </div>
 
-                <div class="col-md-1 text-end">
-                    <small id="contadorResultados" class="text-muted"></small>
-                </div>
-
+            <div class="d-flex gap-2 mt-3 flex-wrap align-items-center">
+                <span id="chipTexto" class="badge bg-primary d-none">
+                    <span id="chipTextoLabel"></span>
+                    <button type="button" class="btn-close btn-close-white btn-sm ms-1" id="btnRemoveTexto" style="font-size:0.6rem;"></button>
+                </span>
+                <span id="chipEstado" class="badge bg-info text-dark d-none">
+                    <span id="chipEstadoLabel"></span>
+                    <button type="button" class="btn-close btn-sm ms-1" id="btnRemoveEstado" style="font-size:0.6rem;"></button>
+                </span>
+                <small id="contadorResultados" class="text-muted ms-auto"></small>
             </div>
         </div>
     </div>
 
-    <div id="gridClientes" class="row g-4">
-        @foreach (var c in Model)
-        {
-            var iniciales = "";
-            if (!string.IsNullOrWhiteSpace(c.Usuario?.Nombre))
-                iniciales += c.Usuario.Nombre[0];
-            if (!string.IsNullOrWhiteSpace(c.Usuario?.Primer_Apellido))
-                iniciales += c.Usuario.Primer_Apellido[0];
-
-            var nombreCompleto = $"{c.Usuario?.Nombre} {c.Usuario?.Primer_Apellido} {c.Usuario?.Segundo_Apellido}".Trim();
-
-            <div class="cliente-card col-md-6 col-lg-4 col-xl-3"
-                 data-nombre="@nombreCompleto.ToLower()"
-                 data-cedula="@c.Usuario?.Cedula?.ToLower()"
-                 data-correo="@c.Usuario?.Email?.ToLower()"
-                 data-estado="@c.Usuario?.Estado.ToString().ToLower()"
-                 data-puntos="@c.Puntos_Acumulados">
-
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
-
-                    <div class="card-header border-0 bg-light px-4 py-3 d-flex align-items-center gap-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                             style="width:48px;height:48px;background:#dbeafe;color:#1e40af;font-size:15px;flex-shrink:0;">
-                            @iniciales.ToUpper()
-                        </div>
-                        <div style="overflow:hidden;">
-                            <h6 class="fw-bold mb-0 text-truncate" style="color:#1a3c5e;" title="@nombreCompleto">
-                                @nombreCompleto
-                            </h6>
-                            <small class="text-muted">@c.Usuario?.Cedula</small>
-                        </div>
-                        @if (c.Usuario?.Estado == true)
-                        {
-                            <span class="badge rounded-pill bg-success ms-auto">Activo</span>
-                        }
-                        else
-                        {
-                            <span class="badge rounded-pill bg-danger ms-auto">Inactivo</span>
-                        }
-                    </div>
-
-                    <div class="card-body px-4 py-3 d-flex flex-column gap-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-envelope text-muted"></i>
-                            <small class="text-muted text-truncate">@c.Usuario?.Email</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-telephone text-muted"></i>
-                            <small class="text-muted">@c.Usuario?.Telefono</small>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-star text-warning"></i>
-                            <small class="text-muted">
-                                Puntos acumulados:
-                                <strong class="text-dark">@c.Puntos_Acumulados</strong>
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="card-footer border-0 bg-white px-4 pb-3">
-                        <div class="d-grid gap-2">
-                            <a asp-action="Detalle" asp-route-id="@c.Cliente_Id"
-                               class="btn rounded-3 text-white"
-                               style="background: linear-gradient(135deg, var(--azul-oscuro), var(--azul));">
-                                <i class="bi bi-eye me-1"></i>Ver Detalle
-                            </a>
-                            <a asp-action="Editar" asp-route-id="@c.Cliente_Id"
-                               class="btn btn-warning rounded-3 text-white">
-                                <i class="bi bi-pencil-square me-1"></i>Editar
-                            </a>
-                            @if (c.Usuario?.Estado == true)
-                            {
-                                <form asp-action="Desactivar" asp-route-id="@c.Cliente_Id"
-                                      method="post"
-                                      onsubmit="return confirm('¿Desea desactivar a @nombreCompleto?')">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-danger rounded-3 w-100">
-                                        <i class="bi bi-slash-circle me-1"></i>Desactivar
-                                    </button>
-                                </form>
-                            }
-                            else
-                            {
-                                <form asp-action="Activar" asp-route-id="@c.Cliente_Id"
-                                      method="post"
-                                      onsubmit="return confirm('¿Desea activar a @nombreCompleto?')">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-success rounded-3 w-100">
-                                        <i class="bi bi-check-circle me-1"></i>Activar
-                                    </button>
-                                </form>
-                            }
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        }
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Cédula</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                    <th class="text-center">Puntos</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaClientes">
+                @{
+                    int fila = 1;
+                }
+                @foreach (var c in Model)
+                {
+                    var nombreCompleto = $"{c.Usuario?.Nombre} {c.Usuario?.Primer_Apellido} {c.Usuario?.Segundo_Apellido}".Trim();
+                    <tr>
+                        <td class="text-muted small">@fila</td>
+                        <td class="fw-semibold">@nombreCompleto</td>
+                        <td class="text-muted small">@(c.Usuario?.Cedula ?? "—")</td>
+                        <td class="text-muted">@(c.Usuario?.Email ?? "—")</td>
+                        <td class="text-muted">@(c.Usuario?.Telefono ?? "—")</td>
+                        <td class="text-center">
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-star-fill me-1"></i>@c.Puntos_Acumulados
+                            </span>
+                        </td>
+                      <td class="text-center">
+    @if (c.Usuario?.Estado == true)
+    {
+        <span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span>
+    }
+    else
+    {
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Inactivo</span>
+    }
+</td>
+                        <td class="text-center">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm rounded-3"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow rounded-3">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-action="Detalle" asp-route-id="@c.Cliente_Id">
+                                            <i class="bi bi-eye me-2" style="color:#6baed6;"></i>Ver detalle
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-action="Editar" asp-route-id="@c.Cliente_Id">
+                                            <i class="bi bi-pencil me-2" style="color:#fd8d3c;"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    @if (c.Usuario?.Estado == true)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="#"
+                                               onclick="return confirmarCambioEstado(event, '@nombreCompleto', @c.Cliente_Id, false)">
+                                                <i class="bi bi-slash-circle me-2" style="color:#e57373;"></i>Desactivar
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="#"
+                                               onclick="return confirmarCambioEstado(event, '@nombreCompleto', @c.Cliente_Id, true)">
+                                                <i class="bi bi-check-circle me-2" style="color:#74c476;"></i>Activar
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    fila++;
+                }
+            </tbody>
+        </table>
     </div>
 
     <div id="estadoVacio" class="text-center py-5 d-none">
@@ -201,68 +211,176 @@
 
 </div>
 
+@Html.AntiForgeryToken()
+
 @section Scripts {
     <script>
-        const cards = Array.from(document.querySelectorAll('.cliente-card'));
+        const todosLosClientes = @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(todosParaJs)
+            );
+
+        const $buscador          = $('#buscador');
+        const $filtroEstado      = $('#filtroEstado');
+        const $ordenar           = $('#ordenar');
+        const $tabla             = $('#tablaClientes');
+        const $estadoVacio       = $('#estadoVacio');
+        const $contador          = $('#contadorResultados');
+        const $btnLimpiarTexto   = $('#btnLimpiarTexto');
+        const $btnLimpiarFiltros = $('#btnLimpiarFiltros');
 
         function filtrar() {
-            const texto  = document.getElementById('searchInput').value.trim().toLowerCase();
-            const estado = document.getElementById('filtroEstado').value;
-            const orden  = document.getElementById('ordenar').value;
-            const hayFiltros = texto || estado || orden;
+            const texto  = $buscador.val().trim().toLowerCase();
+            const estado = $filtroEstado.val();
+            const orden  = $ordenar.val();
+            const hay    = texto !== '' || estado !== '' || orden !== '';
 
-            document.getElementById('btnLimpiarFiltros').style.display = hayFiltros ? 'block' : 'none';
+            actualizarChips(texto, estado);
+            $btnLimpiarFiltros.toggle(hay);
+            $btnLimpiarTexto.toggle(texto !== '');
 
-            let visibles = cards.filter(c => {
-                const pasaTexto  = !texto  || (c.dataset.nombre  || '').includes(texto)
-                                           || (c.dataset.cedula  || '').includes(texto)
-                                           || (c.dataset.correo  || '').includes(texto);
-                const pasaEstado = !estado || c.dataset.estado === estado;
-                const visible = pasaTexto && pasaEstado;
-                c.classList.toggle('d-none', !visible);
-                return visible;
+            if (!hay) { restaurarVista(); return; }
+
+            let resultado = todosLosClientes.filter(function (c) {
+                const coincideTexto = texto === '' ||
+                    c.nombre.toLowerCase().includes(texto) ||
+                    c.cedula.toLowerCase().includes(texto) ||
+                    c.correo.toLowerCase().includes(texto);
+                const coincideEstado = estado === '' || c.estado.toString() === estado;
+                return coincideTexto && coincideEstado;
             });
 
             if (orden) {
-                const grid = document.getElementById('gridClientes');
-                visibles.sort((a, b) => {
-                    if (orden === 'nombre-asc')  return a.dataset.nombre.localeCompare(b.dataset.nombre);
-                    if (orden === 'nombre-desc') return b.dataset.nombre.localeCompare(a.dataset.nombre);
-                    if (orden === 'puntos-asc')  return parseFloat(a.dataset.puntos) - parseFloat(b.dataset.puntos);
-                    if (orden === 'puntos-desc') return parseFloat(b.dataset.puntos) - parseFloat(a.dataset.puntos);
+                resultado.sort((a, b) => {
+                    if (orden === 'nombre-asc')  return a.nombre.localeCompare(b.nombre);
+                    if (orden === 'nombre-desc') return b.nombre.localeCompare(a.nombre);
+                    if (orden === 'puntos-asc')  return a.puntos - b.puntos;
+                    if (orden === 'puntos-desc') return b.puntos - a.puntos;
                 });
-                visibles.forEach(c => grid.appendChild(c));
             }
 
-            const total = visibles.length;
-            document.getElementById('contadorResultados').innerHTML =
-                total > 0 ? `<span class="fw-semibold">${total}</span> cliente${total !== 1 ? 's' : ''}` : '';
-            document.getElementById('estadoVacio').classList.toggle('d-none', total > 0);
+            renderTabla(resultado, texto);
         }
 
-        function limpiarTodo() {
-            document.getElementById('searchInput').value  = '';
-            document.getElementById('filtroEstado').value = '';
-            document.getElementById('ordenar').value      = '';
-            cards.forEach(c => c.classList.remove('d-none'));
-            document.getElementById('btnLimpiarFiltros').style.display = 'none';
-            document.getElementById('estadoVacio').classList.add('d-none');
-            document.getElementById('contadorResultados').textContent = '';
-            document.getElementById('btnLimpiarTexto').style.display  = 'none';
+        function renderTabla(clientes, texto) {
+            if (clientes.length === 0) {
+                $tabla.html('');
+                $estadoVacio.removeClass('d-none');
+                $contador.text('');
+                return;
+            }
+
+            $estadoVacio.addClass('d-none');
+            $contador.html(`<span class="fw-semibold">${clientes.length}</span> resultado${clientes.length !== 1 ? 's' : ''} encontrado${clientes.length !== 1 ? 's' : ''}`);
+
+            let filas = '';
+            clientes.forEach(function (c, index) {
+                const estadoBadge = c.estado
+    ? `<span class="badge bg-success">Activo</span>`
+    : `<span class="badge bg-danger">Inactivo</span>`;  
+
+                const accionEstadoHtml = c.estado
+                    ? `<a class="dropdown-item" href="#"
+                           onclick="return confirmarCambioEstado(event, '${escapeJs(c.nombre)}', ${c.cliente_Id}, false)">
+                           <i class="bi bi-slash-circle me-2" style="color:#e57373;"></i>Desactivar</a>`
+                    : `<a class="dropdown-item" href="#"
+                           onclick="return confirmarCambioEstado(event, '${escapeJs(c.nombre)}', ${c.cliente_Id}, true)">
+                           <i class="bi bi-check-circle me-2" style="color:#74c476;"></i>Activar</a>`;
+
+                filas += `
+                    <tr>
+                        <td class="text-muted small">${index + 1}</td>
+                        <td class="fw-semibold">${resaltar(c.nombre, texto)}</td>
+                        <td class="text-muted small">${resaltar(c.cedula || '—', texto)}</td>
+                        <td class="text-muted">${resaltar(c.correo || '—', texto)}</td>
+                        <td class="text-muted">${c.telefono || '—'}</td>
+                        <td class="text-center">
+                            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill me-1"></i>${c.puntos}</span>
+                        </td>
+                        <td class="text-center">${estadoBadge}</td>
+                        <td class="text-center">
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm rounded-3"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow rounded-3">
+                                    <li>
+                                        <a class="dropdown-item" href="/cliente/detalle/${c.cliente_Id}">
+                                            <i class="bi bi-eye me-2" style="color:#6baed6;"></i>Ver detalle
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/cliente/editar/${c.cliente_Id}">
+                                            <i class="bi bi-pencil me-2" style="color:#fd8d3c;"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>${accionEstadoHtml}</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+
+            $tabla.html(filas);
         }
 
-        document.getElementById('searchInput').addEventListener('input', function () {
-            document.getElementById('btnLimpiarTexto').style.display = this.value ? 'block' : 'none';
-            filtrar();
-        });
-        document.getElementById('filtroEstado').addEventListener('change', filtrar);
-        document.getElementById('ordenar').addEventListener('change', filtrar);
-        document.getElementById('btnLimpiarTexto').addEventListener('click', function () {
-            document.getElementById('searchInput').value = '';
-            this.style.display = 'none';
-            filtrar();
-        });
-        document.getElementById('btnLimpiarFiltros').addEventListener('click', limpiarTodo);
-        document.getElementById('btnLimpiarDesdeVacio').addEventListener('click', limpiarTodo);
+        function restaurarVista() {
+            $estadoVacio.addClass('d-none');
+            $btnLimpiarFiltros.hide();
+            $btnLimpiarTexto.hide();
+            $contador.text('');
+            renderTabla(todosLosClientes, '');
+        }
+
+        function resaltar(valor, busqueda) {
+            if (!busqueda) return escapeHtml(valor);
+            const escaped = busqueda.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return escapeHtml(valor).replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="px-0 bg-warning rounded-1">$1</mark>');
+        }
+
+        function escapeHtml(str) {
+            return (str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function escapeJs(str) {
+            return (str ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        }
+
+        function actualizarChips(texto, estado) {
+            $('#chipTexto').toggleClass('d-none', texto === '');
+            if (texto !== '') $('#chipTextoLabel').text(`"${texto}"`);
+
+            $('#chipEstado').toggleClass('d-none', estado === '');
+            if (estado !== '') $('#chipEstadoLabel').text(estado === 'true' ? 'Activo' : 'Inactivo');
+        }
+
+        function confirmarCambioEstado(e, nombre, id, activar) {
+            e.preventDefault();
+            const accion = activar ? 'activar' : 'desactivar';
+            if (!confirm(`¿Está seguro de ${accion} a "${nombre}"?`)) return false;
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const form  = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/cliente/${accion}/${id}`;
+            const inp   = document.createElement('input');
+            inp.type = 'hidden'; inp.name = '__RequestVerificationToken'; inp.value = token;
+            form.appendChild(inp);
+            document.body.appendChild(form);
+            form.submit();
+            return false;
+        }
+
+        $buscador.on('input', filtrar);
+        $filtroEstado.on('change', filtrar);
+        $ordenar.on('change', filtrar);
+        $btnLimpiarTexto.on('click', () => $buscador.val('').trigger('input').focus());
+        $btnLimpiarFiltros.on('click', () => { $buscador.val(''); $filtroEstado.val(''); $ordenar.val(''); restaurarVista(); });
+        $('#btnLimpiarDesdeVacio').on('click', () => { $buscador.val(''); $filtroEstado.val(''); $ordenar.val(''); restaurarVista(); });
+        $('#btnRemoveTexto').on('click', () => $buscador.val('').trigger('input'));
+        $('#btnRemoveEstado').on('click', () => $filtroEstado.val('').trigger('change'));
     </script>
 }

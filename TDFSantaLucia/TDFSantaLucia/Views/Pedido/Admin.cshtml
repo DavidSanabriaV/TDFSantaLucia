@@ -3,6 +3,34 @@
     ViewData["Title"] = "Gestión de Pedidos";
 }
 
+@functions {
+    string EstadoLegible(string estado) => estado switch
+    {
+        "EnProceso" => "En Proceso",
+        "EnCamino" => "En Camino",
+        _ => estado
+    };
+
+    string BadgeEstado(string estado) => estado switch
+    {
+        "Pendiente" => "bg-warning-subtle text-warning border border-warning-subtle",
+        "Aceptado" => "bg-info-subtle text-info border border-info-subtle",
+        "EnProceso" => "bg-primary-subtle text-primary border border-primary-subtle",
+        "Listo" => "bg-success-subtle text-success border border-success-subtle",
+        "EnCamino" => "bg-primary-subtle text-primary border border-primary-subtle",
+        "Entregado" => "bg-success-subtle text-success border border-success-subtle",
+        "Rechazado" => "bg-danger-subtle text-danger border border-danger-subtle",
+        "Cancelado" => "bg-secondary-subtle text-secondary border border-secondary-subtle",
+        _ => "bg-secondary-subtle text-secondary border border-secondary-subtle"
+    };
+}
+
+<style>
+    .table-responsive {
+        overflow: visible !important;
+    }
+</style>
+
 <div class="container-fluid py-4">
     <h2 class="fw-bold mb-4" style="color:#243C8F;">
         <i class="bi bi-clipboard2-check me-2"></i>Gestión de Pedidos
@@ -10,15 +38,15 @@
 
     @if (TempData["Exito"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show">
-            ✅ @TempData["Exito"]
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Exito"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show">
-            ❌ @TempData["Error"]
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
@@ -27,20 +55,21 @@
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted small">ESTADO</label>
-                <select name="estado" class="form-select" asp-items="ViewBag.Estados">
+                <select name="estado" class="form-select rounded-3" asp-items="ViewBag.Estados">
                     <option value="">Todos</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted small">DESDE</label>
-                <input type="date" name="desde" class="form-control" value="@ViewBag.Desde" />
+                <input type="date" name="desde" class="form-control rounded-3" value="@ViewBag.Desde" />
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted small">HASTA</label>
-                <input type="date" name="hasta" class="form-control" value="@ViewBag.Hasta" />
+                <input type="date" name="hasta" class="form-control rounded-3" value="@ViewBag.Hasta" />
             </div>
             <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100 rounded-3">
+                <button type="submit" class="btn w-100 rounded-3"
+                        style="background-color:#d6e4f0; color:#1a3c5e; border:none;">
                     <i class="bi bi-search me-1"></i>Filtrar
                 </button>
             </div>
@@ -67,19 +96,6 @@
                 {
                     var esDomicilio = p.Tipo_Entrega == "Domicilio";
 
-                    var badgeColor = p.Estado switch
-                    {
-                        "Pendiente" => "warning text-dark",
-                        "Aceptado" => "info text-dark",
-                        "EnProceso" => "primary",
-                        "Listo" => "success",
-                        "EnCamino" => "primary",
-                        "Entregado" => "success",
-                        "Rechazado" => "danger",
-                        "Cancelado" => "secondary",
-                        _ => "secondary"
-                    };
-
                     var metodoPagoHtml = p.Metodo_Pago switch
                     {
                         "Efectivo" => "<i class='bi bi-cash me-1'></i>Efectivo",
@@ -104,13 +120,13 @@
                         <td>
                             @if (esDomicilio)
                             {
-                                <span class="badge bg-info text-dark">
+                                <span class="badge bg-info-subtle text-info border border-info-subtle">
                                     <i class="bi bi-truck me-1"></i>Domicilio
                                 </span>
                             }
                             else
                             {
-                                <span class="badge bg-secondary">
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
                                     <i class="bi bi-shop me-1"></i>Tienda
                                 </span>
                             }
@@ -129,14 +145,14 @@
                                 <div class="d-flex flex-column gap-1 align-items-center">
                                     @if (p.Uso_Puntos && p.Puntos_Canjeados > 0)
                                     {
-                                        <span class="badge bg-warning text-dark" style="font-size:0.7rem;">
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size:0.7rem;">
                                             <i class="bi bi-star-fill me-1"></i>
                                             @p.Puntos_Canjeados pts
                                         </span>
                                     }
                                     @if (p.Cupon_Id.HasValue && descCupon > 0)
                                     {
-                                        <span class="badge bg-success" style="font-size:0.7rem;">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.7rem;">
                                             <i class="bi bi-ticket-perforated-fill me-1"></i>
                                             -₡@descCupon.ToString("N2")
                                         </span>
@@ -145,34 +161,42 @@
                             }
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-@badgeColor">@p.Estado</span>
+                            <span class="badge @BadgeEstado(p.Estado)">@EstadoLegible(p.Estado)</span>
                         </td>
                         <td class="text-center">
-                            <div class="d-flex gap-1 justify-content-center flex-wrap">
-                                <a asp-action="Detalle" asp-route-id="@p.Pedido_Id"
-                                   asp-route-desde="admin"
-                                   class="btn btn-info btn-sm text-white" title="Ver detalle">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-
-                                <button type="button" class="btn btn-warning btn-sm"
-                                        title="Cambiar estado"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalEstado-@p.Pedido_Id">
-                                    <i class="bi bi-arrow-repeat"></i>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm rounded-3"
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
                                 </button>
-
-                                @if (puedeCobrar)
-                                {
-                                    <button type="button" class="btn btn-success btn-sm"
-                                            title="Cobrar pedido"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#modalCobrar-@p.Pedido_Id">
-                                        <i class="bi bi-cash-coin"></i>
-                                    </button>
-                                }
-
-                               
+                                <ul class="dropdown-menu dropdown-menu-end shadow rounded-3">
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-action="Detalle" asp-route-id="@p.Pedido_Id"
+                                           asp-route-desde="admin">
+                                            <i class="bi bi-eye me-2" style="color:#6baed6;"></i>Ver detalle
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalEstado-@p.Pedido_Id">
+                                            <i class="bi bi-arrow-repeat me-2" style="color:#fd8d3c;"></i>Cambiar estado
+                                        </button>
+                                    </li>
+                                    @if (puedeCobrar)
+                                    {
+                                        <li>
+                                            <button type="button" class="dropdown-item"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalCobrar-@p.Pedido_Id">
+                                                <i class="bi bi-cash-coin me-2" style="color:#74c476;"></i>Cobrar pedido
+                                            </button>
+                                        </li>
+                                    }
+                                </ul>
                             </div>
                         </td>
                     </tr>
@@ -203,10 +227,9 @@
                 </div>
                 <div class="modal-body">
                     <p class="text-muted small mb-3">
-                        Estado actual: <strong>@p.Estado</strong>
+                        Estado actual: <strong>@EstadoLegible(p.Estado)</strong>
                     </p>
 
-                    <!-- Descuentos aplicados al pedido -->
                     @{
                         var subtotal = p.DetallesPedido.Sum(d => d.Subtotal);
                         var impuesto = Math.Round(subtotal * 0.13m, 2);
@@ -255,9 +278,11 @@
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="pedidoId" value="@p.Pedido_Id" />
                                 <input type="hidden" name="nuevoEstado" value="@est" />
-                                <button type="submit"
-                                        class="btn w-100 @(p.Estado == est ? "btn-primary" : "btn-outline-secondary")">
-                                    @est
+                                <button type="submit" class="btn w-100 rounded-3"
+                                        style="@(p.Estado == est
+                                            ? "background-color:#d6e4f0; color:#1a3c5e; border:none;"
+                                            : "background-color:#e2e6ea; color:#495057; border:none;")">
+                                    @EstadoLegible(est)
                                 </button>
                             </form>
                         }
@@ -295,14 +320,14 @@
                             <div class="mb-3">
                                 @if (p.Uso_Puntos && p.Puntos_Canjeados > 0)
                                 {
-                                    <span class="badge bg-warning text-dark me-1">
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle me-1">
                                         <i class="bi bi-star-fill me-1"></i>
                                         @p.Puntos_Canjeados pts canjeados
                                     </span>
                                 }
                                 @if (p.Cupon_Id.HasValue && dcT > 0)
                                 {
-                                    <span class="badge bg-success">
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">
                                         <i class="bi bi-ticket-perforated-fill me-1"></i>
                                         Cupón -₡@dcT.ToString("N2")
                                     </span>
@@ -335,16 +360,17 @@
                         <div class="d-grid gap-2">
                             @foreach (var metodo in new[]
                             {
-                                ("Efectivo",      "bi-cash",        "success"),
-                                ("Tarjeta",       "bi-credit-card", "primary"),
-                                ("Sinpe",         "bi-phone",       "warning"),
-                                ("Transferencia", "bi-bank",        "info")
+                                ("Efectivo",      "bi-cash",        "#d4edda", "#2d7a4f"),
+                                ("Tarjeta",       "bi-credit-card", "#d6e4f0", "#1a3c5e"),
+                                ("Sinpe",         "bi-phone",       "#fde8cc", "#d4620a"),
+                                ("Transferencia", "bi-bank",        "#d0e8f5", "#2a7ab5")
                             })
                             {
                                 <form asp-action="Cobrar" asp-route-id="@p.Pedido_Id" method="post">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="metodoPago" value="@metodo.Item1" />
-                                    <button type="submit" class="btn btn-outline-@metodo.Item3 w-100">
+                                    <button type="submit" class="btn w-100 rounded-3"
+                                            style="background-color:@metodo.Item3; color:@metodo.Item4; border:none;">
                                         <i class="bi @metodo.Item2 me-2"></i>@metodo.Item1
                                     </button>
                                 </form>

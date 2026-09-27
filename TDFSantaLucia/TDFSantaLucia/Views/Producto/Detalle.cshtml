@@ -81,9 +81,9 @@
                     <div class="d-flex gap-3 mt-3 flex-wrap">
 
                         <a asp-action="Index" class="btn rounded-3"
-                           style="background-color:#e2e6ea; color:#495057; border:none;">
-                            <i class="bi bi-arrow-left me-1"></i>Volver
-                        </a>
+                   style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a> 
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -100,7 +100,7 @@
                             <a asp-action="Editar"
                                asp-route-id="@Model.Producto_Id"
                                class="btn rounded-3"
-                               style="background-color:#fde8cc; color:#d4620a; border:none;">
+                   style="background-color:#fde8cc; color:#d4620a; border:none;">
                                 <i class="bi bi-pencil-square me-1"></i>Editar
                             </a>
                         }

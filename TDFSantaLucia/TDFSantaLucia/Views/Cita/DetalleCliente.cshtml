@@ -5,40 +5,59 @@
 }
 
 <div class="container mt-4">
-    <h2 class="mb-4">📋 Detalle de Cita</h2>
+    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+        <i class="bi bi-calendar-event-fill me-2"></i>Detalle de Cita
+    </h2>
 
-    <div class="card shadow-sm p-4" style="max-width: 600px;">
-        <h5 class="card-title">@Model.Servicio</h5>
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="max-width:600px;">
+        <h5 class="fw-bold" style="color:#1a3c5e;">@Model.Servicio</h5>
         <hr />
 
-        <p><strong>Fecha:</strong> @Model.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
-        <p><strong>Observaciones:</strong> @Model.Observaciones</p>
-        <p>
-            <strong>Estado:</strong>
+        <p class="mb-1">
+            <span class="text-muted small">FECHA</span><br />
+            <strong>@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</strong>
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Observaciones))
+        {
+            <p class="mb-1 mt-2">
+                <span class="text-muted small">OBSERVACIONES</span><br />
+                @Model.Observaciones
+            </p>
+        }
+
+        <p class="mb-1 mt-2">
+            <span class="text-muted small">ESTADO</span><br />
             @if (Model.Estado == "Aceptada")
             {
-                <span class="badge bg-success fs-6">✔ Aceptada</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle fs-6">✔ Aceptada</span>
             }
             else if (Model.Estado == "Cancelada")
             {
-                <span class="badge bg-danger fs-6">✖ Cancelada</span>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-6">✖ Cancelada</span>
             }
             else
             {
-                <span class="badge bg-warning text-dark fs-6">⏳ En Proceso</span>
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle fs-6">⏳ En Proceso</span>
             }
         </p>
 
         @if (Model.Empleado != null)
         {
-            <p><strong>Empleado asignado:</strong> @Model.Empleado.Usuario?.Nombre @Model.Empleado.Usuario?.Primer_Apellido</p>
+            <p class="mb-1 mt-2">
+                <span class="text-muted small">EMPLEADO ASIGNADO</span><br />
+                @Model.Empleado.Usuario?.Nombre @Model.Empleado.Usuario?.Primer_Apellido
+            </p>
         }
         else
         {
-            <p class="text-muted">Aún no se ha asignado un empleado.</p>
+            <p class="text-muted mt-2">Aún no se ha asignado un empleado.</p>
         }
 
         <a asp-action="MisCitas" asp-route-clienteId="@Model.Cliente_Id"
-           class="btn btn-secondary mt-3">⬅ Volver</a>
+           class="btn rounded-3 mt-3"
+            style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
     </div>
 </div>

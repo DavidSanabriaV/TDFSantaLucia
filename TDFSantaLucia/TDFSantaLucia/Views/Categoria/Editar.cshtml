@@ -51,8 +51,11 @@
                 </div>
 
                 <div class="col-12 d-flex justify-content-between mt-2">
-                    @Html.ActionLink("Cancelar", "Index", "Categoria", null, new { @class = "btn btn-outline-secondary rounded-3" })
-                    <button type="submit" class="btn btn-warning rounded-3 text-white" id="btnGuardar">
+                    @Html.ActionLink("Cancelar", "Index", "Categoria", null,
+                        new { @class = "btn rounded-3", style = "background-color:#d0e8f5; color:#2a7ab5; border:none;" })
+                    <button type="submit" class="btn rounded-3"
+                            style="background-color:#fde8cc; color:#d4620a; border:none;"
+                            id="btnGuardar">
                         <i class="bi bi-save me-1"></i>Guardar cambios
                     </button>
                 </div>

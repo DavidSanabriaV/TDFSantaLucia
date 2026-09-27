@@ -16,11 +16,11 @@
                 </div>
                 @if (Model.Estado)
                 {
-                    <span class="badge bg-success fs-6">Activo</span>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle fs-6">Activo</span>
                 }
                 else
                 {
-                    <span class="badge bg-danger fs-6">Inactivo</span>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-6">Inactivo</span>
                 }
             </div>
 
@@ -68,7 +68,7 @@
                                     <td class="text-center">
                                         @if (p.Receta)
                                         {
-                                            <span class="badge bg-warning text-dark">Sí</span>
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Sí</span>
                                         }
                                         else
                                         {
@@ -78,11 +78,11 @@
                                     <td class="text-center">
                                         @if (p.Estado)
                                         {
-                                            <span class="badge bg-success">Activo</span>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-danger">Inactivo</span>
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Inactivo</span>
                                         }
                                     </td>
                                 </tr>
@@ -100,11 +100,13 @@
             }
 
             <div class="d-flex justify-content-between mt-4">
-                <a asp-action="Index" class="btn btn-outline-secondary rounded-3">
+                <a asp-action="Index" class="btn rounded-3"
+                   style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a>
                 <a asp-action="Editar" asp-route-id="@Model.Categoria_Id"
-                   class="btn btn-warning rounded-3 text-white">
+                   class="btn rounded-3"
+                   style="background-color:#fde8cc; color:#d4620a; border:none;">
                     <i class="bi bi-pencil me-1"></i>Editar
                 </a>
             </div>

@@ -3,6 +3,15 @@
     ViewData["Title"] = "Mis Citas";
 }
 
+@functions {
+    string BadgeCita(string estado) => estado switch
+    {
+        "Aceptada" => "bg-success-subtle text-success border border-success-subtle",
+        "Cancelada" => "bg-danger-subtle text-danger border border-danger-subtle",
+        _ => "bg-warning-subtle text-warning border border-warning-subtle"
+    };
+}
+
 <div class="container py-4">
 
     <h2 class="fw-bold mb-4" style="color:#243C8F;">
@@ -14,7 +23,8 @@
         <div class="text-center py-5">
             <i class="bi bi-calendar-x display-3 text-muted"></i>
             <p class="text-muted mt-3">No tienes citas agendadas.</p>
-            <a asp-action="Agendar" class="btn btn-primary mt-2 rounded-3">
+            <a asp-action="Agendar" class="btn rounded-3 mt-2"
+               style="background-color:#d6e4f0; color:#1a3c5e; border:none;">
                 <i class="bi bi-plus-circle me-1"></i>Agendar una cita
             </a>
         </div>
@@ -24,13 +34,6 @@
         <div class="row g-3">
             @foreach (var cita in Model)
             {
-                var badgeColor = cita.Estado switch
-                {
-                    "Aceptada" => "success",
-                    "Cancelada" => "danger",
-                    _ => "warning text-dark"
-                };
-
                 var icono = cita.Estado switch
                 {
                     "Aceptada" => "bi-check-circle-fill",
@@ -46,7 +49,7 @@
                                 <h5 class="fw-bold mb-0" style="color:#243C8F;">
                                     @cita.Servicio
                                 </h5>
-                                <span class="badge bg-@badgeColor fs-6">
+                                <span class="badge @BadgeCita(cita.Estado) fs-6">
                                     <i class="bi @icono me-1"></i>@cita.Estado
                                 </span>
                             </div>
@@ -84,7 +87,8 @@
                             }
 
                             <a asp-action="DetalleCliente" asp-route-id="@cita.Cita_Id"
-                               class="btn btn-outline-primary btn-sm rounded-3 w-100">
+                               class="btn btn-sm rounded-3 w-100"
+                               style="background-color:#d6e4f0; color:#1a3c5e; border:none;">
                                 <i class="bi bi-eye me-1"></i>Ver Detalle
                             </a>
 

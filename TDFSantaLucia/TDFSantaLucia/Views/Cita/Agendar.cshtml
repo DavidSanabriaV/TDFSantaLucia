@@ -69,10 +69,13 @@
                 </div>
 
                 <div class="d-flex justify-content-between mt-4">
-                    <a asp-action="MisCitas" class="btn btn-outline-secondary rounded-3">
+                    <a asp-action="MisCitas" class="btn rounded-3"
+                   style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
                         <i class="bi bi-arrow-left me-1"></i>Volver
                     </a>
-                    <button type="submit" class="btn btn-success rounded-3" id="btnAgendar">
+                    <button type="submit" class="btn rounded-3"
+                            style="background-color:#d4edda; color:#2d7a4f; border:none;"
+                            id="btnAgendar">
                         <i class="bi bi-calendar-check me-1"></i>Agendar Cita
                     </button>
                 </div>
@@ -90,7 +93,6 @@
             contador.textContent = `${textarea.value.length} / 500`;
         }
 
-        // Inicializar contador
         contarCaracteres(document.getElementById('txtObservaciones'));
 
         document.querySelector('form').addEventListener('submit', function () {

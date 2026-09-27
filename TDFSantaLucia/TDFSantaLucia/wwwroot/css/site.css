@@ -75,12 +75,17 @@ body {
    TOP NAVBAR (logo + buscador + login/carrito)
    ══════════════════════════════════════════════ */
 .top-navbar-lateral {
-    height: 64px;
+    height: 80px;
     flex-shrink: 0;
     background: linear-gradient(90deg, #1a3c5e 0%, #243C8F 100%);
     box-shadow: 0 5px 20px rgba(0,0,0,.15);
     border-bottom: 3px solid var(--amarillo);
     z-index: 1060;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 0 32px;
+    gap: 20px;
 }
 
 .top-navbar-logo {
@@ -100,6 +105,7 @@ body {
     height: 40px;
     font-size: 1.3rem;
     transition: background .2s;
+    flex-shrink: 0;
 }
 
     .sidebar-toggle-inline:hover {
@@ -107,6 +113,65 @@ body {
     }
 
 /* Buscador sobre fondo azul */
+.top-navbar-lateral > form {
+    position: absolute;
+    left: calc(50% + (var(--sidebar-width, 272px) / 2));
+    transform: translateX(-62%);
+    width: 100%;
+    max-width: 320px;
+}
+
+@media (max-width: 1200px) {
+    .top-navbar-lateral > form {
+        max-width: 240px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .top-navbar-lateral {
+        flex-wrap: nowrap;
+    }
+
+        .top-navbar-lateral > form {
+            position: static;
+            transform: none;
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: none;
+        }
+}
+
+@media (max-width: 576px) {
+    .top-navbar-lateral {
+        gap: 8px;
+        padding: 0 12px;
+    }
+
+        .top-navbar-lateral .icon-navbar span {
+            display: none;
+        }
+
+        .top-navbar-lateral .icon-navbar {
+            min-width: 40px;
+            padding: 0 10px;
+        }
+}
+
+/* Contador del carrito siempre visible sobre el ícono */
+#carritoCount {
+    z-index: 5;
+    min-width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+#btnCarrito {
+    overflow: visible;
+}
+
 .top-navbar-lateral .buscador-navbar .form-control {
     border: 2px solid rgba(255,255,255,.5);
     border-right: none;
@@ -139,6 +204,7 @@ body {
 .top-navbar-lateral .icon-navbar {
     background: rgba(255,255,255,.12);
     color: #fff !important;
+    flex-shrink: 0;
 }
 
     .top-navbar-lateral .icon-navbar span {

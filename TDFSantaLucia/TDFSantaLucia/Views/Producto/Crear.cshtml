@@ -28,8 +28,7 @@
                 </div>
             }
 
-            <<form asp-action="Crear" method="post" enctype="multipart/form-data">
-                form asp-action="Crear" method="post">
+            <form asp-action="Crear" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
 
                 <div class="row g-4">
@@ -114,8 +113,6 @@
                         <small class="text-muted"><span id="contadorDesc">0</span> / 1000 caracteres</small>
                     </div>
 
-                    
-
                     <div class="col-md-6">
                         <div class="form-check form-switch">
                             <input asp-for="Receta"
@@ -127,13 +124,13 @@
 
                 </div>
 
-                <div class="d-flex justify-content-end gap-3 mt-4">
+                <div class="d-flex justify-content-between mt-4">
                     <a asp-action="Administrar" class="btn rounded-3"
-                       style="background-color:#e2e6ea; color:#495057; border:none;">
+                       style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
                         <i class="bi bi-x-circle me-1"></i> Cancelar
                     </a>
                     <button type="submit" class="btn rounded-3"
-                            style="background-color:#d6e4f0; color:#1a3c5e; border:none;"
+                            style="background-color:#d4edda; color:#2d7a4f; border:none;"
                             id="btnGuardar">
                         <i class="bi bi-save me-1"></i> Guardar Producto
                     </button>
