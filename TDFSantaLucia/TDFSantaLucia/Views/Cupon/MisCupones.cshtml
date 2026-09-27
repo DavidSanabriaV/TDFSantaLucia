@@ -4,8 +4,9 @@
 }
 
 <div class="container py-4">
-    <h2 class="fw-bold mb-4" style="color:#243C8F;">
-        <i class="bi bi-ticket-perforated-fill me-2"></i>Mis Cupones
+
+    <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
+        <i class="bi bi-ticket-perforated-fill me-2 text-primary"></i>Mis Cupones
     </h2>
 
     @if (!Model.Any())
@@ -13,7 +14,9 @@
         <div class="text-center py-5">
             <i class="bi bi-ticket-perforated display-3 text-muted"></i>
             <p class="text-muted mt-3">No tienes cupones disponibles.</p>
-            <a asp-controller="Producto" asp-action="Index" class="btn btn-primary mt-2">
+            <a asp-controller="Producto" asp-action="Index"
+               class="btn rounded-3 mt-2"
+               style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
                 <i class="bi bi-bag me-1"></i>Ver productos
             </a>
         </div>
@@ -24,14 +27,16 @@
             @foreach (var cc in Model)
             {
                 var diasRestantes = (cc.Cupon!.Fecha_Expiracion.Date - DateTime.Today).Days;
+
                 <div class="col-md-6 col-lg-4">
                     <div class="card border-0 shadow-sm rounded-4 h-100">
                         <div class="card-body p-4">
+
                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                <span class="badge @(cc.Cupon.Tipo_Descuento == "Porcentaje" ? "bg-info text-dark" : "bg-primary")">
+                                <span class="badge @(cc.Cupon.Tipo_Descuento == "Porcentaje" ? "bg-info-subtle text-info border border-info-subtle" : "bg-primary-subtle text-primary border border-primary-subtle")">
                                     @cc.Cupon.Tipo_Descuento
                                 </span>
-                                <span class="badge bg-success fs-6">
+                                <span class="fw-bold fs-5" style="color:#1a3c5e;">
                                     @if (cc.Cupon.Tipo_Descuento == "Porcentaje")
                                     {
                                         @($"{cc.Cupon.Valor_Descuento:G29}% OFF")
@@ -62,10 +67,12 @@
                                 <i class="bi bi-info-circle me-1"></i>
                                 Asignado el @cc.Fecha_Asignacion.ToString("dd/MM/yyyy")
                             </p>
+
                         </div>
                         <div class="card-footer bg-transparent border-0 pb-3 px-4">
                             <a asp-controller="Carrito" asp-action="Index"
-                               class="btn btn-outline-primary btn-sm rounded-3 w-100">
+                               class="btn btn-sm rounded-3 w-100"
+                               style="background-color:#d4edda; color:#2d7a4f; border:none;">
                                 <i class="bi bi-cart me-1"></i>Usar en el carrito
                             </a>
                         </div>
@@ -74,4 +81,5 @@
             }
         </div>
     }
+
 </div>

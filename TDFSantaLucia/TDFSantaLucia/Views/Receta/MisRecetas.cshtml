@@ -1,66 +1,90 @@
 ﻿@model List<TDFSantaLucia.Models.RecetaMedica>
-
 @{
     ViewData["Title"] = "Mis Recetas";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
+
     <h2 class="fw-bold mb-4" style="color:#243C8F;">
         <i class="bi bi-file-medical me-2"></i>Mis Recetas
     </h2>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">No tenés recetas médicas registradas.</div>
+        <div class="text-center py-5">
+            <i class="bi bi-clipboard-x display-3 text-muted"></i>
+            <p class="text-muted mt-3">No tenés recetas médicas registradas.</p>
+        </div>
     }
     else
     {
-        <div class="row">
+        <div class="row g-3">
             @foreach (var receta in Model)
             {
-                <div class="col-md-6 mb-3">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                @receta.Producto?.Nombre
-                                @if (!string.IsNullOrEmpty(receta.Producto?.Marca))
-                                {
-                                    <small class="text-muted">— @receta.Producto.Marca</small>
-                                }
-                            </h5>
-                            <p><strong>Frecuencia:</strong> @(receta.Frecuencia ?? "—")</p>
-                            <p><strong>Indicaciones:</strong> @(receta.Descripcion ?? "—")</p>
-                            <p><strong>Fecha de emisión:</strong> @receta.Fecha_Emision.ToString("dd/MM/yyyy")</p>
-                            <p>
-                                <strong>Vencimiento:</strong>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0" style="color:#243C8F;">
+                                        @receta.Producto?.Nombre
+                                    </h5>
+                                    @if (!string.IsNullOrEmpty(receta.Producto?.Marca))
+                                    {
+                                        <small class="text-muted">@receta.Producto.Marca</small>
+                                    }
+                                </div>
                                 @if (receta.Fecha_Vencimiento.HasValue)
                                 {
                                     @if (receta.Fecha_Vencimiento.Value.Date < DateTime.Today)
                                     {
-                                        <span class="badge bg-danger fs-6">Vencida</span>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Vencida</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-success fs-6">
-                                            @receta.Fecha_Vencimiento.Value.ToString("dd/MM/yyyy")
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                            Vence: @receta.Fecha_Vencimiento.Value.ToString("dd/MM/yyyy")
                                         </span>
                                     }
                                 }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </p>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <p class="text-muted small mb-1">FRECUENCIA</p>
+                                    <p class="fw-semibold mb-0">@(receta.Frecuencia ?? "—")</p>
+                                </div>
+                                <div class="col-6">
+                                    <p class="text-muted small mb-1">FECHA EMISIÓN</p>
+                                    <p class="fw-semibold mb-0">@receta.Fecha_Emision.ToString("dd/MM/yyyy")</p>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(receta.Descripcion))
+                            {
+                                <div class="mb-2">
+                                    <p class="text-muted small mb-1">INDICACIONES</p>
+                                    <p class="small mb-0">@receta.Descripcion</p>
+                                </div>
+                            }
+
                             @if (!string.IsNullOrEmpty(receta.Observaciones))
                             {
-                                <p class="text-muted small"><strong>Observaciones:</strong> @receta.Observaciones</p>
+                                <div class="mb-3">
+                                    <p class="text-muted small mb-1">OBSERVACIONES</p>
+                                    <p class="small mb-0 text-muted">@receta.Observaciones</p>
+                                </div>
                             }
 
                             <a asp-controller="Receta" asp-action="Descargar"
                                asp-route-id="@receta.Receta_Id"
-                               class="btn btn-info btn-sm text-white" target="_blank">
-                                <i class="bi bi-download"></i> Descargar
+                               class="btn btn-sm w-100 rounded-3 mt-2"
+                               style="background-color:#d0e8f5; color:#2a7ab5; border:none;"
+                               target="_blank">
+                                <i class="bi bi-download me-1"></i>Descargar receta
                             </a>
+
                         </div>
                     </div>
                 </div>

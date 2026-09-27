@@ -5,98 +5,103 @@
 }
 
 <div class="container py-4" style="max-width:700px;">
-    <h2 class="fw-bold mb-2" style="color:#243C8F;">
-        <i class="bi bi-file-medical me-2"></i>Nueva Receta Médica
-    </h2>
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
 
-    @if (expediente != null)
-    {
-        <p class="text-muted mb-4">
-            Expediente de:
-            <strong>
-                @expediente.Cliente?.Usuario?.Nombre
-                @expediente.Cliente?.Usuario?.Primer_Apellido
-            </strong>
-        </p>
-    }
+            <h2 class="fw-bold mb-2" style="color:#1a3c5e;">
+                <i class="bi bi-file-medical me-2 text-primary"></i>Nueva Receta Médica
+            </h2>
 
-    @if (!ViewData.ModelState.IsValid &&
-             ViewContext.HttpContext.Request.Method == "POST")
-    {
-        <div class="alert alert-danger rounded-3">
-            <ul class="mb-0">
-                @foreach (var e in ViewData.ModelState.Values
-                                    .SelectMany(v => v.Errors))
-                {
-                    <li>@e.ErrorMessage</li>
-                }
-            </ul>
+            @if (expediente != null)
+            {
+                <p class="text-muted mb-4">
+                    Expediente de:
+                    <strong>
+                        @expediente.Cliente?.Usuario?.Nombre
+                        @expediente.Cliente?.Usuario?.Primer_Apellido
+                    </strong>
+                </p>
+            }
+
+            @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
+            {
+                <div class="alert alert-danger rounded-3 mb-4">
+                    <h6 class="fw-bold mb-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Por favor corrija los siguientes errores:
+                    </h6>
+                    <ul class="mb-0">
+                        @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@e.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <form asp-action="Crear" asp-route-expedienteId="@Model.Expediente_Id" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Expediente_Id" />
+
+                <div class="row g-3">
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Medicamento</label>
+                        @Html.DropDownList("Producto_Id",
+                            (SelectList)ViewBag.Productos,
+                            "— Seleccione un medicamento —",
+                            new { @class = "form-select rounded-3" })
+                        <span asp-validation-for="Producto_Id" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Frecuencia</label>
+                        <input asp-for="Frecuencia" class="form-control rounded-3"
+                               placeholder="Ej: Cada 8 horas" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fecha de vencimiento</label>
+                        <input asp-for="Fecha_Vencimiento" type="date" class="form-control rounded-3" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Descripción</label>
+                        <textarea asp-for="Descripcion" class="form-control rounded-3" rows="3"
+                                  placeholder="Indicaciones del médico..."></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Observaciones</label>
+                        <textarea asp-for="Observaciones" class="form-control rounded-3" rows="2"
+                                  placeholder="Notas adicionales..."></textarea>
+                    </div>
+
+                    <div class="col-12 d-flex justify-content-between mt-2">
+                        <a asp-controller="Expediente" asp-action="Detalle"
+                           asp-route-id="@Model.Expediente_Id"
+                           class="btn rounded-3"
+                           style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
+                            <i class="bi bi-arrow-left me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn rounded-3" id="btnGuardar"
+                                style="background-color:#d4edda; color:#2d7a4f; border:none;">
+                            <i class="bi bi-save me-1"></i>Guardar
+                        </button>
+                    </div>
+
+                </div>
+            </form>
         </div>
-    }
-
-    <form asp-action="Crear" asp-route-expedienteId="@Model.Expediente_Id"
-          method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="Expediente_Id" />
-
-        <div class="card border-0 shadow-sm rounded-4 p-4">
-            <div class="row g-3">
-
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Medicamento</label>
-                    @Html.DropDownList("Producto_Id",
-                        (SelectList)ViewBag.Productos,
-                        "— Seleccione un medicamento —",
-                        new { @class = "form-select" })
-                    <span asp-validation-for="Producto_Id"
-                          class="text-danger small"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Frecuencia</label>
-                    <input asp-for="Frecuencia" class="form-control"
-                           placeholder="Ej: Cada 8 horas" />
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">
-                        Fecha de vencimiento
-                    </label>
-                    <input asp-for="Fecha_Vencimiento"
-                           type="date" class="form-control" />
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Descripción</label>
-                    <textarea asp-for="Descripcion"
-                              class="form-control" rows="3"
-                              placeholder="Indicaciones del médico...">
-                    </textarea>
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Observaciones</label>
-                    <textarea asp-for="Observaciones"
-                              class="form-control" rows="2"
-                              placeholder="Notas adicionales...">
-                    </textarea>
-                </div>
-
-                <div class="col-12 d-flex gap-2 mt-2">
-                    <button type="submit" class="btn btn-primary rounded-3">
-                        <i class="bi bi-save me-1"></i>Guardar
-                    </button>
-                    <a asp-controller="Expediente" asp-action="Detalle"
-                       asp-route-id="@Model.Expediente_Id"
-                       class="btn btn-secondary rounded-3">
-                        Cancelar
-                    </a>
-                </div>
-            </div>
-        </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelector('form').addEventListener('submit', function () {
+            const btn = document.getElementById('btnGuardar');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Guardando...';
+        });
+    </script>
 }

@@ -15,12 +15,12 @@
             </p>
         </div>
         <a asp-action="Historial" asp-controller="Dashboard"
-           class="btn btn-outline-primary rounded-3">
+           class="btn rounded-3"
+           style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
             <i class="bi bi-clock-history me-1"></i>Historial
         </a>
     </div>
 
-    <!-- Filtros -->
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
@@ -53,28 +53,31 @@
         </form>
     </div>
 
-    <!-- KPIs principales -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background:var(--dash-primario);color:white;">
+            <div class="card border-0 shadow-sm rounded-4 h-100"
+                 style="background:#1a3c5e;">
                 <div class="card-body p-4">
-                    <p class="small mb-1 opacity-75">INGRESO POR VENTAS</p>
-                    <h3 class="fw-bold mb-0 text-white" id="kpi-ingreso">₡@Model.TotalIngresoVentas.ToString("N0")</h3>
-                    <p class="mb-0 mt-2 small opacity-75">
+                    <p class="small mb-1 opacity-75" style="color:white;">INGRESO POR VENTAS</p>
+                    <h3 class="fw-bold mb-0" style="color:white !important;" id="kpi-ingreso">
+                        ₡@Model.TotalIngresoVentas.ToString("N0")
+                    </h3>
+                    <p class="mb-0 mt-2 small opacity-75" style="color:white;">
                         @Model.FechaInicio.ToString("dd/MM") — @Model.FechaFin.ToString("dd/MM/yyyy")
                     </p>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background:var(--dash-secundario);color:white;">
+            <div class="card border-0 shadow-sm rounded-4 h-100"
+                 style="background:#3d4b8c;">
                 <div class="card-body p-4">
-                    <p class="small mb-1 opacity-75">FACTURAS / UNIDADES</p>
-                    <h3 class="fw-bold mb-0 text-white">
+                    <p class="small mb-1 opacity-75" style="color:white;">FACTURAS / UNIDADES</p>
+                    <h3 class="fw-bold mb-0" style="color:white !important;">
                         <span id="kpi-facturas">@Model.TotalFacturas</span> /
                         <span id="kpi-unidades">@Model.TotalUnidadesVendidas</span>
                     </h3>
-                    <p class="mb-0 mt-2 small opacity-75">
+                    <p class="mb-0 mt-2 small opacity-75" style="color:white;">
                         Ticket promedio: ₡<span id="kpi-ticket">@Model.TicketPromedio.ToString("N0")</span>
                     </p>
                 </div>
@@ -82,25 +85,26 @@
         </div>
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 h-100"
-                 style="background:@(Model.TotalStockBajo > 0 ? "var(--dash-peligro)" : "#6c757d");color:white;">
+                 style="background:@(Model.TotalStockBajo > 0 ? "#dc3545" : "#6c757d");">
                 <div class="card-body p-4">
-                    <p class="small mb-1 opacity-75">STOCK BAJO / POR VENCER</p>
-                    <h3 class="fw-bold mb-0 text-white">
+                    <p class="small mb-1 opacity-75" style="color:white;">STOCK BAJO / POR VENCER</p>
+                    <h3 class="fw-bold mb-0" style="color:white !important;">
                         <span id="kpi-stock">@Model.TotalStockBajo</span> /
                         <span id="kpi-vencer">@Model.TotalProximosVencer</span>
                     </h3>
-                    <a href="#alertasInventario" class="text-white small opacity-75">Ver detalle ↓</a>
+                    <a href="#alertasInventario" style="color:white;" class="small opacity-75">Ver detalle ↓</a>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-4 h-100" style="background:var(--dash-advertencia);color:white;">
+            <div class="card border-0 shadow-sm rounded-4 h-100"
+                 style="background:#b5841a;">
                 <div class="card-body p-4">
-                    <p class="small mb-1 opacity-75">PRODUCTO TOP</p>
-                    <h5 class="fw-bold mb-0 text-white" id="kpi-top-nombre">
+                    <p class="small mb-1 opacity-75" style="color:white;">PRODUCTO TOP</p>
+                    <h5 class="fw-bold mb-0" style="color:white !important;" id="kpi-top-nombre">
                         @(Model.ProductoMasVendido?.Nombre ?? "Sin datos")
                     </h5>
-                    <p class="mb-0 mt-2 small opacity-75">
+                    <p class="mb-0 mt-2 small opacity-75" style="color:white;">
                         <span id="kpi-top-qty">@(Model.ProductoMasVendido?.CantidadVendida ?? 0)</span> unidades
                     </p>
                 </div>
@@ -108,7 +112,6 @@
         </div>
     </div>
 
-    <!-- KPIs secundarios -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm rounded-4 text-center @(Model.TotalRecetasPorVencer > 0 ? "border-warning border-2" : "")">
@@ -150,7 +153,6 @@
         </div>
     </div>
 
-    <!-- Gráfico tendencia -->
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4">
             <h5 class="fw-bold mb-3" style="color:#1a3c5e;">
@@ -162,7 +164,6 @@
         </div>
     </div>
 
-    <!-- Gráficos secundarios -->
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 h-100">
@@ -202,7 +203,6 @@
         </div>
     </div>
 
-    <!-- Alertas inventario -->
     <div class="row g-3 mb-4" id="alertasInventario">
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 h-100">
@@ -227,11 +227,11 @@
                                 <tbody>
                                     @foreach (var p in Model.ProductosStockBajo)
                                     {
-                                        <tr class="table-danger">
+                                        <tr>
                                             <td class="fw-semibold">@p.ProductoNombre @(p.Marca != null ? $"- {p.Marca}" : "")</td>
-                                            <td class="text-center"><strong>@p.CantidadDisponible</strong></td>
-                                            <td class="text-center">@p.CantidadMinima</td>
-                                            <td>@(p.NumeroLote ?? "—")</td>
+                                            <td class="text-center fw-bold text-danger">@p.CantidadDisponible</td>
+                                            <td class="text-center text-muted">@p.CantidadMinima</td>
+                                            <td class="text-muted small">@(p.NumeroLote ?? "—")</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -270,13 +270,22 @@
                                 <tbody>
                                     @foreach (var p in Model.ProductosProximosVencer)
                                     {
-                                        <tr class="@(p.DiasParaVencer <= 7 ? "table-danger" : "table-warning")">
+                                        <tr>
                                             <td class="fw-semibold">@p.ProductoNombre</td>
-                                            <td>@(p.NumeroLote ?? "—")</td>
+                                            <td class="text-muted small">@(p.NumeroLote ?? "—")</td>
                                             <td class="text-center">@p.CantidadDisponible</td>
-                                            <td>
-                                                @p.FechaVencimiento.ToString("dd/MM/yyyy")
-                                                <span class="text-muted small">(@p.DiasParaVencer d)</span>
+                                            <td class="small">
+                                                @if (p.DiasParaVencer <= 7)
+                                                {
+                                                    <span class="text-danger fw-semibold">
+                                                        <i class="bi bi-exclamation-circle me-1"></i>@p.FechaVencimiento.ToString("dd/MM/yyyy")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-warning fw-semibold">@p.FechaVencimiento.ToString("dd/MM/yyyy")</span>
+                                                }
+                                                <span class="text-muted small ms-1">(@p.DiasParaVencer d)</span>
                                             </td>
                                         </tr>
                                     }
@@ -295,7 +304,6 @@
         </div>
     </div>
 
-    <!-- Recetas y citas -->
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 h-100">
@@ -319,12 +327,21 @@
                                 <tbody>
                                     @foreach (var r in Model.RecetasPorVencer)
                                     {
-                                        <tr class="@(r.DiasParaVencer <= 5 ? "table-danger" : "")">
+                                        <tr>
                                             <td class="fw-semibold">@r.Medicamento</td>
-                                            <td>@r.ClienteNombre</td>
-                                            <td>
-                                                @r.FechaVencimiento.ToString("dd/MM/yyyy")
-                                                <span class="text-muted small">(@r.DiasParaVencer d)</span>
+                                            <td class="text-muted">@r.ClienteNombre</td>
+                                            <td class="small">
+                                                @if (r.DiasParaVencer <= 5)
+                                                {
+                                                    <span class="text-danger fw-semibold">
+                                                        <i class="bi bi-exclamation-circle me-1"></i>@r.FechaVencimiento.ToString("dd/MM/yyyy")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">@r.FechaVencimiento.ToString("dd/MM/yyyy")</span>
+                                                }
+                                                <span class="text-muted small ms-1">(@r.DiasParaVencer d)</span>
                                             </td>
                                         </tr>
                                     }
@@ -368,8 +385,8 @@
                                         <tr>
                                             <td class="fw-semibold">@c.Fecha.ToString("HH:mm")</td>
                                             <td>@c.Servicio</td>
-                                            <td>@c.ClienteNombre</td>
-                                            <td>@c.EmpleadoNombre</td>
+                                            <td class="text-muted">@c.ClienteNombre</td>
+                                            <td class="text-muted">@c.EmpleadoNombre</td>
                                             <td class="text-center">
                                                 <span class="badge bg-secondary">@c.Estado</span>
                                             </td>
@@ -390,7 +407,6 @@
         </div>
     </div>
 
-    <!-- Top productos detalle -->
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-0">
             <div class="p-4 pb-2">
@@ -418,7 +434,7 @@
                                 <td><strong>@rank</strong></td>
                                 <td class="fw-semibold">@p.Nombre</td>
                                 <td class="text-center">@p.CantidadVendida</td>
-                                <td class="text-end text-success fw-bold">₡@p.IngresoGenerado.ToString("N0")</td>
+                                <td class="text-end fw-bold text-success">₡@p.IngresoGenerado.ToString("N0")</td>
                             </tr>
                             rank++;
                         }
@@ -434,7 +450,6 @@
         </div>
     </div>
 
-    <!-- Puntos -->
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 text-center">
@@ -473,12 +488,17 @@
         const diasFechas  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasDiarias.Select(v => v.Fecha)));
         const diasIngreso = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasDiarias.Select(v => v.Ingreso)));
 
+        const coloresVivos = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#00C49F','#E91E63'];
+
         new Chart(document.getElementById('chartTendencia'), {
         type: 'line',
         data: { labels: diasFechas, datasets: [{
         label: 'Ingreso por día (₡)', data: diasIngreso,
-        borderColor: 'rgba(47,93,138,1)', backgroundColor: 'rgba(47,93,138,0.1)',
-        fill: true, tension: 0.4, pointRadius: 3
+        borderColor: '#36A2EB',
+        backgroundColor: 'rgba(54,162,235,0.15)',
+        fill: true, tension: 0.4, pointRadius: 4,
+        pointBackgroundColor: '#36A2EB',
+        borderWidth: 2
         }]},
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
@@ -486,8 +506,8 @@
         new Chart(document.getElementById('chartMensual'), {
         type: 'bar',
         data: { labels: meses, datasets: [
-        { label: 'Ingreso (₡)', data: ingresos, backgroundColor: 'rgba(47,93,138,0.75)' },
-        { label: 'Facturas', data: facturas, backgroundColor: 'rgba(75,90,148,0.6)', yAxisID: 'y1' }
+        { label: 'Ingreso (₡)', data: ingresos, backgroundColor: '#36A2EB', borderRadius: 4 },
+        { label: 'Facturas',    data: facturas,  backgroundColor: '#FF6384', borderRadius: 4, yAxisID: 'y1' }
         ]},
         options: {
         responsive: true, maintainAspectRatio: false,
@@ -503,7 +523,9 @@
         data: {
         labels: topNombres.length ? topNombres : ['Sin datos'],
         datasets: [{ data: topQty.length ? topQty : [1],
-        backgroundColor: ['#2F5D8A','#4B5A94','#C1892E','#B23A3A','#6c757d'] }]
+        backgroundColor: coloresVivos,
+        borderWidth: 2, borderColor: '#fff'
+        }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
@@ -513,7 +535,9 @@
         data: {
         labels: catNombres.length ? catNombres : ['Sin datos'],
         datasets: [{ data: catIngreso.length ? catIngreso : [1],
-        backgroundColor: ['#4B5A94','#2F5D8A','#C1892E','#B23A3A','#8a99b3','#adb5bd'] }]
+        backgroundColor: coloresVivos,
+        borderWidth: 2, borderColor: '#fff'
+        }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });

@@ -32,7 +32,7 @@
 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Cliente</label>
-                    <div class="input-group mb-2">
+                    <div class="input-group mb-2" id="inputBuscadorCliente">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-search text-muted"></i>
                         </span>
@@ -55,10 +55,13 @@
                         }
                     </div>
 
-                    <div id="clienteSeleccionado" class="mt-2" style="display:none;">
-                        <span class="badge bg-success px-3 py-2 fs-6" id="clienteNombreBadge"></span>
-                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarCliente">
-                            <i class="bi bi-x me-1"></i>Cambiar
+                    <div id="clienteSeleccionado" class="mt-2 d-flex align-items-center gap-2" style="display:none !important;">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span class="fw-semibold" id="clienteNombreBadge"></span>
+                        <button type="button" class="btn btn-sm rounded-3 ms-1"
+                                style="background-color:#fde8cc; color:#d4620a; border:none;"
+                                id="btnLimpiarCliente">
+                            <i class="bi bi-arrow-repeat me-1"></i>Cambiar
                         </button>
                     </div>
 
@@ -68,7 +71,7 @@
 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Empleado responsable</label>
-                    <div class="input-group mb-2">
+                    <div class="input-group mb-2" id="inputBuscadorEmpleado">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-search text-muted"></i>
                         </span>
@@ -91,10 +94,13 @@
                         }
                     </div>
 
-                    <div id="empleadoSeleccionado" class="mt-2" style="display:none;">
-                        <span class="badge bg-success px-3 py-2 fs-6" id="empleadoNombreBadge"></span>
-                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarEmpleado">
-                            <i class="bi bi-x me-1"></i>Cambiar
+                    <div id="empleadoSeleccionado" class="mt-2 d-flex align-items-center gap-2" style="display:none !important;">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <span class="fw-semibold" id="empleadoNombreBadge"></span>
+                        <button type="button" class="btn btn-sm rounded-3 ms-1"
+                                style="background-color:#fde8cc; color:#d4620a; border:none;"
+                                id="btnLimpiarEmpleado">
+                            <i class="bi bi-arrow-repeat me-1"></i>Cambiar
                         </button>
                     </div>
 
@@ -113,8 +119,10 @@
                 </div>
 
                 <div class="col-12 d-flex justify-content-between mt-2">
-                    @Html.ActionLink("Cancelar", "Index", "Expediente", null, new { @class = "btn btn-outline-secondary rounded-3" })
-                    <button type="submit" class="btn btn-success rounded-3" id="btnGuardar">
+                    @Html.ActionLink("Cancelar", "Index", "Expediente", null,
+                        new { @class = "btn rounded-3", style = "background-color:#d0e8f5; color:#2a7ab5; border:none;" })
+                    <button type="submit" class="btn rounded-3" id="btnGuardar"
+                            style="background-color:#d4edda; color:#2d7a4f; border:none;">
                         <i class="bi bi-save me-1"></i>Guardar
                     </button>
                 </div>
@@ -144,9 +152,9 @@
             i.addEventListener('click', () => {
                 byId('clienteIdHidden').value          = i.dataset.id;
                 byId('clienteNombreBadge').textContent = i.dataset.nombre;
-                byId('clienteSeleccionado').style.display = 'block';
+                byId('clienteSeleccionado').style.display = 'flex';
                 byId('listaClientes').style.display       = 'none';
-                byId('buscadorCliente').style.display     = 'none';
+                byId('inputBuscadorCliente').style.display = 'none';
             });
         });
 
@@ -155,7 +163,7 @@
             byId('buscadorCliente').value             = '';
             byId('clienteSeleccionado').style.display = 'none';
             byId('listaClientes').style.display       = '';
-            byId('buscadorCliente').style.display     = '';
+            byId('inputBuscadorCliente').style.display = '';
             itemsCliente.forEach(i => i.style.display = '');
         });
 
@@ -175,18 +183,18 @@
             i.addEventListener('click', () => {
                 byId('empleadoIdHidden').value          = i.dataset.id;
                 byId('empleadoNombreBadge').textContent = i.dataset.nombre;
-                byId('empleadoSeleccionado').style.display = 'block';
+                byId('empleadoSeleccionado').style.display = 'flex';
                 byId('listaEmpleados').style.display       = 'none';
-                byId('buscadorEmpleado').style.display     = 'none';
+                byId('inputBuscadorEmpleado').style.display = 'none';
             });
         });
 
         byId('btnLimpiarEmpleado').addEventListener('click', () => {
             byId('empleadoIdHidden').value             = '';
-            byId('buscadorEmpleado').value             = '';
+            byId('buscadorEmpleado').value             = '';;
             byId('empleadoSeleccionado').style.display = 'none';
             byId('listaEmpleados').style.display       = '';
-            byId('buscadorEmpleado').style.display     = '';
+            byId('inputBuscadorEmpleado').style.display = '';
             itemsEmpleado.forEach(i => i.style.display = '');
         });
 

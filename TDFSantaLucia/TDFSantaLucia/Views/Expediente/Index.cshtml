@@ -16,7 +16,6 @@
         .ToList();
 }
 
-
 <style>
     .table-responsive {
         overflow: visible !important;
@@ -89,7 +88,7 @@
             var collapseId = $"collapse_{grupo.ClienteId}";
             var headingId = $"heading_{grupo.ClienteId}";
 
-            <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 overflow-hidden cliente-grupo"
+            <div class="accordion-item border-0 shadow-sm mb-3 rounded-3 cliente-grupo"
                  data-cliente="@grupo.ClienteNombre.ToLower()">
 
                 <h2 class="accordion-header" id="@headingId">
@@ -158,7 +157,7 @@
                                                             aria-expanded="false">
                                                         <i class="bi bi-three-dots-vertical"></i>
                                                     </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow rounded-3">
+                                                    <ul class="dropdown-menu shadow rounded-3">
                                                         <li>
                                                             <a class="dropdown-item"
                                                                asp-action="Detalle" asp-route-id="@e.Expediente_Id">
@@ -167,8 +166,23 @@
                                                         </li>
                                                         <li>
                                                             <a class="dropdown-item"
+                                                               asp-controller="Receta" asp-action="Crear"
+                                                               asp-route-expedienteId="@e.Expediente_Id">
+                                                                <i class="bi bi-file-medical-fill me-2" style="color:#74c476;"></i>Agregar receta
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item"
                                                                asp-action="Editar" asp-route-id="@e.Expediente_Id">
                                                                 <i class="bi bi-pencil me-2" style="color:#fd8d3c;"></i>Editar
+                                                            </a>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                               href="/expediente/eliminar/@e.Expediente_Id"
+                                                               onclick="return confirmarEliminar(event, '@(e.Cliente?.Usuario?.Nombre ?? "—")', @e.RecetasMedicas.Count, @e.Expediente_Id)">
+                                                                <i class="bi bi-trash me-2" style="color:#e57373;"></i>Eliminar
                                                             </a>
                                                         </li>
                                                     </ul>
@@ -200,20 +214,20 @@
 
 @section Scripts {
     <script>
-        const grupos = document.querySelectorAll('.cliente-grupo');
-        const buscador = document.getElementById('buscador');
-        const btnLimpiar = document.getElementById('btnLimpiarTexto');
+        const grupos      = document.querySelectorAll('.cliente-grupo');
+        const buscador    = document.getElementById('buscador');
+        const btnLimpiar  = document.getElementById('btnLimpiarTexto');
         const btnExpandir = document.getElementById('btnExpandirTodo');
         const estadoVacio = document.getElementById('estadoVacio');
-        const contador = document.getElementById('contadorResultados');
-        let expandidoTodo = false;
+        const contador    = document.getElementById('contadorResultados');
+        let   expandidoTodo = false;
 
-        buscador.addEventListener('input', function() {
+        buscador.addEventListener('input', function () {
             const texto = this.value.trim().toLowerCase();
             btnLimpiar.style.display = texto ? 'block' : 'none';
 
             let visibles = 0;
-            grupos.forEach(function(g) {
+            grupos.forEach(function (g) {
                 const coincide = g.dataset.cliente.includes(texto);
                 g.classList.toggle('d-none', !coincide);
                 if (coincide) visibles++;
@@ -230,20 +244,20 @@
                 : '';
         });
 
-        btnLimpiar.addEventListener('click', function() {
+        btnLimpiar.addEventListener('click', function () {
             buscador.value = '';
             buscador.dispatchEvent(new Event('input'));
             buscador.focus();
         });
 
-        document.getElementById('btnLimpiarDesdeVacio').addEventListener('click', function() {
+        document.getElementById('btnLimpiarDesdeVacio').addEventListener('click', function () {
             buscador.value = '';
             buscador.dispatchEvent(new Event('input'));
         });
 
-        btnExpandir.addEventListener('click', function() {
+        btnExpandir.addEventListener('click', function () {
             expandidoTodo = !expandidoTodo;
-            grupos.forEach(function(g) {
+            grupos.forEach(function (g) {
                 const collapse = g.querySelector('.accordion-collapse');
                 new bootstrap.Collapse(collapse, { toggle: false });
                 expandidoTodo
@@ -265,14 +279,12 @@
                 return false;
 
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-            const form = document.createElement('form');
+            const form  = document.createElement('form');
             form.method = 'POST';
             form.action = `/expediente/eliminar/${id}`;
-            const inputToken = document.createElement('input');
-            inputToken.type = 'hidden';
-            inputToken.name = '__RequestVerificationToken';
-            inputToken.value = token;
-            form.appendChild(inputToken);
+            const inp   = document.createElement('input');
+            inp.type = 'hidden'; inp.name = '__RequestVerificationToken'; inp.value = token;
+            form.appendChild(inp);
             document.body.appendChild(form);
             form.submit();
             return false;

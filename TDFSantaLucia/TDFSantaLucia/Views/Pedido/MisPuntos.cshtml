@@ -5,7 +5,8 @@
 }
 
 <div class="container py-4" style="max-width:800px;">
-    <h2 class="fw-bold mb-4" style="color:#243C8F;">
+
+    <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
         <i class="bi bi-star-fill text-warning me-2"></i>Mis Puntos
     </h2>
 
@@ -16,16 +17,12 @@
                     @puntosDisponibles
                 </div>
                 <div class="text-muted">Puntos disponibles</div>
-                <div class="text-success small mt-1">
-                    = ₡@puntosDisponibles
-                </div>
+                <div class="text-success small mt-1">= ₡@puntosDisponibles</div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card border-0 shadow-sm rounded-4 p-4">
-                <h6 class="fw-bold mb-2" style="color:#243C8F;">
-                    ¿Cómo funcionan?
-                </h6>
+                <h6 class="fw-bold mb-2" style="color:#1a3c5e;">¿Cómo funcionan?</h6>
                 <ul class="small text-muted mb-0">
                     <li>Ganás 1 punto por cada ₡100 en compras.</li>
                     <li>Cada punto vale ₡1 de descuento.</li>
@@ -37,9 +34,9 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-0">
-            <h5 class="fw-bold p-4 pb-2" style="color:#243C8F;">
+            <h5 class="fw-bold p-4 pb-2" style="color:#1a3c5e;">
                 Historial de movimientos
             </h5>
 
@@ -47,9 +44,7 @@
             {
                 <div class="text-center py-4 text-muted">
                     <i class="bi bi-star display-4"></i>
-                    <p class="mt-2">
-                        Aún no tienes movimientos de puntos.
-                    </p>
+                    <p class="mt-2">Aún no tienes movimientos de puntos.</p>
                 </div>
             }
             else
@@ -68,38 +63,30 @@
                         <tbody>
                             @foreach (var m in Model)
                             {
-                                var color = m.Tipo switch
+                                var badgeClass = m.Tipo switch
                                 {
-                                    "Ganado" => "success",
-                                    "Canjeado" => "warning text-dark",
-                                    "Devuelto" => "info text-dark",
-                                    "Vencido" => "secondary",
-                                    "Pendiente" => "primary",
-                                    _ => "secondary"
+                                    "Ganado" => "bg-success-subtle text-success border border-success-subtle",
+                                    "Canjeado" => "bg-warning-subtle text-warning border border-warning-subtle",
+                                    "Devuelto" => "bg-info-subtle text-info border border-info-subtle",
+                                    "Vencido" => "bg-secondary-subtle text-secondary border border-secondary-subtle",
+                                    "Pendiente" => "bg-primary-subtle text-primary border border-primary-subtle",
+                                    _ => "bg-secondary-subtle text-secondary border border-secondary-subtle"
                                 };
 
                                 <tr class="@(m.Vencido ? "text-muted" : "")">
-                                    <td class="small">
-                                        @m.Fecha.ToString("dd/MM/yyyy")
-                                    </td>
+                                    <td class="small text-muted">@m.Fecha.ToString("dd/MM/yyyy")</td>
                                     <td>
-                                        <span class="badge bg-@color">
-                                            @m.Tipo
-                                        </span>
+                                        <span class="badge @badgeClass">@m.Tipo</span>
                                     </td>
-                                    <td class="small">@m.Descripcion</td>
+                                    <td class="small text-muted">@m.Descripcion</td>
                                     <td class="text-center fw-bold">
                                         @if (m.Puntos > 0)
                                         {
-                                            <span class="text-success">
-                                                +@m.Puntos
-                                            </span>
+                                            <span class="text-success">+@m.Puntos</span>
                                         }
                                         else if (m.Puntos < 0)
                                         {
-                                            <span class="text-danger">
-                                                @m.Puntos
-                                            </span>
+                                            <span class="text-danger">@m.Puntos</span>
                                         }
                                         else
                                         {
@@ -107,10 +94,9 @@
                                         }
                                     </td>
                                     <td class="text-center small text-muted">
-                                        @if (m.Tipo == "Ganado" ||
-                                             m.Tipo == "Pendiente")
+                                        @if (m.Tipo == "Ganado" || m.Tipo == "Pendiente")
                                         {
-                                                @m.Fecha_Vencimiento.ToString("dd/MM/yyyy")
+                                            @m.Fecha_Vencimiento.ToString("dd/MM/yyyy")
                                         }
                                         else
                                         {
@@ -128,8 +114,10 @@
 
     <div class="mt-4">
         <a asp-controller="Producto" asp-action="Index"
-           class="btn btn-primary rounded-3">
+           class="btn rounded-3"
+           style="background-color:#d4edda; color:#2d7a4f; border:none;">
             <i class="bi bi-bag me-1"></i>Ir a comprar
         </a>
     </div>
+
 </div>

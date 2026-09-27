@@ -3,20 +3,29 @@
     ViewData["Title"] = "Mis Facturas";
 }
 
+<style>
+    .table-responsive {
+        overflow: visible !important;
+    }
+</style>
+
 <div class="container py-4">
-    <h2 class="fw-bold mb-4" style="color:#243C8F;">
-        <i class="bi bi-receipt me-2"></i>Mis Facturas
+
+    <h2 class="fw-bold mb-4" style="color:#1a3c5e;">
+        <i class="bi bi-receipt me-2 text-primary"></i>Mis Facturas
     </h2>
 
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label fw-semibold text-muted small">DESDE</label>
-                <input type="date" name="desde" class="form-control" value="@ViewBag.Desde" />
+                <input type="date" name="desde" class="form-control rounded-3"
+                       value="@ViewBag.Desde" />
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-semibold text-muted small">HASTA</label>
-                <input type="date" name="hasta" class="form-control" value="@ViewBag.Hasta" />
+                <input type="date" name="hasta" class="form-control rounded-3"
+                       value="@ViewBag.Hasta" />
             </div>
             <div class="col-md-4">
                 <button type="submit" class="btn btn-primary w-100 rounded-3">
@@ -58,8 +67,8 @@
                         var tieneDesc = (f.Pedido?.Uso_Puntos == true) || (f.Pedido?.Cupon_Id != null);
 
                         <tr>
-                            <td class="fw-bold" style="color:#243C8F;">@f.Numero_Factura</td>
-                            <td>@f.Pedido?.Numero_Orden</td>
+                            <td class="fw-bold" style="color:#1a3c5e;">@f.Numero_Factura</td>
+                            <td class="text-muted">@f.Pedido?.Numero_Orden</td>
                             <td class="text-muted small">
                                 @f.Fecha_Emision.ToString("dd/MM/yyyy HH:mm")
                             </td>
@@ -76,14 +85,14 @@
                                     <div class="d-flex flex-column gap-1 align-items-center">
                                         @if (f.Pedido?.Uso_Puntos == true && f.Pedido.Puntos_Canjeados > 0)
                                         {
-                                            <span class="badge bg-warning text-dark" style="font-size:0.7rem;">
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size:0.7rem;">
                                                 <i class="bi bi-star-fill me-1"></i>
                                                 @f.Pedido.Puntos_Canjeados pts
                                             </span>
                                         }
                                         @if (f.Pedido?.Cupon_Id != null && descCupon > 0)
                                         {
-                                            <span class="badge bg-success" style="font-size:0.7rem;">
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.7rem;">
                                                 <i class="bi bi-ticket-perforated-fill me-1"></i>
                                                 -₡@descCupon.ToString("N2")
                                             </span>
@@ -92,17 +101,33 @@
                                 }
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-success">@f.Estado</span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    @f.Estado
+                                </span>
                             </td>
                             <td class="text-center">
-                                <a asp-action="Detalle" asp-route-id="@f.Factura_Id"
-                                   class="btn btn-info btn-sm text-white">
-                                    <i class="bi bi-eye"></i> Ver
-                                </a>
-                                <a asp-action="Descargar" asp-route-id="@f.Factura_Id"
-                                   class="btn btn-primary btn-sm">
-                                    <i class="bi bi-download"></i>
-                                </a>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm rounded-3"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu shadow rounded-3">
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-action="Detalle" asp-route-id="@f.Factura_Id">
+                                                <i class="bi bi-eye me-2" style="color:#6baed6;"></i>Ver detalle
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-action="Descargar" asp-route-id="@f.Factura_Id">
+                                                <i class="bi bi-download me-2" style="color:#74c476;"></i>Descargar
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </td>
                         </tr>
                     }
