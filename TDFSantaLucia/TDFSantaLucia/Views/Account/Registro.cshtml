@@ -220,23 +220,42 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
     <script>
-        function togglePass(inputId, iconId) {
-        const input = document.getElementById(inputId);
-        const icon  = document.getElementById(iconId);
-        if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('bi-eye', 'bi-eye-slash');
-        } else {
-        input.type = 'password';
-        icon.classList.replace('bi-eye-slash', 'bi-eye');
-        }
-        }
+            function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+                const icon  = document.getElementById(iconId);
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.replace('bi-eye', 'bi-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.replace('bi-eye-slash', 'bi-eye');
+                    }
+                }
 
-        document.querySelector('form').addEventListener('submit', function () {
-        const btn = document.getElementById('btnRegistro');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creando cuenta...';
-        });
+                const form = document.querySelector('form');
+                const btn = document.getElementById('btnRegistro');
+                const htmlOriginal = btn.innerHTML;
+
+                function restaurarBoton() {
+                    btn.disabled = false;
+                    btn.innerHTML = htmlOriginal;
+                }
+
+                form.addEventListener('submit', function (e) {
+                   
+                    if (window.jQuery && !$(form).valid()) {
+                        e.preventDefault();
+                        restaurarBoton();
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creando cuenta...';
+                });
+
+                window.addEventListener('pageshow', function (e) {
+                    if (e.persisted) restaurarBoton();
+                });
     </script>
 </body>
 </html>

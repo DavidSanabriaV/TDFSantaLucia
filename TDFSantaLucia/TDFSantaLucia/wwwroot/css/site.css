@@ -304,7 +304,7 @@ body {
 
 .sidebar-nav {
     flex-grow: 1;
-    padding: 4px 10px 60px; 
+    padding: 4px 10px 60px;
     overflow-x: hidden;
     min-width: 0;
 }
@@ -498,8 +498,24 @@ body {
     }
 
 /* ══════════════════════════════════════════════
-   CAROUSEL BANNER
+   CAROUSEL BANNER  (imagen completa, sin recorte)
    ══════════════════════════════════════════════ */
+/* Contenedor del Home: ocupa exactamente el área junto al sidebar
+   (pegado al menú y al borde derecho, sin importar el padding del layout) */
+.banner-full {
+    position: relative;
+    left: 50%;
+    width: calc(100vw - var(--sidebar-width) - 10px);
+    margin-left: calc((100vw - var(--sidebar-width) - 10px) / -2);
+}
+
+@media (max-width: 991.98px) {
+    .banner-full {
+        width: calc(100vw - 10px);
+        margin-left: calc((100vw - 10px) / -2);
+    }
+}
+
 #carouselExampleIndicators {
     overflow: hidden;
     border-radius: 0 0 35px 35px;
@@ -510,9 +526,9 @@ body {
 
     #carouselExampleIndicators .carousel-item img {
         width: 100%;
-        height: 540px;
-        object-fit: cover;
-        object-position: center;
+        height: 600px; /* fino, un poco más alto que antes (540) */
+        object-fit: cover; /* llena todo el ancho, sin bordes azules */
+        object-position: center top; /* ancla arriba: la parte de arriba no se corta */
         display: block; /* evita el hueco blanco que deja <img> inline */
     }
 
@@ -1792,7 +1808,9 @@ h1, h2, h3, h4, h5 {
     }
 
     #carouselExampleIndicators .carousel-item img {
-        height: 300px;
+        height: 340px;
+        object-fit: cover;
+        object-position: center top;
     }
 
     .producto-card {
