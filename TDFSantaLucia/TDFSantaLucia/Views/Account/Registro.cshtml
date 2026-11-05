@@ -150,9 +150,10 @@
                             <i class="bi bi-envelope text-muted"></i>
                         </span>
                         <input asp-for="Email"
-                               type="email"
+                               type="text" inputmode="email" autocapitalize="off" spellcheck="false"
                                class="form-control border-start-0 ps-0 rounded-end-3"
-                               placeholder="correo@ejemplo.com" />
+                               placeholder="correo@ejemplo.com"
+                               oninput="this.value = this.value.replace(/\s/g, '')" />
                     </div>
                     <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
@@ -163,12 +164,10 @@
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-lock text-muted"></i>
                         </span>
-                        <input asp-for="Password"
-                               type="password"
+                        <input asp-for="Password" type="password" id="passInput"
                                class="form-control border-start-0 ps-0"
-                               id="passInput"
-                               placeholder="••••••••"
-                               autocomplete="new-password" />
+                               placeholder="••••••••" autocomplete="new-password"
+                               oninput="this.value = this.value.replace(/\s/g, '')" />
                         <button type="button"
                                 class="btn btn-outline-secondary rounded-end-3"
                                 onclick="togglePass('passInput','eyePass')">
@@ -184,12 +183,10 @@
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-lock-fill text-muted"></i>
                         </span>
-                        <input asp-for="ConfirmarPassword"
-                               type="password"
+                        <input asp-for="ConfirmarPassword" type="password" id="passConfirm"
                                class="form-control border-start-0 ps-0"
-                               id="passConfirm"
-                               placeholder="••••••••"
-                               autocomplete="new-password" />
+                               placeholder="••••••••" autocomplete="new-password"
+                               oninput="this.value = this.value.replace(/\s/g, '')" />
                         <button type="button"
                                 class="btn btn-outline-secondary rounded-end-3"
                                 onclick="togglePass('passConfirm','eyeConfirm')">
@@ -223,23 +220,42 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <partial name="_ValidationScriptsPartial" />
     <script>
-        function togglePass(inputId, iconId) {
-        const input = document.getElementById(inputId);
-        const icon  = document.getElementById(iconId);
-        if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('bi-eye', 'bi-eye-slash');
-        } else {
-        input.type = 'password';
-        icon.classList.replace('bi-eye-slash', 'bi-eye');
-        }
-        }
+            function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+                const icon  = document.getElementById(iconId);
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.replace('bi-eye', 'bi-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.replace('bi-eye-slash', 'bi-eye');
+                    }
+                }
 
-        document.querySelector('form').addEventListener('submit', function () {
-        const btn = document.getElementById('btnRegistro');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creando cuenta...';
-        });
+                const form = document.querySelector('form');
+                const btn = document.getElementById('btnRegistro');
+                const htmlOriginal = btn.innerHTML;
+
+                function restaurarBoton() {
+                    btn.disabled = false;
+                    btn.innerHTML = htmlOriginal;
+                }
+
+                form.addEventListener('submit', function (e) {
+                   
+                    if (window.jQuery && !$(form).valid()) {
+                        e.preventDefault();
+                        restaurarBoton();
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Creando cuenta...';
+                });
+
+                window.addEventListener('pageshow', function (e) {
+                    if (e.persisted) restaurarBoton();
+                });
     </script>
 </body>
 </html>
