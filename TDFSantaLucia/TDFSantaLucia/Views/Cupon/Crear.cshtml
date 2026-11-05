@@ -24,12 +24,12 @@
             <div class="col-md-6">
                 <label asp-for="Tipo_Descuento" class="form-label fw-semibold">Tipo de Descuento</label>
                 <select asp-for="Tipo_Descuento" class="form-select rounded-3"
-                        onchange="actualizarLimites(this.value)">
+                        onchange="actualizarLimites(this.value); limpiarErrorTipo();">
                     <option value="">Seleccione...</option>
                     <option value="Porcentaje">Porcentaje (%) sobre el total</option>
                     <option value="Monto">Monto fijo (₡) del total</option>
                 </select>
-                <span asp-validation-for="Tipo_Descuento" class="text-danger small"></span>
+                <span asp-validation-for="Tipo_Descuento" class="text-danger small" id="errorTipo"></span>
             </div>
             <div class="col-md-6">
                 <label asp-for="Valor_Descuento" class="form-label fw-semibold">Valor</label>
@@ -103,6 +103,11 @@
             }
 
             validarValor(input);
+        }
+
+        function limpiarErrorTipo() {
+            const span = document.getElementById('errorTipo');
+            if (span) span.textContent = '';
         }
 
         function validarValor(input) {
