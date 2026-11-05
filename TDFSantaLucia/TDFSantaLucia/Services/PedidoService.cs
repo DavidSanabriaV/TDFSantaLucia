@@ -39,6 +39,9 @@ namespace TDFSantaLucia.Services
         public Pedido? ObtenerPorId(int id) => _pedidoRepo.ObtenerPorId(id);
         public void ActualizarPedido(Pedido pedido) => _pedidoRepo.Actualizar(pedido);
 
+        // ════════════════════════════════════════════════════════════════
+        //  PROCESAR PEDIDO (checkout)
+        // ════════════════════════════════════════════════════════════════
         public async Task<(bool exito, string? error, Pedido? pedido)>
             ProcesarPedidoAsync(CheckoutViewModel checkout, int clienteId)
         {
@@ -46,21 +49,24 @@ namespace TDFSantaLucia.Services
 
             try
             {
-                // ── Validar puntos ────────────────────────────────────────
+                // ── Validar puntos (los "Pendiente" no cuentan) ───────────
                 if (checkout.Canjear_Puntos && checkout.Puntos_A_Canjear > 0)
                 {
                     var puntosActuales = await _db.MovimientosPuntos
-                        .Where(m => m.Cliente_Id == clienteId && !m.Vencido)
+                        .Where(m => m.Cliente_Id == clienteId
+                                 && !m.Vencido
+                                 && m.Tipo != "Pendiente")
                         .SumAsync(m => m.Puntos);
 
                     if (checkout.Puntos_A_Canjear > puntosActuales)
+                    {
+                        await transaction.RollbackAsync();
                         return (false,
                             $"No tienes suficientes puntos. Disponibles: {puntosActuales}.", null);
+                    }
                 }
 
                 // ── Validar cupón ─────────────────────────────────────────
-                // Si el cupón no es válido, limpiamos solo los campos de referencia
-                // (Descuento_Cupon es calculado desde Descuento_Cupon_Raw, no se asigna)
                 if (checkout.Cupon_Id.HasValue && checkout.ClienteCupon_Id > 0)
                 {
                     var cc = await _db.ClientesCupones
@@ -74,17 +80,18 @@ namespace TDFSantaLucia.Services
                     {
                         checkout.Cupon_Id = null;
                         checkout.ClienteCupon_Id = 0;
-                        checkout.Descuento_Cupon_Raw = "0";  // ← limpia el raw en lugar del calculado
+                        checkout.Descuento_Cupon_Raw = "0";
                     }
                 }
 
-                // ── Stock ─────────────────────────────────────────────────
+                // ── Stock: descuento atómico por lote ─────────────────────
                 var detalles = new List<DetallePedido>();
                 var movimientosPendientes = new List<(int ProductoId, int InventarioId, int Cantidad)>();
 
                 foreach (var item in checkout.Items)
                 {
                     var lotes = await _db.Inventarios
+                        .AsNoTracking()
                         .Where(i => i.Producto_Id == item.Producto_Id
                                  && i.Estado && i.Cantidad_Disponible > 0)
                         .OrderBy(i => i.Fecha_Vencimiento)
@@ -104,11 +111,27 @@ namespace TDFSantaLucia.Services
                     {
                         if (pendiente <= 0) break;
                         int descontar = Math.Min(lote.Cantidad_Disponible, pendiente);
-                        lote.Cantidad_Disponible -= descontar;
-                        pendiente -= descontar;
-                        _db.Inventarios.Update(lote);
+                        var loteId = lote.Inventario_Id;
 
-                        movimientosPendientes.Add((item.Producto_Id, lote.Inventario_Id, descontar));
+                        // UPDATE ... WHERE Cantidad_Disponible >= descontar
+                        // Si otro cliente se llevó el stock primero, filas = 0.
+                        var filas = await _db.Inventarios
+                            .Where(i => i.Inventario_Id == loteId
+                                     && i.Cantidad_Disponible >= descontar)
+                            .ExecuteUpdateAsync(s => s.SetProperty(
+                                i => i.Cantidad_Disponible,
+                                i => i.Cantidad_Disponible - descontar));
+
+                        if (filas == 0)
+                        {
+                            await transaction.RollbackAsync();
+                            return (false,
+                                $"'{item.Nombre}' acaba de agotarse o cambió su stock. " +
+                                "Revisa tu carrito e intenta de nuevo.", null);
+                        }
+
+                        pendiente -= descontar;
+                        movimientosPendientes.Add((item.Producto_Id, loteId, descontar));
                     }
 
                     detalles.Add(new DetallePedido
@@ -119,13 +142,11 @@ namespace TDFSantaLucia.Services
                         Subtotal = item.Subtotal
                     });
                 }
-
-                await _db.SaveChangesAsync();
-
+                // ── Calculos ──────────────────────────────────────────────
                 var subtotal = checkout.Subtotal;
                 var impuesto = checkout.Impuesto;
                 var descuentoPuntos = checkout.Canjear_Puntos ? checkout.Descuento_Puntos : 0;
-                var descuentoCupon = checkout.Descuento_Cupon;   // ← lee la propiedad calculada
+                var descuentoCupon = checkout.Descuento_Cupon;
                 var descuentoTotal = descuentoPuntos + descuentoCupon;
                 var total = checkout.Total;
 
@@ -161,6 +182,7 @@ namespace TDFSantaLucia.Services
                 _pedidoRepo.Agregar(pedido);
                 await _db.SaveChangesAsync();
 
+                // ── Movimientos de inventario (SALIDA por lote) ───────────
                 foreach (var mov in movimientosPendientes)
                 {
                     _movimientoRepo.Agregar(new MovimientoInventario
@@ -176,18 +198,24 @@ namespace TDFSantaLucia.Services
                 }
                 await _db.SaveChangesAsync();
 
-                // ── Marcar cupón como utilizado ───────────────────────────
-
-                // ── Marcar cupón como utilizado ───────────────────────────
+                // ── Marcar cupón como utilizado (atómico) ─────────────────
                 if (checkout.Cupon_Id.HasValue && checkout.ClienteCupon_Id > 0)
                 {
-                    var cc = await _db.ClientesCupones
-                        .FirstOrDefaultAsync(x => x.Cupon_Cliente_Id == checkout.ClienteCupon_Id);
-                    if (cc != null)
+                    var ahora = DateTime.Now;
+                    var clienteCuponId = checkout.ClienteCupon_Id;
+
+                    var filasCupon = await _db.ClientesCupones
+                        .Where(x => x.Cupon_Cliente_Id == clienteCuponId
+                                 && x.Cliente_Id == clienteId
+                                 && !x.Utilizado)
+                        .ExecuteUpdateAsync(s => s
+                            .SetProperty(x => x.Utilizado, true)
+                            .SetProperty(x => x.Fecha_Uso, (DateTime?)ahora));
+
+                    if (filasCupon == 0)
                     {
-                        cc.Utilizado = true;
-                        cc.Fecha_Uso = DateTime.Now;
-                        await _db.SaveChangesAsync();
+                        await transaction.RollbackAsync();
+                        return (false, "El cupón ya fue utilizado.", null);
                     }
                 }
 
@@ -207,7 +235,7 @@ namespace TDFSantaLucia.Services
                     });
                 }
 
-                // ── Puntos ganados ────────────────────────────────────────
+                // ── Puntos ganados (quedan "Pendiente" hasta confirmar) ───
                 if (puntosGanados > 0)
                 {
                     await _db.MovimientosPuntos.AddAsync(new MovimientoPuntos
@@ -280,6 +308,9 @@ namespace TDFSantaLucia.Services
             }
         }
 
+        // ════════════════════════════════════════════════════════════════
+        //  CAMBIAR ESTADO
+        // ════════════════════════════════════════════════════════════════
         public async Task<(bool exito, string? error)>
             CambiarEstadoAsync(int pedidoId, string nuevoEstado)
         {
@@ -297,112 +328,198 @@ namespace TDFSantaLucia.Services
             if (!estadosValidos.Contains(nuevoEstado))
                 return (false, "Estado no válido.");
 
-            // ── Al aceptar: activar puntos ────────────────────────────────
-            if (nuevoEstado == PedidoEstados.Aceptado)
+            var yaAnulado = pedido.Estado == PedidoEstados.Cancelado
+                         || pedido.Estado == PedidoEstados.Rechazado;
+
+            if (yaAnulado)
+                return (false, "El pedido ya fue cancelado o rechazado y no se puede modificar.");
+
+            var esAnulacion = nuevoEstado == PedidoEstados.Rechazado
+                           || nuevoEstado == PedidoEstados.Cancelado;
+
+            var estadosConfirmados = new[]
             {
-                var movPendiente = await _db.MovimientosPuntos
-                    .FirstOrDefaultAsync(m => m.Pedido_Id == pedidoId && m.Tipo == "Pendiente");
-                if (movPendiente != null)
+                PedidoEstados.Aceptado, PedidoEstados.EnProceso, PedidoEstados.Listo,
+                PedidoEstados.EnCamino, PedidoEstados.Entregado
+            };
+
+            var ahora = DateTime.Now;
+
+            await using var tx = await _db.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Cambio de estado atómico: solo procede si el pedido NO fue anulado
+                // por otra persona mientras tanto (evita devolver el stock dos veces).
+                var filas = await _db.Pedidos
+                    .Where(p => p.Pedido_Id == pedidoId
+                             && p.Estado != PedidoEstados.Cancelado
+                             && p.Estado != PedidoEstados.Rechazado)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(p => p.Estado, nuevoEstado)
+                        .SetProperty(p => p.Fecha_Actualizacion, ahora));
+
+                if (filas == 0)
                 {
-                    movPendiente.Tipo = "Ganado";
-                    _db.MovimientosPuntos.Update(movPendiente);
-                    await _db.SaveChangesAsync();
+                    await tx.RollbackAsync();
+                    return (false, "El pedido ya fue cancelado o rechazado.");
                 }
-            }
 
-            // ── Al rechazar/cancelar: devolver stock, puntos y cupón ──────
-            if (nuevoEstado == PedidoEstados.Rechazado ||
-                nuevoEstado == PedidoEstados.Cancelado)
-            {
-                if (pedido.Estado != PedidoEstados.Cancelado &&
-                    pedido.Estado != PedidoEstados.Rechazado)
+                // ── Confirmado: los puntos pendientes pasan a ganados ─────
+                if (estadosConfirmados.Contains(nuevoEstado))
                 {
-                    foreach (var detalle in pedido.DetallesPedido)
-                    {
-                        var lote = await _db.Inventarios
-                            .Where(i => i.Producto_Id == detalle.Producto_Id && i.Estado)
-                            .OrderBy(i => i.Fecha_Vencimiento)
-                            .FirstOrDefaultAsync();
+                    var vencimiento = ahora.AddMonths(MesesVencimiento);
 
-                        if (lote != null)
+                    await _db.MovimientosPuntos
+                        .Where(m => m.Pedido_Id == pedidoId && m.Tipo == "Pendiente")
+                        .ExecuteUpdateAsync(s => s
+                            .SetProperty(m => m.Tipo, "Ganado")
+                            .SetProperty(m => m.Fecha, ahora)
+                            .SetProperty(m => m.Fecha_Vencimiento, vencimiento));
+                }
+
+                // ── Rechazado / Cancelado: devolver stock, puntos, cupón ──
+                if (esAnulacion)
+                {
+                    // 1) Stock: se devuelve a los mismos lotes de donde salió
+                    var salidas = await _db.MovimientosInventario
+                        .AsNoTracking()
+                        .Where(m => m.Pedido_Id == pedidoId && m.Tipo_Movimiento == "SALIDA")
+                        .ToListAsync();
+
+                    if (salidas.Any())
+                    {
+                        foreach (var salida in salidas)
                         {
-                            lote.Cantidad_Disponible += detalle.Cantidad;
-                            _db.Inventarios.Update(lote);
+                            if (salida.Inventario_Id == null) continue;
+
+                            var loteId = salida.Inventario_Id.Value;
+                            var cantidad = salida.Cantidad;
+
+                            await _db.Inventarios
+                                .Where(i => i.Inventario_Id == loteId)
+                                .ExecuteUpdateAsync(s => s.SetProperty(
+                                    i => i.Cantidad_Disponible,
+                                    i => i.Cantidad_Disponible + cantidad));
 
                             _movimientoRepo.Agregar(new MovimientoInventario
                             {
                                 Tipo_Movimiento = "ENTRADA",
-                                Cantidad = detalle.Cantidad,
+                                Cantidad = cantidad,
+                                Descripcion = $"Devolución por pedido {nuevoEstado.ToLower()}",
+                                Fecha_Movimiento = DateTime.Now,
+                                Producto_Id = salida.Producto_Id,
+                                Inventario_Id = loteId,
+                                Pedido_Id = pedidoId
+                            });
+                        }
+                    }
+                    else
+                    {
+                        // Pedidos antiguos sin movimientos de salida: se devuelve
+                        // al lote con vencimiento más cercano (comportamiento anterior).
+                        foreach (var detalle in pedido.DetallesPedido)
+                        {
+                            var lote = await _db.Inventarios
+                                .AsNoTracking()
+                                .Where(i => i.Producto_Id == detalle.Producto_Id && i.Estado)
+                                .OrderBy(i => i.Fecha_Vencimiento)
+                                .FirstOrDefaultAsync();
+
+                            if (lote == null) continue;
+
+                            var loteId = lote.Inventario_Id;
+                            var cantidad = detalle.Cantidad;
+
+                            await _db.Inventarios
+                                .Where(i => i.Inventario_Id == loteId)
+                                .ExecuteUpdateAsync(s => s.SetProperty(
+                                    i => i.Cantidad_Disponible,
+                                    i => i.Cantidad_Disponible + cantidad));
+
+                            _movimientoRepo.Agregar(new MovimientoInventario
+                            {
+                                Tipo_Movimiento = "ENTRADA",
+                                Cantidad = cantidad,
                                 Descripcion = $"Devolución por pedido {nuevoEstado.ToLower()}",
                                 Fecha_Movimiento = DateTime.Now,
                                 Producto_Id = detalle.Producto_Id,
-                                Inventario_Id = lote.Inventario_Id,
-                                Pedido_Id = pedido.Pedido_Id
+                                Inventario_Id = loteId,
+                                Pedido_Id = pedidoId
                             });
-
-                            var prod = await _db.Productos
-                                .FirstOrDefaultAsync(p => p.Producto_Id == detalle.Producto_Id);
-                            if (prod != null && !prod.Estado)
-                            {
-                                prod.Estado = true;
-                                _db.Productos.Update(prod);
-                            }
                         }
                     }
 
-                    var movPuntos = await _db.MovimientosPuntos
+                    // 2) Reactivar los productos que se habían desactivado por falta de stock
+                    var productosIds = pedido.DetallesPedido
+                        .Select(d => d.Producto_Id)
+                        .Distinct()
+                        .ToList();
+
+                    await _db.Productos
+                        .Where(p => productosIds.Contains(p.Producto_Id) && !p.Estado)
+                        .ExecuteUpdateAsync(s => s.SetProperty(p => p.Estado, true));
+
+                    // 3) Puntos ganados (pendientes o ya acreditados) se anulan
+                    await _db.MovimientosPuntos
                         .Where(m => m.Pedido_Id == pedidoId
                                  && (m.Tipo == "Pendiente" || m.Tipo == "Ganado"))
-                        .ToListAsync();
+                        .ExecuteUpdateAsync(s => s
+                            .SetProperty(m => m.Tipo, "Devuelto")
+                            .SetProperty(m => m.Puntos, 0));
 
-                    foreach (var m in movPuntos)
-                    {
-                        m.Tipo = "Devuelto";
-                        m.Puntos = 0;
-                        _db.MovimientosPuntos.Update(m);
-                    }
-
+                    // 4) Puntos canjeados se devuelven al cliente
                     if (pedido.Uso_Puntos && pedido.Puntos_Canjeados > 0)
                     {
                         await _db.MovimientosPuntos.AddAsync(new MovimientoPuntos
                         {
                             Puntos = pedido.Puntos_Canjeados,
                             Tipo = "Devuelto",
-                            Descripcion = $"Devolución por pedido {pedido.Numero_Orden} rechazado",
-                            Fecha = DateTime.Now,
-                            Fecha_Vencimiento = DateTime.Now.AddMonths(MesesVencimiento),
+                            Descripcion = $"Devolución por pedido {pedido.Numero_Orden} {nuevoEstado.ToLower()}",
+                            Fecha = ahora,
+                            Fecha_Vencimiento = ahora.AddMonths(MesesVencimiento),
                             Vencido = false,
                             Cliente_Id = pedido.Cliente_Id,
-                            Pedido_Id = pedido.Pedido_Id
+                            Pedido_Id = pedidoId
                         });
                     }
 
-                    // ── Devolver cupón ────────────────────────────────────
+                    // 5) Cupón se devuelve al cliente
                     if (pedido.Cupon_Id.HasValue)
                     {
-                        var cc = await _db.ClientesCupones
-                            .FirstOrDefaultAsync(x => x.Cupon_Id == pedido.Cupon_Id
-                                                    && x.Cliente_Id == pedido.Cliente_Id
-                                                    && x.Utilizado);
-                        if (cc != null)
-                        {
-                            cc.Utilizado = false;
-                            cc.Fecha_Uso = null;
-                            _db.ClientesCupones.Update(cc);
-                        }
+                        var cuponId = pedido.Cupon_Id.Value;
+                        var clienteId = pedido.Cliente_Id;
+
+                        await _db.ClientesCupones
+                            .Where(x => x.Cupon_Id == cuponId
+                                     && x.Cliente_Id == clienteId
+                                     && x.Utilizado)
+                            .ExecuteUpdateAsync(s => s
+                                .SetProperty(x => x.Utilizado, false)
+                                .SetProperty(x => x.Fecha_Uso, (DateTime?)null));
                     }
 
-                    await _db.SaveChangesAsync();
+                    // 6) Factura anulada
+                    await _db.Facturas
+                        .Where(f => f.Pedido_Id == pedidoId)
+                        .ExecuteUpdateAsync(s => s.SetProperty(f => f.Estado, "Anulada"));
                 }
+
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return (true, null);
             }
-
-            pedido.Estado = nuevoEstado;
-            pedido.Fecha_Actualizacion = DateTime.Now;
-            _pedidoRepo.Actualizar(pedido);
-
-            return (true, null);
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return (false, $"Error al cambiar el estado del pedido: {ex.Message}");
+            }
         }
 
+        // ════════════════════════════════════════════════════════════════
+        //  ELIMINAR
+        // ════════════════════════════════════════════════════════════════
         public (bool exito, string? error) EliminarPedido(int pedidoId)
         {
             var pedido = _pedidoRepo.ObtenerPorId(pedidoId);
