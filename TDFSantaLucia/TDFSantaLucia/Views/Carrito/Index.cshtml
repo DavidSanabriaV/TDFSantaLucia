@@ -195,6 +195,9 @@
     <script>
         const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
+        // Subtotal numérico real (sin depender del formato del texto en pantalla)
+        let subtotalActual = @subtotal.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+
         // Limpiar cupón al entrar al carrito (se aplica solo desde aquí)
         sessionStorage.removeItem('cuponId');
         sessionStorage.removeItem('clienteCuponId');
@@ -250,6 +253,7 @@
         }
 
         function actualizarResumen(total, count) {
+            subtotalActual    = total;
             const subtotalNum = total;
             const impuestoNum = Math.round(subtotalNum * 0.13 * 100) / 100;
             const totalNum    = subtotalNum + impuestoNum;
@@ -258,8 +262,14 @@
                 `₡${subtotalNum.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
             document.getElementById('resumenImpuesto').textContent =
                 `₡${impuestoNum.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
-            document.getElementById('resumenTotal').textContent =
-                `₡${totalNum.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+
+            // Si hay cupón activo, el total lo recalcula el servidor con el descuento
+            if (cuponActivoId > 0) {
+                recalcularCupon();
+            } else {
+                document.getElementById('resumenTotal').textContent =
+                    `₡${totalNum.toLocaleString('es-CR', { minimumFractionDigits: 2 })}`;
+            }
 
             const badge = document.querySelector('.badge.rounded-pill');
             if (badge) badge.textContent = count;
@@ -297,47 +307,43 @@
                             <i class="bi bi-ticket-perforated me-1"></i>Aplicar cupón
                          </button>`;
                 div.innerHTML = html;
+
+                // Si viene desde "Mis Cupones" (?cupon=ID), seleccionarlo y aplicarlo
+                const cuponUrl = new URLSearchParams(window.location.search).get('cupon');
+                if (cuponUrl) {
+                    // Quitar el parámetro para que un recargo de página no lo reaplique
+                    history.replaceState(null, '', window.location.pathname);
+
+                    const sel = document.getElementById('selectCupon');
+                    const existe = Array.from(sel.options).some(o => o.value === cuponUrl);
+                    if (existe) {
+                        sel.value = cuponUrl;
+                        await aplicarCupon();
+                    }
+                }
             } catch {
                 div.innerHTML = '<small class="text-muted">No se pudieron cargar los cupones.</small>';
             }
         }
 
-        async function aplicarCupon() {
-            const sel = document.getElementById('selectCupon');
-            if (!sel?.value) { alert('Selecciona un cupón primero.'); return; }
+        // Pregunta al servidor el descuento del cupón para el total actual
+        async function consultarCupon(cuponId) {
+            const impuesto    = Math.round(subtotalActual * 0.13 * 100) / 100;
+            const totalActual = subtotalActual + impuesto;
 
-            // Leer subtotal limpiando formato costarricense (₡2 400,00)
-            const subtotalRaw = document.getElementById('resumenSubtotal').textContent
-                .trim()
-                .replace(/[₡\s\u00A0]/g, '') // ₡, espacios y non-breaking space
-                .replace(/\./g, '')           // puntos de miles
-                .replace(',', '.');           // coma decimal → punto
-
-            const subtotal    = parseFloat(subtotalRaw) || 0;
-            const impuesto    = Math.round(subtotal * 0.13 * 100) / 100;
-            const totalActual = subtotal + impuesto;
-
-            if (totalActual <= 0) {
-                alert('No se pudo calcular el total. Refresca la página.');
-                return;
-            }
-
-            const res  = await fetch('/cupon/validar', {
+            const res = await fetch('/cupon/validar', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'RequestVerificationToken': token
                 },
-                body: `cuponId=${sel.value}&totalActual=${totalActual.toFixed(2)}`
+                body: `cuponId=${cuponId}&totalActual=${totalActual.toFixed(2)}`
             });
-            const data = await res.json();
+            return await res.json();
+        }
 
-            if (!data.exito) { alert(data.mensaje); return; }
-
-            cuponActivoId      = parseInt(sel.value);
-            clienteCuponActivo = data.clienteCuponId;
-            descuentoCupon     = data.descuento;
-
+        // Muestra en pantalla el descuento y el total final
+        function pintarCupon(data) {
             const descFmt  = parseFloat(data.descuento)
                 .toLocaleString('es-CR', { minimumFractionDigits: 2 });
             const totalFmt = parseFloat(data.totalFinal)
@@ -353,6 +359,42 @@
             sessionStorage.setItem('cuponId',        cuponActivoId);
             sessionStorage.setItem('clienteCuponId', clienteCuponActivo);
             sessionStorage.setItem('descuentoCupon', descuentoCupon);
+        }
+
+        async function aplicarCupon() {
+            const sel = document.getElementById('selectCupon');
+            if (!sel?.value) { alert('Selecciona un cupón primero.'); return; }
+
+            if (subtotalActual <= 0) {
+                alert('No se pudo calcular el total. Refresca la página.');
+                return;
+            }
+
+            const data = await consultarCupon(sel.value);
+            if (!data.exito) { alert(data.mensaje); return; }
+
+            cuponActivoId      = parseInt(sel.value);
+            clienteCuponActivo = data.clienteCuponId;
+            descuentoCupon     = data.descuento;
+
+            pintarCupon(data);
+        }
+
+        // Se llama cuando cambia el carrito con un cupón ya aplicado
+        async function recalcularCupon() {
+            if (cuponActivoId <= 0) return;
+
+            const data = await consultarCupon(cuponActivoId);
+            if (!data.exito) {
+                alert(data.mensaje);
+                quitarCupon();
+                return;
+            }
+
+            clienteCuponActivo = data.clienteCuponId;
+            descuentoCupon     = data.descuento;
+
+            pintarCupon(data);
         }
 
         function quitarCupon() {

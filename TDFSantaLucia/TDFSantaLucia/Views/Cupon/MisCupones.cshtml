@@ -71,7 +71,8 @@
                         </div>
                         <div class="card-footer bg-transparent border-0 pb-3 px-4">
                             <a asp-controller="Carrito" asp-action="Index"
-                               class="btn btn-sm rounded-3 w-100"
+                               asp-route-cupon="@cc.Cupon_Id"
+                               class="btn btn-sm rounded-3 w-100 btn-usar-cupon"
                                style="background-color:#d4edda; color:#2d7a4f; border:none;">
                                 <i class="bi bi-cart me-1"></i>Usar en el carrito
                             </a>
@@ -83,3 +84,30 @@
     }
 
 </div>
+
+@section Scripts {
+    <script>
+        // Si el carrito está vacío, mandar a Productos con un aviso;
+        // si tiene productos, ir al carrito con el cupón ya seleccionado.
+        document.querySelectorAll('.btn-usar-cupon').forEach(function (btn) {
+            btn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const destinoCarrito = this.href;
+
+                try {
+                    const res  = await fetch('/carrito/contar');
+                    const data = await res.json();
+
+                    if (data.count > 0) {
+                        window.location.href = destinoCarrito;
+                    } else {
+                        window.location.href =
+                            '@Url.Action("Index", "Producto")' + '?aviso=carritoVacio';
+                    }
+                } catch {
+                    window.location.href = destinoCarrito;
+                }
+            });
+        });
+    </script>
+}

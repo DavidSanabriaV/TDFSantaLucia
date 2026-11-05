@@ -222,7 +222,7 @@
                                                 <i class="bi bi-pencil-square me-1"></i>Editar
                                             </a>
                                         }
-                                                                                @if (User.IsInRole("Cliente"))
+                                        @if (User.IsInRole("Cliente"))
                                         {
                                             <button class="btn rounded-3"
                                                     style="background-color:#d6e4f0; color:#1a3c5e; border:none;"
@@ -428,11 +428,11 @@
         function agregarAlCarrito(productoId, nombre) {
             @if (User.Identity?.IsAuthenticated != true)
             {
-                            <text>
-                                            window.location.href = '/Account/Login?returnUrl=' +
-                                                encodeURIComponent(window.location.pathname);
-                                            return;
-                            </text>
+                    <text>
+                            window.location.href = '/Account/Login?returnUrl=' +
+                                encodeURIComponent(window.location.pathname);
+                            return;
+                    </text>
             }
             const token = document.querySelector(
                 'input[name="__RequestVerificationToken"]').value;
@@ -484,6 +484,13 @@
             input.value = buscarInicial;
             document.getElementById('btnLimpiarTexto').style.display = 'block';
             filtrar();
+        }
+
+        // Aviso al venir desde "Mis Cupones" con el carrito vacío
+        const aviso = new URLSearchParams(window.location.search).get('aviso');
+        if (aviso === 'carritoVacio') {
+            mostrarAlerta('warning', 'Agrega productos a tu carrito para usar tu cupón.');
+            history.replaceState(null, '', window.location.pathname);
         }
     </script>
 }
