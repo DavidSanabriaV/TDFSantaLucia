@@ -59,7 +59,10 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Teléfono de contacto</label>
                         <input asp-for="Telefono_Contacto" class="form-control"
-                               placeholder="Ej: 8888-8888" />
+                               maxlength="8"
+                               inputmode="numeric"
+                               placeholder="Ej: 88888888"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,8)" />
                         <span asp-validation-for="Telefono_Contacto" class="text-danger small"></span>
                     </div>
                     <div id="campoDireccion" style="display:none;">

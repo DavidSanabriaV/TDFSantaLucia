@@ -61,8 +61,11 @@
                         </div>
                         <div id="categoriaSeleccionada" class="mt-2" style="display:none;">
                             <span class="badge bg-success px-3 py-2 fs-6" id="categoriaNombreBadge"></span>
-                            <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiarCategoria">
-                                ✕ Cambiar
+                            <button type="button"
+                                    class="btn btn-sm rounded-3 ms-1"
+                                    style="background-color:#fde8cc; color:#d4620a; border:none;"
+                                    id="btnLimpiarCategoria">
+                                <i class="bi bi-arrow-repeat me-1"></i>Cambiar
                             </button>
                         </div>
                         <input type="hidden" asp-for="Categoria_Id" id="categoriaIdHidden" />

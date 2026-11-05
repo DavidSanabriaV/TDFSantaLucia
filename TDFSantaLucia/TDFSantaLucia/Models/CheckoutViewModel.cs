@@ -10,6 +10,7 @@ namespace TDFSantaLucia.Models
         public string? Direccion_Entrega { get; set; }
 
         [Required(ErrorMessage = "Ingrese un teléfono de contacto")]
+        [RegularExpression(@"^\d{8}$", ErrorMessage = "El teléfono debe tener exactamente 8 números")]
         public string Telefono_Contacto { get; set; } = string.Empty;
 
         public string? Metodo_Pago { get; set; }
