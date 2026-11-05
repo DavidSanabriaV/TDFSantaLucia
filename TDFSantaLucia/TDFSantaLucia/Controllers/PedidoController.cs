@@ -124,6 +124,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpGet("checkout")]
+        [Authorize(Roles = "Cliente")]
         public async Task<IActionResult> Checkout()
         {
             var items = _carritoService.ObtenerCarrito();
@@ -155,6 +156,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("checkout")]
+        [Authorize(Roles = "Cliente")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Checkout(CheckoutViewModel model)
         {
@@ -228,6 +230,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpGet("pago")]
+        [Authorize(Roles = "Cliente")]
         public IActionResult Pago()
         {
             var json = TempData["CheckoutJson"]?.ToString();
@@ -246,6 +249,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("pago")]
+        [Authorize(Roles = "Cliente")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Pago(string metodoPago)
         {

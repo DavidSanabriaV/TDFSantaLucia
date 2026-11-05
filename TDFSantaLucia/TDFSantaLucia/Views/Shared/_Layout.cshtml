@@ -98,15 +98,18 @@
                     </a>
                 }
 
-                <a asp-controller="Carrito" asp-action="Index"
-                   class="icon-navbar position-relative" id="btnCarrito">
-                    <i class="bi bi-cart fs-5"></i>
-                    <span class="position-absolute top-0 start-100
-                    translate-middle badge rounded-pill
-                    bg-info text-dark"
-                          style="font-size:10px;"
-                          id="carritoCount">0</span>
-                </a>
+                            @if (User.IsInRole("Cliente"))
+                {
+                    <a asp-controller="Carrito" asp-action="Index"
+                       class="icon-navbar position-relative" id="btnCarrito">
+                        <i class="bi bi-cart fs-5"></i>
+                        <span class="position-absolute top-0 start-100
+                        translate-middle badge rounded-pill
+                        bg-info text-dark"
+                              style="font-size:10px;"
+                              id="carritoCount">0</span>
+                    </a>
+                }
 
             </div>
         </nav>
@@ -420,8 +423,9 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
-    <script>
+        <script>
             function actualizarContadorCarrito() {
+                if (!document.getElementById('carritoCount')) return; 
                 fetch('/carrito/contar')
                     .then(r => r.json())
                     .then(d => {

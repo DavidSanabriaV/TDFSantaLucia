@@ -71,6 +71,7 @@ namespace TDFSantaLucia.Controllers
             if (producto == null) return NotFound();
 
             ViewData["Title"] = "Detalle de Producto";
+            ViewBag.Stock = _carritoService.ObtenerStockDisponible(producto.Producto_Id);
             return View(producto);
         }
 
@@ -225,6 +226,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("agregaralcarrito")]
+        [Authorize(Roles = "Cliente")]
         public IActionResult AgregarAlCarrito(int productoId, int cantidad = 1)
         {
             var producto = _productoService.ObtenerPorId(productoId);
@@ -234,16 +236,28 @@ namespace TDFSantaLucia.Controllers
                 return Json(new { exito = false, mensaje = "Producto no disponible." });
             }
 
-            _carritoService.AgregarItem(new CarritoItem
+            if (cantidad < 1) cantidad = 1;
+
+            var (exito, mensaje) = _carritoService.AgregarItem(new CarritoItem
             {
                 Producto_Id = producto.Producto_Id,
                 Nombre = producto.Nombre,
+                Marca = producto.Marca,
                 Precio = producto.Precio,
                 Cantidad = cantidad,
-                Imagen_URL = producto.Imagen_URL
+                Imagen_URL = producto.Imagen_URL,
+                Receta = producto.Receta
             });
 
-            return Json(new { exito = true, mensaje = $"{producto.Nombre} agregado al carrito." });
+            if (!exito)
+                return Json(new { exito = false, mensaje });
+
+            return Json(new
+            {
+                exito = true,
+                mensaje = $"{producto.Nombre} agregado al carrito.",
+                total = _carritoService.ContarItems()
+            });
         }
 
         private void CargarCategorias(int? selectedId = null)

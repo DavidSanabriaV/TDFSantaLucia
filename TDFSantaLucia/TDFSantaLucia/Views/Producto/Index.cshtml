@@ -222,7 +222,7 @@
                                                 <i class="bi bi-pencil-square me-1"></i>Editar
                                             </a>
                                         }
-                                        @if (User.Identity?.IsAuthenticated == true)
+                                                                                @if (User.IsInRole("Cliente"))
                                         {
                                             <button class="btn rounded-3"
                                                     style="background-color:#d6e4f0; color:#1a3c5e; border:none;"

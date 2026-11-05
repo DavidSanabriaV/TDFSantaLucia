@@ -6,16 +6,17 @@ namespace TDFSantaLucia.Services
     {
         List<CarritoItem> ObtenerCarrito();
 
-        void AgregarItem(CarritoItem item);
-        void ActualizarCantidad(int productoId, int cantidad);
+        (bool Exito, string Mensaje) AgregarItem(CarritoItem item);
+        (bool Exito, string Mensaje, int StockMax) ActualizarCantidad(int productoId, int cantidad);
         void EliminarItem(int productoId);
         void LimpiarCarrito();
 
-        Task AgregarItemAsync(CarritoItem item);
-        Task ActualizarCantidadAsync(int productoId, int cantidad);
+        Task<(bool Exito, string Mensaje)> AgregarItemAsync(CarritoItem item);
+        Task<(bool Exito, string Mensaje, int StockMax)> ActualizarCantidadAsync(int productoId, int cantidad);
         Task EliminarItemAsync(int productoId);
         Task LimpiarCarritoAsync();
 
+        int ObtenerStockDisponible(int productoId);
         int ContarItems();
         decimal ObtenerTotal();
         Task SincronizarSesionADbAsync();

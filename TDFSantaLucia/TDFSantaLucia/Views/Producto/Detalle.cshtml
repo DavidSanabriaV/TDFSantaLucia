@@ -2,7 +2,10 @@
 
 @{
     ViewData["Title"] = "Detalle";
+    int stockDisponible = ViewBag.Stock is int stockVb ? stockVb : 0;
+    int stockMax = Math.Max(stockDisponible, 1);
 }
+
 
 <div class="container py-5" style="max-width:900px;">
 
@@ -57,7 +60,7 @@
                         </div>
                     }
 
-                    @if (User.Identity?.IsAuthenticated == true)
+                    @if (User.IsInRole("Cliente"))
                     {
                         <div class="d-flex align-items-center gap-3 mb-3">
                             <label class="fw-semibold text-muted small">CANTIDAD</label>
@@ -70,7 +73,7 @@
                                        class="form-control text-center"
                                        value="1"
                                        min="1"
-                                       max="99" />
+                                       max="@stockMax" />
                                 <button class="btn btn-outline-secondary" type="button" id="btnMas">
                                     <i class="bi bi-plus"></i>
                                 </button>
@@ -85,7 +88,7 @@
                     <i class="bi bi-arrow-left me-1"></i>Volver
                 </a> 
 
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (User.IsInRole("Cliente"))
                         {
                             <button class="btn rounded-3"
                                     style="background-color:#d6e4f0; color:#1a3c5e; border:none;"
@@ -122,6 +125,7 @@
         const inputCantidad = document.getElementById('inputCantidad');
         const btnMenos      = document.getElementById('btnMenos');
         const btnMas        = document.getElementById('btnMas');
+        const stockMax      = @stockMax;
 
         if (btnMenos && btnMas && inputCantidad) {
             btnMenos.addEventListener('click', function () {
@@ -131,18 +135,18 @@
 
             btnMas.addEventListener('click', function () {
                 const val = parseInt(inputCantidad.value) || 1;
-                if (val < 99) inputCantidad.value = val + 1;
+                if (val < stockMax) inputCantidad.value = val + 1;
             });
 
             inputCantidad.addEventListener('change', function () {
                 let val = parseInt(this.value) || 1;
                 if (val < 1)  val = 1;
-                if (val > 99) val = 99;
+                if (val > stockMax) val = stockMax;
                 this.value = val;
             });
         }
 
-                function agregarAlCarrito(productoId, nombre) {
+        function agregarAlCarrito(productoId, nombre) {
             @if (User.Identity?.IsAuthenticated != true)
             {
                         <text>
