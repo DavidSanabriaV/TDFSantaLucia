@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Services;
 
-
 namespace TDFSantaLucia.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("empleado")]
     public class EmpleadoController : Controller
     {
         private readonly IEmpleadoService _empleadoService;
-
 
         public EmpleadoController(IEmpleadoService empleadoService)
         {
@@ -23,7 +23,6 @@ namespace TDFSantaLucia.Controllers
             return View(empleados);
         }
 
-
         [HttpGet("detalle/{id:int}")]
         public async Task<IActionResult> Detalle(int id)
         {
@@ -35,8 +34,6 @@ namespace TDFSantaLucia.Controllers
             return View(model);
         }
 
-
-
         [HttpGet("crear")]
         public IActionResult Crear()
         {
@@ -45,6 +42,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("crear")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear(EmpleadoViewModel model)
         {
             if (string.IsNullOrWhiteSpace(model.password))
@@ -74,16 +72,12 @@ namespace TDFSantaLucia.Controllers
             if (!resultado.success)
             {
                 ModelState.AddModelError("", resultado.error ?? "Error al crear empleado");
-
                 ViewBag.Roles = _empleadoService.ObtenerRoles();
-
                 return View(model);
             }
 
             return RedirectToAction("Index");
         }
-
-
 
         [HttpGet("editar/{id:int}")]
         public async Task<IActionResult> Editar(int id)
@@ -94,13 +88,17 @@ namespace TDFSantaLucia.Controllers
                 return NotFound();
 
             ViewBag.Roles = _empleadoService.ObtenerRoles();
-
             return View(model);
         }
 
         [HttpPost("editar/{id:int}")]
-        public async Task<IActionResult> Editar(EmpleadoViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Editar(int id, EmpleadoViewModel model)
         {
+            
+            if (id != model.Empleado_Id)
+                return BadRequest();
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Roles = _empleadoService.ObtenerRoles();
@@ -112,9 +110,7 @@ namespace TDFSantaLucia.Controllers
             if (!resultado.success)
             {
                 ModelState.AddModelError("", resultado.error ?? "Error al actualizar empleado");
-
                 ViewBag.Roles = _empleadoService.ObtenerRoles();
-
                 return View(model);
             }
 
@@ -122,6 +118,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("desactivar/{id:int}")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Desactivar(int id)
         {
             try
@@ -142,6 +139,7 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpPost("activar/{id:int}")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Activar(int id)
         {
             var resultado = await _empleadoService.ActivarEmpleadoAsync(id);
@@ -154,4 +152,4 @@ namespace TDFSantaLucia.Controllers
             return RedirectToAction("Index");
         }
     }
-    }
+}
