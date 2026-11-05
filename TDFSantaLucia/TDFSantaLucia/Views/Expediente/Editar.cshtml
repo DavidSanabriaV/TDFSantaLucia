@@ -41,10 +41,12 @@
 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Empleado responsable</label>
-                    @Html.DropDownList("Empleado_Id", (SelectList)ViewBag.Empleados,
-                        "— Seleccione un empleado —",
-                        new { @class = "form-select rounded-3 " + (ViewData.ModelState["Empleado_Id"]?.Errors.Any() == true ? "is-invalid" : "") })
-                    @Html.ValidationMessage("Empleado_Id", "", new { @class = "invalid-feedback" })
+                    <input type="text"
+                           class="form-control rounded-3 bg-light"
+                           value="@(Model.Empleado?.Usuario != null ? $"{Model.Empleado.Usuario.Nombre} {Model.Empleado.Usuario.Primer_Apellido} {Model.Empleado.Usuario.Segundo_Apellido}" : "—")"
+                           readonly />
+                    <input type="hidden" name="Empleado_Id" value="@Model.Empleado_Id" />
+                    <small class="text-muted">El empleado responsable no puede modificarse.</small>
                 </div>
 
                 <div class="col-12">

@@ -123,6 +123,11 @@
                                 style="background-color:#d6e4f0; color:#1a3c5e; border:none;">
                             <i class="bi bi-person-check me-1"></i>Asignar seleccionado
                         </button>
+                        <button type="button" class="btn rounded-3"
+                                style="background-color:#f8d7da; color:#842029; border:none;"
+                                onclick="limpiarSeleccion()">
+                            <i class="bi bi-x-circle me-1"></i>Limpiar selección
+                        </button>
                     </div>
                 </form>
             }
@@ -227,6 +232,13 @@
                 const nombre = opt.dataset.nombre || '';
                 opt.hidden   = texto && !nombre.includes(texto);
             });
+        }
+
+        function limpiarSeleccion() {
+            const select = document.getElementById('selectCliente');
+            select.selectedIndex = -1;
+            document.getElementById('buscadorCliente').value = '';
+            filtrarClientes('');
         }
     </script>
 }

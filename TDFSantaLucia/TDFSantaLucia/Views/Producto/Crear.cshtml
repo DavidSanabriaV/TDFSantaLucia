@@ -48,7 +48,7 @@
                                autocomplete="off" />
                         <div id="listaCategorias"
                              style="max-height:220px; overflow-y:auto; border:1px solid #dee2e6;
-                             border-radius:10px; background:white;">
+                            border-radius:10px; background:white;">
                             @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Categorias)
                             {
                                 <div class="categoria-item px-3 py-2"
@@ -72,8 +72,9 @@
                     <div class="col-md-6">
                         <label asp-for="Marca" class="form-label fw-semibold"></label>
                         <input asp-for="Marca"
-                               class="form-control rounded-3"
+                               class="form-control rounded-3 @(ViewData.ModelState["Marca"]?.Errors.Any() == true ? "is-invalid" : "")"
                                placeholder="Ej: Bayer, Pfizer..." />
+                        <span asp-validation-for="Marca" class="invalid-feedback d-block"></span>
                     </div>
 
                     <div class="col-md-6">
@@ -144,12 +145,18 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        const descripcion = document.getElementById('Descripcion');
-        const contador    = document.getElementById('contadorDesc');
 
-        document.getElementById('ImagenArchivo').addEventListener('change', function () {
-            const preview = document.getElementById('previewImagen');
-            const imgPreview = document.getElementById('imgPreview');
+        if (window.jQuery && $.validator) {
+            $.validator.setDefaults({ ignore: [] });
+        }
+
+        const byId = id => document.getElementById(id);
+        const descripcion = byId('Descripcion');
+        const contador = byId('contadorDesc');
+
+        byId('ImagenArchivo').addEventListener('change', function() {
+            const preview = byId('previewImagen');
+            const imgPreview = byId('imgPreview');
             const file = this.files[0];
 
             if (file) {
@@ -158,21 +165,37 @@
             preview.classList.remove('d-none');
         });
 
-        descripcion.addEventListener('input', function () {
+        descripcion.addEventListener('input', function() {
             contador.textContent = this.value.length;
         });
         contador.textContent = descripcion.value.length;
 
-        document.querySelector('form').addEventListener('submit', function () {
-            const btn = document.getElementById('btnGuardar');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
+        const form = document.querySelector('form');
+        const btnGuardar = byId('btnGuardar');
+        const htmlOriginal = btnGuardar.innerHTML;
+
+        function restaurarBoton() {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = htmlOriginal;
+        }
+
+        form.addEventListener('submit', function(e) {
+            if (window.jQuery && !$(form).valid()) {
+                e.preventDefault();
+                restaurarBoton();
+                return;
+            }
+            btnGuardar.disabled = true;
+            btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
         });
 
-        const byId = id => document.getElementById(id);
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) restaurarBoton();
+        });
+
         const itemsCategoria = Array.from(document.querySelectorAll('.categoria-item'));
 
-        byId('buscadorCategoria').addEventListener('input', function () {
+        byId('buscadorCategoria').addEventListener('input', function() {
             const texto = this.value.toLowerCase();
             itemsCategoria.forEach(i => {
                 i.style.display = i.dataset.nombre.toLowerCase().includes(texto) ? '' : 'none';
@@ -184,20 +207,20 @@
             i.addEventListener('mouseleave', () => i.style.background = 'white');
 
             i.addEventListener('click', () => {
-                byId('categoriaIdHidden').value          = i.dataset.id;
+                byId('categoriaIdHidden').value = i.dataset.id;
                 byId('categoriaNombreBadge').textContent = i.dataset.nombre;
                 byId('categoriaSeleccionada').style.display = 'block';
-                byId('listaCategorias').style.display       = 'none';
-                byId('buscadorCategoria').style.display     = 'none';
+                byId('listaCategorias').style.display = 'none';
+                byId('buscadorCategoria').style.display = 'none';
             });
         });
 
         byId('btnLimpiarCategoria').addEventListener('click', () => {
-            byId('categoriaIdHidden').value             = '';
-            byId('buscadorCategoria').value             = '';
+            byId('categoriaIdHidden').value = '';
+            byId('buscadorCategoria').value = '';
             byId('categoriaSeleccionada').style.display = 'none';
-            byId('listaCategorias').style.display       = '';
-            byId('buscadorCategoria').style.display     = '';
+            byId('listaCategorias').style.display = '';
+            byId('buscadorCategoria').style.display = '';
             itemsCategoria.forEach(i => i.style.display = '');
         });
     </script>

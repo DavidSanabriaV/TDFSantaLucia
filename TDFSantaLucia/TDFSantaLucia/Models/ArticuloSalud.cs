@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http;
 
 namespace TDFSantaLucia.Models
 {
@@ -17,6 +18,9 @@ namespace TDFSantaLucia.Models
         public string? Resumen { get; set; }
 
         public string? Imagen_URL { get; set; }
+
+        [NotMapped]
+        public IFormFile? Imagen_Archivo { get; set; }
 
         public string? Categoria { get; set; }
 
