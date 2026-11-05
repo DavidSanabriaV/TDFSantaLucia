@@ -28,6 +28,20 @@ namespace TDFSantaLucia.Controllers
             return View();
         }
 
+        public IActionResult BuscarSugerencias(string q)
+        {
+            if (string.IsNullOrWhiteSpace(q))
+                return Json(new List<object>());
+
+            var sugerencias = _context.Productos
+                .Where(p => p.Estado && p.Nombre.Contains(q))
+                .Take(5)
+                .Select(p => new { p.Producto_Id, p.Nombre })
+                .ToList();
+
+            return Json(sugerencias);
+        }
+
         public IActionResult SobreNosotros()
         {
             return View();
