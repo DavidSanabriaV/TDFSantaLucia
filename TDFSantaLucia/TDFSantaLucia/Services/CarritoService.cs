@@ -83,14 +83,22 @@ namespace TDFSantaLucia.Services
             return items;
         }
 
+        public int ObtenerStockDisponible(int productoId)
+        {
+            return _db.Inventarios
+                .Where(i => i.Producto_Id == productoId
+                         && i.Estado && i.Cantidad_Disponible > 0)
+                .Sum(i => i.Cantidad_Disponible);
+        }
+
         public int ContarItems() => ObtenerCarrito().Sum(i => i.Cantidad);
         public decimal ObtenerTotal() => ObtenerCarrito().Sum(i => i.Subtotal);
 
 
-        public void AgregarItem(CarritoItem item)
+        public (bool Exito, string Mensaje) AgregarItem(CarritoItem item)
             => AgregarItemAsync(item).GetAwaiter().GetResult();
 
-        public void ActualizarCantidad(int productoId, int cantidad)
+        public (bool Exito, string Mensaje, int StockMax) ActualizarCantidad(int productoId, int cantidad)
             => ActualizarCantidadAsync(productoId, cantidad).GetAwaiter().GetResult();
 
         public void EliminarItem(int productoId)
@@ -100,11 +108,29 @@ namespace TDFSantaLucia.Services
             => LimpiarCarritoAsync().GetAwaiter().GetResult();
 
 
-        public async Task AgregarItemAsync(CarritoItem item)
+        public async Task<(bool Exito, string Mensaje)> AgregarItemAsync(CarritoItem item)
         {
-            var carrito = LeerSesion();
+            if (item.Cantidad <= 0)
+                return (false, "La cantidad debe ser mayor a cero.");
+
+            var carrito = ObtenerCarrito();
             var existente = carrito
                 .FirstOrDefault(i => i.Producto_Id == item.Producto_Id);
+
+            int enCarrito = existente?.Cantidad ?? 0;
+            int stock = ObtenerStockDisponible(item.Producto_Id);
+
+            if (stock <= 0)
+                return (false, $"'{item.Nombre}' no tiene stock disponible.");
+
+            if (enCarrito + item.Cantidad > stock)
+            {
+                int puedeAgregar = stock - enCarrito;
+                return (false, puedeAgregar <= 0
+                    ? $"Ya tiene en el carrito todo el stock disponible de '{item.Nombre}' ({stock})."
+                    : $"Stock insuficiente. Solo puede agregar {puedeAgregar} unidad(es) más de '{item.Nombre}' " +
+                      $"(disponible: {stock}, en su carrito: {enCarrito}).");
+            }
 
             if (existente != null)
                 existente.Cantidad += item.Cantidad;
@@ -114,7 +140,7 @@ namespace TDFSantaLucia.Services
             GuardarSesion(carrito);
 
             var clienteId = ObtenerClienteId();
-            if (clienteId == null) return;
+            if (clienteId == null) return (true, string.Empty);
 
             var itemDb = await _db.CarritoItems
                 .FirstOrDefaultAsync(c => c.Cliente_Id == clienteId
@@ -140,10 +166,19 @@ namespace TDFSantaLucia.Services
             }
 
             await _db.SaveChangesAsync();
+            return (true, string.Empty);
         }
 
-        public async Task ActualizarCantidadAsync(int productoId, int cantidad)
+        public async Task<(bool Exito, string Mensaje, int StockMax)> ActualizarCantidadAsync(int productoId, int cantidad)
         {
+            int stock = ObtenerStockDisponible(productoId);
+            if (cantidad > stock)
+                return (false,
+                    stock <= 0
+                        ? "Este producto ya no tiene stock disponible."
+                        : $"Solo hay {stock} unidades disponibles.",
+                    stock);
+
             var carrito = LeerSesion();
             var item = carrito.FirstOrDefault(i => i.Producto_Id == productoId);
             if (item != null)
@@ -154,12 +189,12 @@ namespace TDFSantaLucia.Services
             GuardarSesion(carrito);
 
             var clienteId = ObtenerClienteId();
-            if (clienteId == null) return;
+            if (clienteId == null) return (true, string.Empty, stock);
 
             var itemDb = await _db.CarritoItems
                 .FirstOrDefaultAsync(c => c.Cliente_Id == clienteId
                                        && c.Producto_Id == productoId);
-            if (itemDb == null) return;
+            if (itemDb == null) return (true, string.Empty, stock);
 
             if (cantidad <= 0)
                 _db.CarritoItems.Remove(itemDb);
@@ -170,11 +205,12 @@ namespace TDFSantaLucia.Services
             }
 
             await _db.SaveChangesAsync();
+            return (true, string.Empty, stock);
         }
 
         public async Task EliminarItemAsync(int productoId)
         {
-            
+
             var carrito = LeerSesion();
             carrito.RemoveAll(i => i.Producto_Id == productoId);
             GuardarSesion(carrito);
@@ -218,9 +254,14 @@ namespace TDFSantaLucia.Services
                 var itemDb = await _db.CarritoItems
                     .FirstOrDefaultAsync(c => c.Cliente_Id == clienteId
                                            && c.Producto_Id == item.Producto_Id);
+
+                int stock = ObtenerStockDisponible(item.Producto_Id);
+                int cantidadFinal = Math.Min((itemDb?.Cantidad ?? 0) + item.Cantidad, stock);
+                if (cantidadFinal <= 0) continue;
+
                 if (itemDb != null)
                 {
-                    itemDb.Cantidad += item.Cantidad;
+                    itemDb.Cantidad = cantidadFinal;
                     _db.CarritoItems.Update(itemDb);
                 }
                 else
@@ -233,7 +274,7 @@ namespace TDFSantaLucia.Services
                         Imagen_URL = item.Imagen_URL,
                         Marca = item.Marca,
                         Precio = item.Precio,
-                        Cantidad = item.Cantidad,
+                        Cantidad = cantidadFinal,
                         Receta = item.Receta
                     });
                 }

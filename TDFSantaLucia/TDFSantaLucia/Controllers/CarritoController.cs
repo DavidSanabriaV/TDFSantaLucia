@@ -9,6 +9,7 @@ using TDFSantaLucia.Services;
 namespace TDFSantaLucia.Controllers
 {
     [Route("carrito")]
+    [Authorize(Roles = "Cliente")]
     public class CarritoController : Controller
     {
         private readonly ICarritoService _carritoService;
@@ -65,7 +66,9 @@ namespace TDFSantaLucia.Controllers
                     mensaje = "Producto no disponible."
                 });
 
-            _carritoService.AgregarItem(new CarritoItem
+            if (cantidad < 1) cantidad = 1;
+
+            var (exito, mensaje) = _carritoService.AgregarItem(new CarritoItem
             {
                 Producto_Id = producto.Producto_Id,
                 Nombre = producto.Nombre,
@@ -75,6 +78,9 @@ namespace TDFSantaLucia.Controllers
                 Cantidad = cantidad,
                 Receta = producto.Receta
             });
+
+            if (!exito)
+                return Json(new { exito = false, mensaje });
 
             return Json(new
             {
@@ -87,20 +93,11 @@ namespace TDFSantaLucia.Controllers
         [HttpPost("actualizar")]
         public IActionResult Actualizar(int productoId, int cantidad)
         {
-            var stockDisponible = _db.Inventarios
-                .Where(i => i.Producto_Id == productoId
-                         && i.Estado && i.Cantidad_Disponible > 0)
-                .Sum(i => i.Cantidad_Disponible);
+            var (exito, mensaje, stockMax) = _carritoService.ActualizarCantidad(productoId, cantidad);
 
-            if (cantidad > stockDisponible)
-                return Json(new
-                {
-                    exito = false,
-                    mensaje = $"Solo hay {stockDisponible} unidades disponibles.",
-                    stockMax = stockDisponible
-                });
+            if (!exito)
+                return Json(new { exito = false, mensaje, stockMax });
 
-            _carritoService.ActualizarCantidad(productoId, cantidad);
             var items = _carritoService.ObtenerCarrito();
             var subtotal = items.FirstOrDefault(i =>
                 i.Producto_Id == productoId)?.Subtotal ?? 0;
