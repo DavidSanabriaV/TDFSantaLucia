@@ -2,6 +2,9 @@
 using TDFSantaLucia.Data;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Repositories;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TDFSantaLucia.Services
 {
@@ -24,6 +27,7 @@ namespace TDFSantaLucia.Services
         {
             try
             {
+                opcion.Texto = LimpiarTexto(opcion.Texto);
                 opcion.Fecha_Creacion = DateTime.Now;
                 opcion.Fecha_Actualizacion = DateTime.Now;
                 _repo.Agregar(opcion);
@@ -37,19 +41,44 @@ namespace TDFSantaLucia.Services
                 return (false, $"Error: {detalle}");
             }
         }
+
+        private static string NormalizarParaComparar(string? texto)
+        {
+            if (string.IsNullOrWhiteSpace(texto)) return string.Empty;
+
+            var descompuesto = texto.Trim().Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+            foreach (var c in descompuesto)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    sb.Append(c);
+            }
+
+            return Regex.Replace(sb.ToString().Normalize(NormalizationForm.FormC), @"\s+", " ")
+                        .ToLowerInvariant();
+        }
+
+        private static string LimpiarTexto(string? texto)
+            => Regex.Replace((texto ?? string.Empty).Trim(), @"\s+", " ");
+
         public bool ExisteTexto(string texto, int? excluirId = null)
-    => _repo.ObtenerTodas()
-        .Any(o => o.Texto.ToLower() == texto.ToLower()
-               && (excluirId == null || o.Opcion_Id != excluirId));
+        {
+            var buscado = NormalizarParaComparar(texto);
+            return _repo.ObtenerTodas()
+                .Any(o => NormalizarParaComparar(o.Texto) == buscado
+                       && (excluirId == null || o.Opcion_Id != excluirId));
+        }
 
         public bool ExisteOrden(int orden, int? excluirId = null)
             => _repo.ObtenerTodas()
                 .Any(o => o.Orden == orden
                        && (excluirId == null || o.Opcion_Id != excluirId));
+
         public (bool exito, string? error) Actualizar(ChatbotOpcion opcion)
         {
             try
             {
+                opcion.Texto = LimpiarTexto(opcion.Texto);
                 opcion.Fecha_Actualizacion = DateTime.Now;
                 _repo.Actualizar(opcion);
                 return (true, null);
@@ -66,7 +95,6 @@ namespace TDFSantaLucia.Services
             }
             catch (Exception ex) { return (false, ex.Message); }
         }
-
 
         public string? DetectarIntent(string texto)
         {

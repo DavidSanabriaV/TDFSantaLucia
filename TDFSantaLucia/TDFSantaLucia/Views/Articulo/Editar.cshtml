@@ -1,4 +1,5 @@
-﻿@model TDFSantaLucia.Models.ArticuloSalud
+﻿@* Views/Articulo/Editar.cshtml *@
+@model TDFSantaLucia.Models.ArticuloSalud
 @{
     ViewData["Title"] = "Editar Artículo";
 }
@@ -11,12 +12,28 @@
                 <i class="bi bi-pencil-square me-2 text-primary"></i>Editar Artículo
             </h2>
 
-            <form asp-action="Editar" asp-route-id="@Model.Articulo_Id" method="post">
+            @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
+            {
+                <div class="alert alert-danger rounded-3 mb-4">
+                    <h6 class="fw-bold mb-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Por favor corrija los siguientes errores:
+                    </h6>
+                    <ul class="mb-0">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <form asp-action="Editar" asp-route-id="@Model.Articulo_Id" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Articulo_Id" />
                 <input type="hidden" asp-for="Usuario_Id" />
                 <input type="hidden" asp-for="Fecha_Creacion" />
                 <input type="hidden" asp-for="Fecha_Actualizacion" />
+                <input type="hidden" asp-for="Imagen_URL" />
 
                 <div class="mb-3">
                     <label asp-for="Titulo" class="form-label fw-semibold">Título</label>
@@ -37,8 +54,24 @@
                 </div>
 
                 <div class="mb-3">
-                    <label asp-for="Imagen_URL" class="form-label fw-semibold">URL de imagen</label>
-                    <input asp-for="Imagen_URL" class="form-control rounded-3" placeholder="https://..." />
+                    <label asp-for="Imagen_Archivo" class="form-label fw-semibold">Imagen</label>
+
+                    @if (!string.IsNullOrEmpty(Model.Imagen_URL))
+                    {
+                        <div class="mb-2">
+                            <img id="imagenActual" src="@Model.Imagen_URL" class="img-fluid rounded-3"
+                                 style="max-height:200px;" alt="Imagen actual" />
+                            <div class="form-text">Imagen actual. Seleccione un archivo para reemplazarla.</div>
+                        </div>
+                    }
+
+                    <input asp-for="Imagen_Archivo" type="file" id="imagenInput"
+                           class="form-control rounded-3"
+                           accept=".jpg,.jpeg,.png,.webp,.gif" />
+                    <div class="form-text">JPG, PNG, WEBP o GIF. Máximo 5 MB.</div>
+                    <span asp-validation-for="Imagen_Archivo" class="text-danger small"></span>
+                    <img id="imagenPreview" class="img-fluid rounded-3 mt-2 d-none"
+                         style="max-height:200px;" alt="Vista previa" />
                 </div>
 
                 <div class="mb-3">
@@ -71,4 +104,16 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('imagenInput').addEventListener('change', function (e) {
+            const preview = document.getElementById('imagenPreview');
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.classList.remove('d-none');
+            } else {
+                preview.classList.add('d-none');
+            }
+        });
+    </script>
 }

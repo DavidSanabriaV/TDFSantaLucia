@@ -65,6 +65,9 @@ namespace TDFSantaLucia.Services
             if (inventario.Fecha_Ingreso > DateTime.Today)
                 return (false, "La fecha de ingreso no puede ser futura.");
 
+            if (inventario.Fecha_Vencimiento.Date <= inventario.Fecha_Ingreso.Date)
+                return (false, "La fecha de vencimiento debe ser posterior a la fecha de ingreso.");
+
             inventario.Numero_Lote = inventario.Numero_Lote?.Trim();
             inventario.Proveedor = inventario.Proveedor?.Trim();
             inventario.Estado = true;
@@ -118,6 +121,12 @@ namespace TDFSantaLucia.Services
 
             if (inventario.Fecha_Vencimiento <= DateTime.Today)
                 return (false, "La fecha de vencimiento debe ser futura.");
+
+            if (inventario.Fecha_Ingreso > DateTime.Today)
+                return (false, "La fecha de ingreso no puede ser futura.");
+
+            if (inventario.Fecha_Vencimiento.Date <= inventario.Fecha_Ingreso.Date)
+                return (false, "La fecha de vencimiento debe ser posterior a la fecha de ingreso.");
 
             existente.Producto_Id = inventario.Producto_Id;
             existente.Cantidad_Disponible = inventario.Cantidad_Disponible;

@@ -118,8 +118,34 @@
 </div>
 
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
     <script>
+        const fIngreso = document.getElementById('Fecha_Ingreso');
+        const fVenc    = document.getElementById('Fecha_Vencimiento');
+
+        fIngreso.max = new Date().toLocaleDateString('en-CA'); 
+
+        function validarFechasLote() {
+            if (fIngreso.value) {
+                const minVenc = new Date(fIngreso.value + 'T00:00:00');
+                minVenc.setDate(minVenc.getDate() + 1);
+                fVenc.min = minVenc.toLocaleDateString('en-CA');
+            }
+
+            if (fIngreso.value && fVenc.value && fVenc.value <= fIngreso.value)
+                fVenc.setCustomValidity('La fecha de vencimiento debe ser posterior a la fecha de ingreso.');
+            else
+                fVenc.setCustomValidity('');
+        }
+
+        fIngreso.addEventListener('change', validarFechasLote);
+        fVenc.addEventListener('change', function () {
+            validarFechasLote();
+            fVenc.reportValidity();
+        });
+        validarFechasLote();
+
         document.querySelector('form').addEventListener('submit', function () {
             const btn = document.getElementById('btnGuardar');
             btn.disabled = true;

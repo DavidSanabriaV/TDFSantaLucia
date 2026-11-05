@@ -1,18 +1,36 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TDFSantaLucia.Binders;
 using TDFSantaLucia.Constants;
 using TDFSantaLucia.Data;
-using TDFSantaLucia.Binders;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Repositories;
 using TDFSantaLucia.Services;
 using TDFSantaLucia.Validations;
+using TDFSantaLucia.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews(options =>
 {
     options.ModelBinderProviders.Insert(0, new UsuarioModelBinderProvider());
+    options.ModelMetadataDetailsProviders.Add(new ValidacionEspanolMetadataProvider());
+
+    var m = options.ModelBindingMessageProvider;
+    m.SetValueMustNotBeNullAccessor(_ => "Este campo es obligatorio.");
+    m.SetMissingBindRequiredValueAccessor(campo => $"Falta el valor del campo {campo}.");
+    m.SetMissingKeyOrValueAccessor(() => "Se requiere un valor.");
+    m.SetMissingRequestBodyRequiredValueAccessor(() => "Se requiere el contenido de la solicitud.");
+    m.SetAttemptedValueIsInvalidAccessor((valor, campo) =>
+        string.IsNullOrWhiteSpace(valor)
+            ? $"Debe seleccionar o ingresar el campo {campo}."
+            : $"El valor '{valor}' no es válido para {campo}.");
+    m.SetNonPropertyAttemptedValueIsInvalidAccessor(valor => $"El valor '{valor}' no es válido.");
+    m.SetUnknownValueIsInvalidAccessor(campo => $"El valor ingresado no es válido para {campo}.");
+    m.SetNonPropertyUnknownValueIsInvalidAccessor(() => "El valor ingresado no es válido.");
+    m.SetValueIsInvalidAccessor(valor => $"El valor '{valor}' no es válido.");
+    m.SetValueMustBeANumberAccessor(campo => $"El campo {campo} debe ser un número.");
+    m.SetNonPropertyValueMustBeANumberAccessor(() => "El campo debe ser un número.");
 });
 
 // Configure database context
@@ -52,6 +70,7 @@ builder.Services.AddIdentity<Usuario, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddPasswordValidator<SinEspaciosPasswordValidator>()
+.AddErrorDescriber<IdentityErrorDescriberEspanol>()
 .AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(options =>
