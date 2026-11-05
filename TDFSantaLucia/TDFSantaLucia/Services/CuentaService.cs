@@ -45,7 +45,7 @@ namespace TDFSantaLucia.Services
         {
             var usuario = await _userManager.FindByEmailAsync(correo);
 
-            if (usuario == null)
+            if (string.IsNullOrEmpty(correo) || correo.Any(char.IsWhiteSpace))
                 return (false, "Correo o contraseña incorrectos.");
 
             if (!usuario.Estado)
@@ -72,8 +72,8 @@ namespace TDFSantaLucia.Services
             var emailExistente = _userManager.Users
                 .FirstOrDefault(u => u.NormalizedEmail == emailNormalizado);
 
-            if (emailExistente != null)
-                return (false, "Ya existe una cuenta con ese correo.");
+            if (model.Email.Any(char.IsWhiteSpace))
+                return (false, "El correo no puede contener espacios.");
 
             // Validar cédula duplicada
             if (!string.IsNullOrWhiteSpace(model.Cedula))

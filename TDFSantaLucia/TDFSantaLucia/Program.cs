@@ -6,6 +6,7 @@ using TDFSantaLucia.Binders;
 using TDFSantaLucia.Models;
 using TDFSantaLucia.Repositories;
 using TDFSantaLucia.Services;
+using TDFSantaLucia.Validations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,9 +50,8 @@ builder.Services.AddIdentity<Usuario, IdentityRole>(options =>
     options.Password.RequireLowercase = true;
 
 })
-
 .AddEntityFrameworkStores<AppDbContext>()
-
+.AddPasswordValidator<SinEspaciosPasswordValidator>()
 .AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(options =>

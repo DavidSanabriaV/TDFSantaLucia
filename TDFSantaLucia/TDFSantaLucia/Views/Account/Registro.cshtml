@@ -150,9 +150,10 @@
                             <i class="bi bi-envelope text-muted"></i>
                         </span>
                         <input asp-for="Email"
-                               type="email"
+                               type="text" inputmode="email" autocapitalize="off" spellcheck="false"
                                class="form-control border-start-0 ps-0 rounded-end-3"
-                               placeholder="correo@ejemplo.com" />
+                               placeholder="correo@ejemplo.com"
+                               oninput="this.value = this.value.replace(/\s/g, '')" />
                     </div>
                     <span asp-validation-for="Email" class="text-danger small"></span>
                 </div>
@@ -163,12 +164,10 @@
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-lock text-muted"></i>
                         </span>
-                        <input asp-for="Password"
-                               type="password"
+                        <input asp-for="Password" type="password" id="passInput"
                                class="form-control border-start-0 ps-0"
-                               id="passInput"
-                               placeholder="••••••••"
-                               autocomplete="new-password" />
+                               placeholder="••••••••" autocomplete="new-password"
+                               oninput="this.value = this.value.replace(/\s/g, '')" />
                         <button type="button"
                                 class="btn btn-outline-secondary rounded-end-3"
                                 onclick="togglePass('passInput','eyePass')">
@@ -184,12 +183,10 @@
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-lock-fill text-muted"></i>
                         </span>
-                        <input asp-for="ConfirmarPassword"
-                               type="password"
+                        <input asp-for="ConfirmarPassword" type="password" id="passConfirm"
                                class="form-control border-start-0 ps-0"
-                               id="passConfirm"
-                               placeholder="••••••••"
-                               autocomplete="new-password" />
+                               placeholder="••••••••" autocomplete="new-password"
+                               oninput="this.value = this.value.replace(/\s/g, '')" />
                         <button type="button"
                                 class="btn btn-outline-secondary rounded-end-3"
                                 onclick="togglePass('passConfirm','eyeConfirm')">
