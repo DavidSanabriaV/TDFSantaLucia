@@ -19,8 +19,8 @@ namespace TDFSantaLucia.Services
             var movimientos = _repo.ObtenerPorCliente(clienteId);
 
             return movimientos
-                .Where(m => !m.Vencido)
-                .Sum(m => m.Puntos);
+             .Where(m => !m.Vencido && m.Tipo != "Pendiente")
+             .Sum(m => m.Puntos);
         }
 
         public List<MovimientoPuntos> ObtenerHistorial(int clienteId)

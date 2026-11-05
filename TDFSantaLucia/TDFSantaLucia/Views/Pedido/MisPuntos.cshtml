@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = "Mis Puntos";
     var puntosDisponibles = ViewBag.PuntosDisponibles as int? ?? 0;
+
+    var puntosPorConfirmar = Model
+        .Where(m => m.Tipo == "Pendiente" && !m.Vencido)
+        .Sum(m => m.Puntos);
 }
 
 <div class="container py-4" style="max-width:800px;">
@@ -18,6 +22,14 @@
                 </div>
                 <div class="text-muted">Puntos disponibles</div>
                 <div class="text-success small mt-1">= ₡@puntosDisponibles</div>
+
+                @if (puntosPorConfirmar > 0)
+                {
+                    <div class="text-muted small mt-2">
+                        <i class="bi bi-hourglass-split me-1"></i>
+                        @puntosPorConfirmar punto(s) por confirmar
+                    </div>
+                }
             </div>
         </div>
         <div class="col-md-6">
@@ -26,6 +38,7 @@
                 <ul class="small text-muted mb-0">
                     <li>Ganás 1 punto por cada ₡100 en compras.</li>
                     <li>Cada punto vale ₡1 de descuento.</li>
+                    <li>Los puntos se acreditan cuando tu pedido es confirmado.</li>
                     <li>Los puntos vencen a los 24 meses.</li>
                     <li>No se acumulan si canjeás puntos.</li>
                     <li>No son transferibles.</li>
@@ -73,14 +86,20 @@
                                     _ => "bg-secondary-subtle text-secondary border border-secondary-subtle"
                                 };
 
+                                var etiquetaTipo = m.Tipo == "Pendiente" ? "Por confirmar" : m.Tipo;
+
                                 <tr class="@(m.Vencido ? "text-muted" : "")">
                                     <td class="small text-muted">@m.Fecha.ToString("dd/MM/yyyy")</td>
                                     <td>
-                                        <span class="badge @badgeClass">@m.Tipo</span>
+                                        <span class="badge @badgeClass">@etiquetaTipo</span>
                                     </td>
                                     <td class="small text-muted">@m.Descripcion</td>
                                     <td class="text-center fw-bold">
-                                        @if (m.Puntos > 0)
+                                        @if (m.Tipo == "Pendiente")
+                                        {
+                                            <span class="text-muted">+@m.Puntos</span>
+                                        }
+                                        else if (m.Puntos > 0)
                                         {
                                             <span class="text-success">+@m.Puntos</span>
                                         }
@@ -94,9 +113,13 @@
                                         }
                                     </td>
                                     <td class="text-center small text-muted">
-                                        @if (m.Tipo == "Ganado" || m.Tipo == "Pendiente")
+                                        @if (m.Tipo == "Ganado")
                                         {
                                             @m.Fecha_Vencimiento.ToString("dd/MM/yyyy")
+                                        }
+                                        else if (m.Tipo == "Pendiente")
+                                        {
+                                            <text>Al confirmar</text>
                                         }
                                         else
                                         {

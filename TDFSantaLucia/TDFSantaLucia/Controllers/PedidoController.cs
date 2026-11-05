@@ -307,14 +307,15 @@ namespace TDFSantaLucia.Controllers
             if (pedido == null) return NotFound();
 
             pedido.Metodo_Pago = metodoPago;
-            pedido.Estado = PedidoEstados.Listo;
+            _pedidoService.ActualizarPedido(pedido);
 
-            _db.Pedidos.Update(pedido);
-            await _db.SaveChangesAsync();
+            var (exito, error) = await _pedidoService.CambiarEstadoAsync(id, PedidoEstados.Listo);
+            if (!exito) TempData["Error"] = error;
+            else TempData["Exito"] = $"Pedido {pedido.Numero_Orden} cobrado correctamente.";
 
-            TempData["Exito"] = $"Pedido {pedido.Numero_Orden} cobrado correctamente.";
             return RedirectToAction("Admin");
         }
+
         [HttpGet("confirmacion/{id:int}")]
         public IActionResult Confirmacion(int id)
         {
@@ -381,6 +382,33 @@ namespace TDFSantaLucia.Controllers
                 TempData["Exito"] = "Estado actualizado correctamente.";
 
             return RedirectToAction("Admin");
+        }
+
+        [HttpPost("cancelar/{id:int}")]
+        [Authorize(Roles = "Cliente")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancelar(int id)
+        {
+            var cliente = await ObtenerClienteAsync();
+            var pedido = _pedidoService.ObtenerPorId(id);
+
+            if (cliente == null || pedido == null || pedido.Cliente_Id != cliente.Cliente_Id)
+                return Forbid();
+
+            if (pedido.Estado != PedidoEstados.Pendiente)
+            {
+                TempData["Error"] = "Solo puedes cancelar pedidos pendientes.";
+                return RedirectToAction("MisPedidos");
+            }
+
+            var (exito, error) = await _pedidoService.CambiarEstadoAsync(id, PedidoEstados.Cancelado);
+
+            if (exito)
+                TempData["Exito"] = "Pedido cancelado correctamente.";
+            else
+                TempData["Error"] = error;
+
+            return RedirectToAction("MisPedidos");
         }
 
         [HttpPost("eliminar/{id:int}")]
