@@ -19,6 +19,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                padding: 1rem;
             }
 
             .login-card {
@@ -128,23 +129,23 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function togglePassword() {
-        const input = document.getElementById('passwordInput');
-        const icono = document.getElementById('iconoOjo');
-        if (input.type === 'password') {
-        input.type = 'text';
-        icono.classList.replace('bi-eye', 'bi-eye-slash');
-        } else {
-        input.type = 'password';
-        icono.classList.replace('bi-eye-slash', 'bi-eye');
-        }
-        }
+            function togglePassword() {
+                const input = document.getElementById('passwordInput');
+                const icono = document.getElementById('iconoOjo');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icono.classList.replace('bi-eye', 'bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icono.classList.replace('bi-eye-slash', 'bi-eye');
+                }
+            }
 
-        document.querySelector('form').addEventListener('submit', function () {
-        const btn = document.getElementById('btnLogin');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Ingresando...';
-        });
+            document.querySelector('form').addEventListener('submit', function() {
+                const btn = document.getElementById('btnLogin');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Ingresando...';
+            });
     </script>
 </body>
 </html>
