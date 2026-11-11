@@ -27,7 +27,7 @@
                 <img src="~/images/fotoL.jpg" alt="Logo" class="top-navbar-logo">
             </a>
 
-            <form asp-controller="Producto" asp-action="Index" method="get" class="flex-grow-1 mx-3" style="max-width:480px;">
+            <form asp-controller="Producto" asp-action="Index" method="get" class="buscador-form">
                 <div class="input-group buscador-navbar">
                     <input type="text" name="buscar" class="form-control"
                            placeholder="Buscar producto..." autocomplete="off">
@@ -37,7 +37,7 @@
                 </div>
             </form>
 
-            <div class="ms-auto d-flex align-items-center gap-2">
+            <div class="top-navbar-acciones">
 
                 @if (User.Identity?.IsAuthenticated == true)
                 {
@@ -98,7 +98,7 @@
                     </a>
                 }
 
-                            @if (User.IsInRole("Cliente"))
+                @if (User.IsInRole("Cliente"))
                 {
                     <a asp-controller="Carrito" asp-action="Index"
                        class="icon-navbar position-relative" id="btnCarrito">
@@ -114,7 +114,6 @@
             </div>
         </nav>
 
-        <!-- ===== FILA: sidebar (solo navegación) + contenido ===== -->
         <div class="d-flex flex-grow-1 app-row">
 
             <aside class="sidebar" id="sidebarMenu">
@@ -423,9 +422,9 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
-        <script>
+    <script>
             function actualizarContadorCarrito() {
-                if (!document.getElementById('carritoCount')) return; 
+                if (!document.getElementById('carritoCount')) return;
                 fetch('/carrito/contar')
                     .then(r => r.json())
                     .then(d => {
@@ -445,12 +444,25 @@
             function abrirSidebar() {
                 sidebarMenu.classList.add('abierto');
                 sidebarOverlay.classList.add('abierto');
+                document.body.classList.add('sidebar-abierto');
             }
 
             function cerrarSidebar() {
                 sidebarMenu.classList.remove('abierto');
                 sidebarOverlay.classList.remove('abierto');
+                document.body.classList.remove('sidebar-abierto');
             }
+
+            // En celular la barra superior puede tener 2 filas: el menú lateral se acomoda justo debajo
+            const navbarSuperior = document.querySelector('.top-navbar-lateral');
+            function ajustarAlturaNavbar() {
+                if (!navbarSuperior) return;
+                document.documentElement.style.setProperty('--navbar-h', navbarSuperior.offsetHeight + 'px');
+                if (window.innerWidth >= 992) cerrarSidebar();
+            }
+            ajustarAlturaNavbar();
+            window.addEventListener('resize', ajustarAlturaNavbar);
+            window.addEventListener('load', ajustarAlturaNavbar);
 
             sidebarToggle?.addEventListener('click', () => {
                 sidebarMenu.classList.contains('abierto') ? cerrarSidebar() : abrirSidebar();
@@ -458,11 +470,91 @@
 
             sidebarOverlay?.addEventListener('click', cerrarSidebar);
 
+            // Los menús de acciones dentro de las tablas usan posición fija para que el scroll horizontal
+            // de la tabla (necesario en celular) no los recorte
+            document.querySelectorAll('.table-responsive [data-bs-toggle="dropdown"]').forEach(function(el) {
+                new bootstrap.Dropdown(el, {
+                    popperConfig: function(cfg) { cfg.strategy = 'fixed'; return cfg; }
+                });
+            });
+
             document.querySelectorAll('.sidebar-nav a.menu-link').forEach(a => {
                 a.addEventListener('click', () => {
                     if (window.innerWidth < 992) cerrarSidebar();
                 });
             });
+
+            // B20 — Búsqueda dinámica con dropdown de sugerencias
+            (function() {
+                const inputBuscar = document.querySelector('input[name="buscar"]');
+                if (!inputBuscar) return;
+
+                const dropdown = document.createElement('ul');
+                dropdown.id = 'sugerenciasDropdown';
+                dropdown.style.cssText =
+                    'position:absolute; top:100%; left:0; z-index:9999; background:white;' +
+                    'border:1px solid #dee2e6; border-radius:8px; list-style:none; padding:4px 0;' +
+                    'margin-top:4px; width:100%; box-shadow:0 4px 12px rgba(0,0,0,0.1); display:none;';
+                const formBuscador = inputBuscar.closest('form');
+                formBuscador.appendChild(dropdown);
+
+                let timer = null;
+
+                inputBuscar.addEventListener('input', function() {
+                    const termino = this.value.trim();
+                    clearTimeout(timer);
+
+                    // Filtrar tarjetas del home si existen
+                    const tarjetas = document.querySelectorAll('.producto-card');
+                    tarjetas.forEach(function(tarjeta) {
+                        const nombre = (tarjeta.querySelector('.producto-nombre')?.textContent || '').toLowerCase();
+                        tarjeta.style.display = (!termino || nombre.includes(termino.toLowerCase())) ? '' : 'none';
+                    });
+                    document.querySelectorAll('#carouselProductos .carousel-item').forEach(function(slide) {
+                        const hayVisibles = Array.from(slide.querySelectorAll('.producto-card'))
+                            .some(t => t.style.display !== 'none');
+                        slide.style.display = hayVisibles || !termino ? '' : 'none';
+                    });
+
+                    // Dropdown de sugerencias
+                    if (termino.length < 2) {
+                        dropdown.style.display = 'none';
+                        return;
+                    }
+
+                    timer = setTimeout(function() {
+                        fetch('/Home/BuscarSugerencias?q=' + encodeURIComponent(termino))
+                            .then(r => r.json())
+                            .then(function(data) {
+                                dropdown.innerHTML = '';
+                                if (!data.length) {
+                                    dropdown.style.display = 'none';
+                                    return;
+                                }
+                                data.forEach(function(p) {
+                                    const li = document.createElement('li');
+                                    li.style.cssText = 'padding:8px 16px; cursor:pointer;';
+                                    li.textContent = p.nombre;
+                                    li.addEventListener('mouseenter', () => li.style.background = '#f0f7ff');
+                                    li.addEventListener('mouseleave', () => li.style.background = 'white');
+                                    li.addEventListener('click', function() {
+                                        window.location.href = '/producto/detalle/' + p.producto_Id;
+                                    });
+                                    dropdown.appendChild(li);
+                                });
+                                dropdown.style.display = 'block';
+                            })
+                            .catch(() => { dropdown.style.display = 'none'; });
+                    }, 250);
+                });
+
+                // Cerrar dropdown al hacer click fuera
+                document.addEventListener('click', function(e) {
+                    if (!formBuscador.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+            })();
     </script>
 
     <div id="chatbotBurbuja">
@@ -495,9 +587,7 @@
     <script>
             let chatAbierto = false;
             let opcionesCache = [];
-            const estaAuth = @(User.Identity?.IsAuthenticated == true
-                            ? "true" : "false");
-
+            const estaAuth = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
 
             async function toggleChat() {
                 chatAbierto = !chatAbierto;
@@ -514,7 +604,6 @@
                 chatAbierto = false;
                 document.getElementById('chatbotVentana').classList.remove('abierto');
             }
-
 
             async function iniciarChat() {
                 agregarBurbuja('bot',
@@ -534,8 +623,7 @@
                 cont.innerHTML = '';
                 opcionesCache.forEach(o => {
                     const btn = document.createElement('button');
-                    btn.innerHTML =
-                        `<i class="bi ${o.icono || 'bi-chat'} me-1"></i>${o.texto}`;
+                    btn.innerHTML = `<i class="bi ${o.icono || 'bi-chat'} me-1"></i>${o.texto}`;
                     btn.onclick = () => seleccionarOpcion(o);
                     cont.appendChild(btn);
                 });
@@ -544,7 +632,6 @@
             function ocultarOpciones() {
                 document.getElementById('chatbotOpciones').innerHTML = '';
             }
-
 
             async function seleccionarOpcion(opcion) {
                 agregarBurbuja('usuario', opcion.texto);
@@ -564,7 +651,6 @@
                 quitarTyping();
                 procesarRespuesta(data);
             }
-
 
             async function enviarTexto() {
                 const input = document.getElementById('chatbotTexto');
@@ -587,7 +673,6 @@
                 procesarRespuesta(data);
             }
 
-
             function procesarRespuesta(data) {
                 if (data.mensaje)
                     agregarBurbuja('bot', data.mensaje);
@@ -597,27 +682,21 @@
                         if (data.datos)
                             agregarLinkBot('Ir ahora →', String(data.datos));
                         break;
-
                     case 'pedidos':
                         if (data.datos?.length)
                             agregarTarjetas(data.datos, renderPedido);
-                        agregarLinkBot('📦 Ver todos mis pedidos',
-                            '/pedido/mis-pedidos');
+                        agregarLinkBot('📦 Ver todos mis pedidos', '/pedido/mis-pedidos');
                         break;
-
                     case 'citas':
                         if (data.datos?.length)
                             agregarTarjetas(data.datos, renderCita);
                         agregarLinkBot('📅 Ver todas mis citas', '/cita/miscitas');
                         break;
-
                     case 'facturas':
                         if (data.datos?.length)
                             agregarTarjetas(data.datos, renderFactura);
-                        agregarLinkBot('🧾 Ver todas mis facturas',
-                            '/factura/mis-facturas');
+                        agregarLinkBot('🧾 Ver todas mis facturas', '/factura/mis-facturas');
                         break;
-
                     case 'carrito':
                         if (data.datos?.length)
                             agregarTarjetas(data.datos, renderCarritoItem);
@@ -629,7 +708,6 @@
                 const id = window.setTimeout(mostrarOpciones, delay);
                 scrollChat();
             }
-
 
             function renderPedido(p) {
                 const colores = {
@@ -646,9 +724,7 @@
                 return `
                     <div class="chatbot-tarjeta">
                     <div class="d-flex justify-content-between align-items-center">
-                    <span class="fw-bold" style="color:#243C8F;">
-                    ${p.numero_Orden}
-                    </span>
+                    <span class="fw-bold" style="color:#243C8F;">${p.numero_Orden}</span>
                     <span class="badge bg-${badge}">${p.estado}</span>
                     </div>
                     <div class="d-flex justify-content-between mt-1">
@@ -662,16 +738,11 @@
                 return `
                     <div class="chatbot-tarjeta">
                     <div class="fw-semibold">
-                    <i class="bi bi-calendar-event me-1"
-                    style="color:#243C8F;"></i>
+                    <i class="bi bi-calendar-event me-1" style="color:#243C8F;"></i>
                     ${c.fecha}
                     </div>
-                    <div class="small text-muted mt-1">
-                    ${c.servicio ?? 'Sin especificar'}
-                    </div>
-                    <span class="badge bg-info text-dark mt-1">
-                    ${c.estado}
-                    </span>
+                    <div class="small text-muted mt-1">${c.servicio ?? 'Sin especificar'}</div>
+                    <span class="badge bg-info text-dark mt-1">${c.estado}</span>
                     </div>`;
             }
 
@@ -679,9 +750,7 @@
                 return `
                     <div class="chatbot-tarjeta">
                     <div class="d-flex justify-content-between align-items-center">
-                    <span class="fw-bold" style="color:#243C8F;">
-                    ${f.numero_Factura}
-                    </span>
+                    <span class="fw-bold" style="color:#243C8F;">${f.numero_Factura}</span>
                     <span class="badge bg-success">${f.estado}</span>
                     </div>
                     <div class="d-flex justify-content-between mt-1">
@@ -696,14 +765,11 @@
                     <div class="chatbot-tarjeta">
                     <div class="fw-semibold">${i.nombre}</div>
                     <div class="d-flex justify-content-between mt-1">
-                    <small class="text-muted">
-                    x${i.cantidad} — ${i.precio}
-                    </small>
+                    <small class="text-muted">x${i.cantidad} — ${i.precio}</small>
                     <small class="fw-bold text-success">${i.subtotal}</small>
                     </div>
                     </div>`;
             }
-
 
             function agregarBurbuja(tipo, texto) {
                 const cont = document.getElementById('chatbotMensajes');
@@ -743,12 +809,9 @@
                 const div = document.createElement('div');
                 div.className = 'chat-burbuja bot chat-typing';
                 div.id = 'chatTyping';
-                const s1 = document.createElement('span');
-                const s2 = document.createElement('span');
-                const s3 = document.createElement('span');
-                div.appendChild(s1);
-                div.appendChild(s2);
-                div.appendChild(s3);
+                div.appendChild(document.createElement('span'));
+                div.appendChild(document.createElement('span'));
+                div.appendChild(document.createElement('span'));
                 cont.appendChild(div);
                 scrollChat();
             }

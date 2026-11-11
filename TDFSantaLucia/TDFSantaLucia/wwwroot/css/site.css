@@ -19,6 +19,14 @@
     --dash-peligro: #B23A3A;
     --dash-peligro-hover: #8F2E2E;
     --sidebar-width: 300px;
+    --navbar-h: 80px; /* en móvil el JS del _Layout lo actualiza con la altura real de la barra */
+}
+
+/* En pantallas medianas el menú lateral es más angosto para no quitarle espacio al contenido */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    :root {
+        --sidebar-width: 250px;
+    }
 }
 
 /* ══════════════════════════════════════════════
@@ -33,27 +41,43 @@
 html {
     font-size: 15px;
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
 }
 
+/* "clip" evita el scroll horizontal sin romper position: sticky (hidden es el respaldo) */
 html, body {
     width: 100%;
     min-height: 100%;
-    overflow-x: hidden !important;
+    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 body {
     min-height: 100vh;
+    min-height: 100dvh;
     font-family: 'Poppins', 'DM Sans', 'Segoe UI', sans-serif;
     color: var(--texto);
     background: #F7FAFD;
+    -webkit-tap-highlight-color: transparent;
+}
+
+img, svg, video, canvas {
+    max-width: 100%;
+}
+
+body.sidebar-abierto {
+    overflow: hidden;
 }
 
 /* ══════════════════════════════════════════════
    LAYOUT GENERAL (navbar arriba + sidebar + contenido)
+   Escritorio: la barra y el menú quedan fijos y el contenido hace scroll.
+   Móvil (< 992px): la página hace scroll normal y la barra queda pegada arriba.
    ══════════════════════════════════════════════ */
 .app-shell {
     height: 100vh;
-    min-height: 100vh;
+    height: 100dvh;
+    min-height: 0;
     overflow: hidden;
 }
 
@@ -65,17 +89,30 @@ body {
 
 .main-wrapper {
     flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     min-width: 0;
-    min-height: 100vh;
+    min-height: 0;
     overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
+
+    /* el contenido crece y empuja el footer al final de la pantalla */
+    .main-wrapper > .container-fluid {
+        flex: 1 0 auto;
+    }
+
+    .main-wrapper > .footer-custom {
+        flex-shrink: 0;
+    }
 
 /* ══════════════════════════════════════════════
    TOP NAVBAR (logo + buscador + login/carrito)
    ══════════════════════════════════════════════ */
 .top-navbar-lateral {
-    height: 80px;
+    height: var(--navbar-h);
     flex-shrink: 0;
     background: linear-gradient(90deg, #1a3c5e 0%, #243C8F 100%);
     box-shadow: 0 5px 20px rgba(0,0,0,.15);
@@ -112,49 +149,20 @@ body {
         background: rgba(255,255,255,.22);
     }
 
-/* Buscador sobre fondo azul */
-.top-navbar-lateral > form {
-    position: absolute;
-    left: calc(50% + (var(--sidebar-width, 272px) / 2));
-    transform: translateX(-62%);
-    width: 100%;
-    max-width: 320px;
+/* Buscador: ocupa el espacio libre entre el logo y los íconos, centrado */
+.top-navbar-lateral > .buscador-form {
+    position: relative;
+    flex: 1 1 280px;
+    min-width: 0;
+    max-width: 480px;
+    margin: 0 auto;
 }
 
-@media (max-width: 1200px) {
-    .top-navbar-lateral > form {
-        max-width: 240px;
-    }
-}
-
-@media (max-width: 991.98px) {
-    .top-navbar-lateral {
-        flex-wrap: nowrap;
-    }
-
-        .top-navbar-lateral > form {
-            position: static;
-            transform: none;
-            flex: 1 1 auto;
-            min-width: 0;
-            max-width: none;
-        }
-}
-
-@media (max-width: 576px) {
-    .top-navbar-lateral {
-        gap: 8px;
-        padding: 0 12px;
-    }
-
-        .top-navbar-lateral .icon-navbar span {
-            display: none;
-        }
-
-        .top-navbar-lateral .icon-navbar {
-            min-width: 40px;
-            padding: 0 10px;
-        }
+.top-navbar-acciones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 /* Contador del carrito siempre visible sobre el ícono */
@@ -211,6 +219,11 @@ body {
         color: #fff !important;
     }
 
+        /* el globito del carrito conserva su color propio */
+        .top-navbar-lateral .icon-navbar span.badge {
+            color: #212529 !important;
+        }
+
     .top-navbar-lateral .icon-navbar:hover {
         background: rgba(255,255,255,.25);
         color: #fff !important;
@@ -220,6 +233,10 @@ body {
         .top-navbar-lateral .icon-navbar:hover span {
             color: #fff !important;
         }
+
+            .top-navbar-lateral .icon-navbar:hover span.badge {
+                color: #212529 !important;
+            }
 
 /* Ícono genérico reutilizable (fuera de la navbar azul, ej. dropdowns) */
 .icon-navbar {
@@ -252,14 +269,73 @@ body {
         white-space: nowrap;
     }
 
+/* Tablet: barra un poco más compacta */
+@media (max-width: 991.98px) {
+    .top-navbar-lateral {
+        padding: 0 16px;
+        gap: 12px;
+    }
+}
+
+/* Celular: la barra se parte en dos filas (menú, logo e íconos arriba / buscador abajo) */
+@media (max-width: 767.98px) {
+    :root {
+        --navbar-h: 64px;
+    }
+
+    .top-navbar-lateral {
+        height: auto;
+        min-height: 64px;
+        flex-wrap: wrap;
+        padding: 8px 12px;
+        gap: 8px;
+    }
+
+        .top-navbar-lateral > .buscador-form {
+            order: 3;
+            flex: 1 0 100%;
+            max-width: none;
+            margin: 0;
+        }
+
+        .top-navbar-lateral .buscador-navbar .form-control {
+            min-height: 42px;
+            font-size: 16px; /* evita el zoom automático de iOS al enfocar */
+        }
+
+        .top-navbar-lateral .buscador-navbar .input-group-text {
+            padding-inline: 14px;
+        }
+
+    .top-navbar-acciones {
+        margin-left: auto;
+        gap: 6px;
+    }
+
+    .top-navbar-logo {
+        height: 38px;
+    }
+
+    /* solo ícono (sin texto) para que quepan; el globito del carrito se queda */
+    .top-navbar-lateral .icon-navbar {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 10px;
+    }
+
+        .top-navbar-lateral .icon-navbar span:not(.badge),
+        .top-navbar-lateral .icon-navbar.dropdown-toggle::after {
+            display: none !important;
+        }
+}
+
 /* ══════════════════════════════════════════════
    SIDEBAR (solo navegación)
    ══════════════════════════════════════════════ */
 .sidebar {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
-    height: 100vh;
-    min-height: 100vh;
+    align-self: stretch;
     position: sticky;
     top: 0;
     left: 0;
@@ -304,7 +380,7 @@ body {
 
 .sidebar-nav {
     flex-grow: 1;
-    padding: 4px 10px 60px;
+    padding: 4px 10px 24px;
     overflow-x: hidden;
     min-width: 0;
 }
@@ -312,7 +388,7 @@ body {
     .sidebar-nav .nav-link.menu-link {
         color: rgba(255,255,255,.90);
         border-radius: 10px;
-        padding: 13px 16px;
+        padding: 10px 16px;
         margin-bottom: 6px;
         font-weight: 600;
         font-size: 16px;
@@ -364,43 +440,58 @@ body {
     z-index: 1030;
 }
 
-.sidebar-user .small,
-.sidebar-user .fw-semibold,
-.sidebar-user span {
-    color: #fff !important;
-}
-
-/* Responsive sidebar (móvil) */
+/* Responsive: en celular y tablet el menú es un cajón que se abre con la hamburguesa */
 @media (max-width: 991.98px) {
 
-    .app-row {
+    .app-shell {
         height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
         overflow: visible;
+    }
+
+    .app-row {
+        flex: 1 0 auto;
+        overflow: visible;
+    }
+
+    .main-wrapper {
+        overflow: visible;
+        overflow-x: clip;
+    }
+
+    /* la barra queda siempre visible al hacer scroll */
+    .top-navbar-lateral {
+        position: sticky;
+        top: 0;
     }
 
     .sidebar {
         position: fixed;
-        top: 64px;
+        top: var(--navbar-h);
+        bottom: 0;
         left: 0;
-        height: calc(100vh - 64px);
-        min-height: calc(100vh - 64px);
+        width: min(var(--sidebar-width), 85vw);
+        min-width: 0;
         transform: translateX(-100%);
         box-shadow: 2px 0 12px rgba(0,0,0,.25);
+        visibility: hidden;
+        transition: transform .3s ease, visibility 0s linear .3s;
     }
 
         .sidebar.abierto {
             transform: translateX(0);
+            visibility: visible;
+            transition: transform .3s ease;
         }
 
-    .sidebar-overlay.abierto {
-        display: block;
+    .sidebar-overlay {
+        inset: var(--navbar-h) 0 0 0;
     }
 
-    .main-wrapper {
-        width: 100%;
-        min-height: 100vh;
-        padding-top: 0;
-    }
+        .sidebar-overlay.abierto {
+            display: block;
+        }
 }
 
 /* ══════════════════════════════════════════════
@@ -413,73 +504,16 @@ body {
     border: 1px solid #dee2e6;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    max-height: 320px;
+    max-height: min(320px, 50vh);
     overflow-y: auto;
     width: 100%;
     top: 100%;
     left: 0;
 }
 
-.sugerencia-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 14px;
-    cursor: pointer;
-    text-decoration: none;
-    color: #1a3c5e;
-    font-size: 0.9rem;
-    transition: background 0.15s;
-}
-
-    .sugerencia-item:hover {
-        background-color: #f0f5ff;
-        color: #1a3c5e;
-    }
-
-.sugerencia-img {
-    width: 38px;
-    height: 38px;
-    object-fit: contain;
-    border-radius: 8px;
-    background: #f8f9fa;
-    flex-shrink: 0;
-}
-
-.sugerencia-nombre {
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sugerencia-precio {
-    font-size: 0.78rem;
-    color: #6c757d;
-}
-
 /* ══════════════════════════════════════════════
-   MENU NAVBAR (si se usa aparte)
+   MENÚ / DROPDOWNS
    ══════════════════════════════════════════════ */
-.menu-navbar {
-    background: var(--azul-oscuro);
-    border-bottom: 4px solid var(--amarillo);
-    box-shadow: 0 6px 22px rgba(0,0,0,.12);
-}
-
-.menu-link {
-    color: white !important;
-    font-weight: 600;
-    border-radius: 12px;
-    padding: 10px 16px !important;
-    transition: .25s;
-}
-
-    .menu-link:hover {
-        background: rgba(255,255,255,.15);
-        transform: translateY(-2px);
-    }
-
 .dropdown-menu {
     border: none;
     border-radius: 16px;
@@ -498,21 +532,19 @@ body {
     }
 
 /* ══════════════════════════════════════════════
-   CAROUSEL BANNER  (imagen completa, sin recorte)
+   CAROUSEL BANNER
    ══════════════════════════════════════════════ */
-/* Contenedor del Home: ocupa exactamente el área junto al sidebar
-   (pegado al menú y al borde derecho, sin importar el padding del layout) */
+/* El banner ocupa todo el ancho del área de contenido: anula el padding del contenedor
+   (px-2 en celular, px-md-3 desde 768px) con márgenes negativos, sin usar 100vw */
 .banner-full {
-    position: relative;
-    left: 50%;
-    width: calc(100vw - var(--sidebar-width) - 10px);
-    margin-left: calc((100vw - var(--sidebar-width) - 10px) / -2);
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
 }
 
-@media (max-width: 991.98px) {
+@media (min-width: 768px) {
     .banner-full {
-        width: calc(100vw - 10px);
-        margin-left: calc((100vw - 10px) / -2);
+        margin-left: -1rem;
+        margin-right: -1rem;
     }
 }
 
@@ -520,16 +552,16 @@ body {
     overflow: hidden;
     border-radius: 0 0 35px 35px;
     box-shadow: 0 12px 40px rgba(0,0,0,.18);
-    margin-top: 0; /* antes 8px — generaba la línea blanca bajo la navbar */
+    margin-top: 0;
     margin-bottom: 0;
 }
 
     #carouselExampleIndicators .carousel-item img {
         width: 100%;
-        height: 600px; /* fino, un poco más alto que antes (540) */
-        object-fit: cover; /* llena todo el ancho, sin bordes azules */
-        object-position: center top; /* ancla arriba: la parte de arriba no se corta */
-        display: block; /* evita el hueco blanco que deja <img> inline */
+        height: clamp(190px, 42vw, 600px); /* se adapta al ancho: ~190px en celular, 600px en pantallas grandes */
+        object-fit: cover;
+        object-position: center top;
+        display: block;
     }
 
 .carousel-controls-wrapper {
@@ -552,7 +584,7 @@ body {
     }
 
 /* ══════════════════════════════════════════════
-   CAROUSEL PRODUCTOS
+   CAROUSEL PRODUCTOS (Home)
    ══════════════════════════════════════════════ */
 #carouselProductos {
     margin-top: 40px;
@@ -563,6 +595,7 @@ body {
     box-shadow: 0 8px 30px rgba(0,0,0,.08);
 }
 
+/* Tarjeta de producto (carrusel del Home y listado de Productos) */
 .producto-card {
     display: block;
     text-decoration: none;
@@ -572,7 +605,6 @@ body {
     text-align: center;
     color: black;
     transition: .3s;
-    width: 220px;
     box-shadow: 0 8px 24px rgba(0,0,0,.15);
     border: 1px solid #eee;
 }
@@ -582,6 +614,11 @@ body {
         border-color: var(--amarillo);
         box-shadow: 0 12px 28px rgba(0,0,0,.25);
     }
+
+/* el ancho fijo solo aplica en el carrusel; en el listado lo define la columna de Bootstrap (col-*) */
+#carouselProductos .producto-card {
+    width: 220px;
+}
 
 .producto-img {
     width: 100%;
@@ -613,18 +650,6 @@ body {
     justify-content: center;
 }
 
-    #gridProductos .producto-card {
-        width: auto !important;
-        max-width: none !important;
-        flex: 0 0 auto;
-        padding: 10px;
-    }
-
-        #gridProductos .producto-card .card {
-            width: 285px;
-            margin: auto;
-        }
-
     #gridProductos .card-body {
         padding: 1.1rem !important;
     }
@@ -652,267 +677,7 @@ body {
     }
 
 /* ══════════════════════════════════════════════
-   SECCIÓN FARMACIA SANTA LUCÍA
-   ══════════════════════════════════════════════ */
-#section-farmacia-santa-lucia {
-    padding-top: 0;
-    padding-bottom: 0;
-    background: #fff;
-    overflow: hidden;
-}
-
-    #section-farmacia-santa-lucia .fsl-inner {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        min-height: 520px;
-    }
-
-    #section-farmacia-santa-lucia .fsl-image {
-        position: relative;
-        overflow: hidden;
-        order: 0;
-    }
-
-        #section-farmacia-santa-lucia .fsl-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            border-radius: 0;
-            box-shadow: none;
-            filter: saturate(0.9);
-            transition: filter .4s;
-        }
-
-            #section-farmacia-santa-lucia .fsl-image img:hover {
-                filter: saturate(1);
-            }
-
-        #section-farmacia-santa-lucia .fsl-image::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(0,168,216,.10);
-            pointer-events: none;
-        }
-
-    #section-farmacia-santa-lucia .fsl-content {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 72px 68px;
-        background: #fff;
-        order: 1;
-    }
-
-    #section-farmacia-santa-lucia .fsl-eyebrow {
-        display: inline-block;
-        background: rgba(0,168,216,.10);
-        color: var(--azul-oscuro);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        padding: 6px 16px;
-        border-radius: 999px;
-        margin-bottom: 22px;
-        width: fit-content;
-    }
-
-    #section-farmacia-santa-lucia h2 {
-        font-size: clamp(2rem, 3vw, 2.8rem);
-        font-weight: 800;
-        line-height: 1.1;
-        color: var(--azul-oscuro);
-        margin-bottom: 28px;
-        font-family: 'Georgia', serif;
-    }
-
-        #section-farmacia-santa-lucia h2 strong {
-            color: var(--amarillo);
-        }
-
-    #section-farmacia-santa-lucia p {
-        font-size: 1rem;
-        line-height: 1.85;
-        color: #4b5563;
-        margin-bottom: 16px;
-        max-width: 420px;
-    }
-
-    #section-farmacia-santa-lucia .fsl-btn {
-        display: inline-block;
-        margin-top: 20px;
-        background: var(--azul-oscuro);
-        color: #fff !important;
-        font-size: 0.78rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        padding: 14px 34px;
-        border-radius: 999px;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        transition: opacity .25s, transform .25s;
-        width: fit-content;
-        box-shadow: 0 6px 20px rgba(0,168,216,.25);
-    }
-
-        #section-farmacia-santa-lucia .fsl-btn:hover {
-            opacity: .88;
-            transform: translateY(-2px);
-        }
-
-@media (max-width: 900px) {
-    #section-farmacia-santa-lucia .fsl-inner {
-        grid-template-columns: 1fr;
-    }
-
-    #section-farmacia-santa-lucia .fsl-image {
-        height: 50vw;
-        min-height: 260px;
-        order: 0;
-    }
-
-    #section-farmacia-santa-lucia .fsl-content {
-        padding: 48px 32px;
-        order: 1;
-    }
-
-    #section-farmacia-santa-lucia h2 {
-        font-size: 1.9rem;
-    }
-}
-
-/* ══════════════════════════════════════════════
-   HORARIO + MAPA
-   ══════════════════════════════════════════════ */
-.info-section {
-    display: flex;
-    align-items: stretch;
-    gap: 40px;
-    max-width: 1100px;
-    margin: 70px auto;
-    padding: 0 24px;
-}
-
-.horario-box {
-    flex: 1;
-    background: #fff;
-    border-radius: 20px;
-    padding: 44px 48px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.07);
-}
-
-    .horario-box h3 {
-        font-family: 'Cormorant Garamond', Georgia, serif;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--azul-oscuro);
-        margin-bottom: 28px;
-        padding-bottom: 14px;
-        border-bottom: 2px solid var(--amarillo);
-    }
-
-.horario-lista {
-    list-style: none;
-}
-
-    .horario-lista li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 13px 16px;
-        margin-bottom: 6px;
-        border-radius: 10px;
-        font-size: 0.97rem;
-        color: #444;
-        background: #f9fafb;
-        transition: .3s;
-    }
-
-        .horario-lista li:last-child {
-            margin-bottom: 0;
-        }
-
-    .horario-lista .dia {
-        font-weight: 600;
-        color: #1f2937;
-    }
-
-    .horario-lista .hora {
-        color: #6b7280;
-    }
-
-    .horario-lista li.domingo .dia,
-    .horario-lista li.domingo .hora {
-        color: #dc2626;
-        font-weight: 600;
-    }
-
-.horario-activo {
-    background: #d4edda !important;
-    color: #155724 !important;
-    font-weight: 600;
-}
-
-    .horario-activo .dia,
-    .horario-activo .hora {
-        color: #155724 !important;
-    }
-
-.horario-pronto-cerrar {
-    background: #fff3cd !important;
-    color: #856404 !important;
-    font-weight: 600;
-}
-
-    .horario-pronto-cerrar .dia,
-    .horario-pronto-cerrar .hora {
-        color: #856404 !important;
-    }
-
-.horario-cerrado {
-    background: #f8d7da !important;
-    color: #721c24 !important;
-    font-weight: 600;
-}
-
-    .horario-cerrado .dia,
-    .horario-cerrado .hora {
-        color: #721c24 !important;
-    }
-
-.mapa-box {
-    flex: 1.6;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.10);
-    min-height: 380px;
-}
-
-    .mapa-box #map {
-        width: 100%;
-        height: 100%;
-        min-height: 380px;
-        border: none;
-    }
-
-.farmacia-tooltip {
-    background: #fff;
-    border: 1.5px solid var(--azul) !important;
-    border-radius: 10px !important;
-    padding: 6px 12px !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,.12) !important;
-}
-
-    .farmacia-tooltip::before {
-        border-bottom-color: var(--azul) !important;
-    }
-
-/* ══════════════════════════════════════════════
-   HERO
+   HERO (Sobre Nosotros)
    ══════════════════════════════════════════════ */
 .hero {
     display: grid;
@@ -1171,43 +936,128 @@ body {
         }
 
 /* ══════════════════════════════════════════════
-   IMÁGENES (galería)
+   HORARIO + MAPA
    ══════════════════════════════════════════════ */
-.images-wrapper {
+.info-section {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 30px;
-    margin-top: 80px;
-    flex-wrap: wrap;
-    padding-bottom: 80px;
+    align-items: stretch;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 70px auto;
+    padding: 0 24px;
 }
 
-.images-wrapper__item {
-    width: 400px;
-    height: 520px;
-    object-fit: cover;
-    border-radius: 22px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+.horario-box {
+    flex: 1;
+    min-width: 0;
+    background: #fff;
+    border-radius: 20px;
+    padding: 44px 48px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.07);
 }
 
-    .images-wrapper__item:hover {
-        transform: scale(1.03);
-        box-shadow: 0 14px 35px rgba(0,0,0,0.18);
+    .horario-box h3 {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--azul-oscuro);
+        margin-bottom: 28px;
+        padding-bottom: 14px;
+        border-bottom: 2px solid var(--amarillo);
     }
 
-.item-top {
-    margin-top: -60px;
+.horario-lista {
+    list-style: none;
 }
 
-.item-middle {
-    margin-top: 30px;
+    .horario-lista li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 16px;
+        margin-bottom: 6px;
+        border-radius: 10px;
+        font-size: 0.97rem;
+        color: #444;
+        background: #f9fafb;
+        transition: .3s;
+    }
+
+        .horario-lista li:last-child {
+            margin-bottom: 0;
+        }
+
+    .horario-lista .dia {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .horario-lista .hora {
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+.horario-activo {
+    background: #d4edda !important;
+    color: #155724 !important;
+    font-weight: 600;
 }
 
-.item-bottom {
-    margin-top: 100px;
+    .horario-activo .dia,
+    .horario-activo .hora {
+        color: #155724 !important;
+    }
+
+.horario-pronto-cerrar {
+    background: #fff3cd !important;
+    color: #856404 !important;
+    font-weight: 600;
 }
+
+    .horario-pronto-cerrar .dia,
+    .horario-pronto-cerrar .hora {
+        color: #856404 !important;
+    }
+
+.horario-cerrado {
+    background: #f8d7da !important;
+    color: #721c24 !important;
+    font-weight: 600;
+}
+
+    .horario-cerrado .dia,
+    .horario-cerrado .hora {
+        color: #721c24 !important;
+    }
+
+.mapa-box {
+    flex: 1.6;
+    min-width: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+    min-height: 380px;
+}
+
+    .mapa-box #map {
+        width: 100%;
+        height: 100%;
+        min-height: 380px;
+        border: none;
+    }
+
+.farmacia-tooltip {
+    background: #fff;
+    border: 1.5px solid var(--azul) !important;
+    border-radius: 10px !important;
+    padding: 6px 12px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12) !important;
+}
+
+    .farmacia-tooltip::before {
+        border-bottom-color: var(--azul) !important;
+    }
 
 /* ══════════════════════════════════════════════
    CARDS / BOTONES / FORMULARIOS / TABLAS
@@ -1232,7 +1082,13 @@ section,
     border-radius: 14px;
     font-weight: 700;
     transition: .25s;
+    touch-action: manipulation;
 }
+
+    /* los botones "outline" de Bootstrap necesitan su borde (la regla de arriba se lo quitaba) */
+    .btn[class*="btn-outline-"] {
+        border: var(--bs-btn-border-width, 1px) solid var(--bs-btn-border-color);
+    }
 
 .btn-primary,
 .btn-success {
@@ -1273,6 +1129,15 @@ section,
     border-radius: 24px;
     padding: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,.05);
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Varias vistas tenían <style> con ".table-responsive { overflow: visible !important }" (para que no se recortara
+   el menú de acciones). Eso impedía el scroll horizontal y las columnas de la derecha quedaban cortadas en celular.
+   Aquí se vuelve a activar el scroll; los menús de acciones de las tablas se muestran con posición fija
+   (ver el script del _Layout), así que tampoco se recortan. */
+main .table-responsive {
+    overflow-x: auto !important;
 }
 
 .table {
@@ -1321,13 +1186,17 @@ section,
     box-shadow: 0 6px 18px rgba(0,0,0,.06);
 }
 
+.pagination {
+    flex-wrap: wrap;
+}
+
 h1, h2, h3, h4, h5 {
     font-weight: 800;
     color: var(--azul-oscuro);
 }
 
 /* ══════════════════════════════════════════════
-   PHOTO GRID
+   PHOTO GRID (Home)
    ══════════════════════════════════════════════ */
 .photo-container {
     background: #fff;
@@ -1335,9 +1204,10 @@ h1, h2, h3, h4, h5 {
     font-family: Arial, sans-serif;
 }
 
+/* 3 columnas en pantallas grandes, 2 en tablet, 1 en celular */
 .photo-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
     gap: 15px;
 }
 
@@ -1364,13 +1234,16 @@ h1, h2, h3, h4, h5 {
     padding: 15px;
 }
 
-.title {
+.photo-card .title {
     font-size: 24px;
     font-weight: bold;
 }
 
-.subtitle {
-    font-size: 16px;
+/* En celular las tablas muestran una sombra suave en el borde que indica que se puede deslizar hacia el lado */
+@media (max-width: 767.98px) {
+    main .table-responsive {
+        background: linear-gradient(to right, #fff 30%, rgba(255,255,255,0)) left center / 28px 100% no-repeat local, linear-gradient(to left, #fff 30%, rgba(255,255,255,0)) right center / 28px 100% no-repeat local, radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.20), rgba(0,0,0,0)) left center / 12px 100% no-repeat scroll, radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.20), rgba(0,0,0,0)) right center / 12px 100% no-repeat scroll, #fff;
+    }
 }
 
 /* ══════════════════════════════════════════════
@@ -1420,6 +1293,7 @@ h1, h2, h3, h4, h5 {
 .footer-text {
     color: white;
     font-weight: 500;
+    overflow-wrap: anywhere;
 }
 
 .footer-link {
@@ -1444,87 +1318,6 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ══════════════════════════════════════════════
-   AUTH (login / register)
-   ══════════════════════════════════════════════ */
-.login-card {
-    border: none;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
-    max-width: 420px;
-    width: 100%;
-}
-
-.login-logo {
-    height: 80px;
-    border-radius: 14px;
-}
-
-.btn-login {
-    background-color: #1a3c5e;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    padding: 10px;
-    transition: background 0.2s;
-}
-
-    .btn-login:hover {
-        background-color: #14304e;
-    }
-
-.divider {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #aaa;
-    font-size: 13px;
-}
-
-    .divider::before,
-    .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid #ddd;
-    }
-
-.register-card {
-    border: none;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
-    max-width: 600px;
-    width: 100%;
-}
-
-.section-title {
-    color: #1a3c5e;
-    font-weight: 600;
-    font-size: 15px;
-    border-bottom: 2px solid #e8f0fe;
-    padding-bottom: 6px;
-    margin-bottom: 16px;
-}
-
-.auth-body {
-    background-color: #f0f4f8;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 30px 0;
-}
-
-.eyebrow-element span {
-    background: #f3f4f6;
-    color: #1f2937;
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-/* ══════════════════════════════════════════════
    SCROLLBAR GLOBAL
    ══════════════════════════════════════════════ */
 ::-webkit-scrollbar {
@@ -1539,22 +1332,6 @@ h1, h2, h3, h4, h5 {
 /* ══════════════════════════════════════════════
    CHATBOT
    ══════════════════════════════════════════════ */
-.form-articulo-wrapper {
-    max-width: 750px;
-}
-
-    .form-articulo-wrapper h2 {
-        color: var(--azul-oscuro);
-    }
-
-.chatbot-form-wrapper {
-    max-width: 650px;
-}
-
-    .chatbot-form-wrapper h2 {
-        color: var(--azul-oscuro);
-    }
-
 #chatbotBurbuja {
     position: fixed;
     bottom: 28px;
@@ -1587,7 +1364,7 @@ h1, h2, h3, h4, h5 {
     position: absolute;
     bottom: 70px;
     right: 0;
-    width: 340px;
+    width: min(340px, calc(100vw - 28px));
     background: white;
     border-radius: 20px;
     box-shadow: 0 12px 40px rgba(0,0,0,.15);
@@ -1629,7 +1406,7 @@ h1, h2, h3, h4, h5 {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-height: 320px;
+    max-height: min(320px, 45vh);
     min-height: 200px;
 }
 
@@ -1639,6 +1416,7 @@ h1, h2, h3, h4, h5 {
     border-radius: 16px;
     font-size: 0.88rem;
     line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
     .chat-burbuja.bot {
@@ -1689,6 +1467,7 @@ h1, h2, h3, h4, h5 {
 
     #chatbotInput input {
         flex: 1;
+        min-width: 0;
         border: 1.5px solid #e5e7eb;
         border-radius: 20px;
         padding: 8px 14px;
@@ -1766,16 +1545,10 @@ h1, h2, h3, h4, h5 {
 }
 
 /* ══════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — pantallas medianas y pequeñas
+   (de mayor a menor: 1200 → 992 → 768 → 576 → 400)
    ══════════════════════════════════════════════ */
-@media (max-width: 1200px) {
-    .images-wrapper__item {
-        width: 320px;
-        height: 430px;
-    }
-}
-
-@media (max-width: 1024px) {
+@media (max-width: 1199.98px) {
     .hero {
         padding: 60px 48px 50px;
         gap: 40px;
@@ -1800,43 +1573,54 @@ h1, h2, h3, h4, h5 {
         width: 175px;
         height: 225px;
     }
-}
 
-@media (max-width: 992px) {
-    .photo-grid {
-        grid-template-columns: 1fr;
+    .sobre-content {
+        padding: 56px 44px;
     }
 
-    #carouselExampleIndicators .carousel-item img {
-        height: 340px;
-        object-fit: cover;
-        object-position: center top;
-    }
-
-    .producto-card {
-        width: 150px;
-    }
-
-    .menu-navbar .nav {
-        gap: 0 !important;
-    }
-
-    .images-wrapper {
-        gap: 20px;
-    }
-
-    .images-wrapper__item {
-        width: 280px;
-        height: 370px;
+    .horario-box {
+        padding: 36px 32px;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 991.98px) {
+    .producto-img {
+        height: 200px;
+    }
+
+    #carouselProductos .producto-card {
+        width: 170px;
+    }
+
+    #carouselProductos .carousel-item > .d-flex {
+        padding-left: 2.5rem !important;
+        padding-right: 2.5rem !important;
+    }
+}
+
+/* Filtros de Productos: con el menú lateral visible, el contenido es angosto hasta los 1200px,
+   por eso la caja de filtros se apila (plegable) y solo se queda a un lado en pantallas grandes */
+@media (max-width: 1199.98px) {
+    main .sticky-top {
+        position: static !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .filtros-card {
+        max-height: calc(100dvh - var(--navbar-h) - 32px);
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Hero / Sobre nosotros en una sola columna */
     .hero {
         grid-template-columns: 1fr;
         min-height: auto;
-        padding: 60px 28px 48px;
-        gap: 48px;
+        max-height: none;
+        padding: 48px 24px 40px;
+        gap: 36px;
         text-align: center;
         align-items: start;
     }
@@ -1850,12 +1634,13 @@ h1, h2, h3, h4, h5 {
         max-width: 100%;
     }
 
-    .hero-right {
-        justify-content: center;
+    .hero-title {
+        font-size: clamp(2.6rem, 12vw, 3.2rem);
     }
 
     .gallery-stack {
         width: 320px;
+        max-width: 100%;
         height: 300px;
         margin: 0 auto;
     }
@@ -1894,12 +1679,22 @@ h1, h2, h3, h4, h5 {
     }
 
     .sobre-content {
-        padding: 48px 28px;
+        padding: 40px 24px;
     }
+
+        .sobre-content p {
+            max-width: 100%;
+        }
 
     .info-section {
         flex-direction: column;
-        margin: 50px auto;
+        gap: 24px;
+        margin: 40px auto;
+        padding: 0 12px;
+    }
+
+    .horario-box {
+        padding: 28px 20px;
     }
 
     .mapa-box {
@@ -1910,28 +1705,249 @@ h1, h2, h3, h4, h5 {
             min-height: 280px;
         }
 
-    .images-wrapper {
-        flex-direction: column;
-        align-items: center;
-        padding-bottom: 20px;
+    /* Home: carrusel de productos (3 por diapositiva) en tarjetas compactas */
+    #carouselProductos {
+        margin: 24px 12px 32px;
+        padding: 14px 0;
+        border-radius: 22px;
     }
 
-    .item-top, .item-middle, .item-bottom {
-        margin-top: 0;
+        #carouselProductos .carousel-item > .d-flex {
+            padding-left: 1.75rem !important;
+            padding-right: 1.75rem !important;
+            gap: 8px !important;
+        }
+
+        #carouselProductos .producto-card {
+            width: auto;
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 6px;
+        }
+
+        #carouselProductos .producto-img {
+            height: auto;
+            aspect-ratio: 3 / 4;
+        }
+
+        #carouselProductos .producto-nombre {
+            font-size: 11px;
+        }
+
+        #carouselProductos .producto-precio {
+            font-size: 12px;
+        }
+
+    .carousel-controls-wrapper .carousel-control-prev,
+    .carousel-controls-wrapper .carousel-control-next {
+        width: 28px;
+    }
+
+    .carousel-control-prev-icon,
+    .carousel-control-next-icon {
+        width: 1.4rem;
+        height: 1.4rem;
+    }
+
+    #carouselExampleIndicators {
+        border-radius: 0 0 22px 22px;
+    }
+
+    /* espacios verticales más cortos */
+    section,
+    .photo-container,
+    .table-responsive,
+    .card {
+        margin-bottom: 28px;
+    }
+
+    .footer-custom {
+        margin-top: 40px;
     }
 }
 
-@media (max-width: 480px) {
-    .hero {
-        padding: 48px 20px 40px;
+@media (max-width: 575.98px) {
+    /* Formularios: 16px evita el zoom de iOS al tocar un campo */
+    .form-control,
+    .form-select {
+        font-size: 16px;
     }
 
-    .hero-title {
-        font-size: 2.8rem;
+    /* Botones de las cajas de arriba (título + acciones) pasan a la fila de abajo si no caben */
+    main .d-flex.justify-content-between.align-items-center,
+    main .d-flex.justify-content-between.align-items-start {
+        flex-wrap: wrap;
+        row-gap: .5rem;
+    }
+
+    /* filas con un interruptor (switch) pasan a la línea de abajo si no caben */
+    main .d-flex.align-items-center.gap-2:has(> .form-switch) {
+        flex-wrap: wrap;
+    }
+
+    /* textos y etiquetas largas no se salen de la pantalla */
+    main .badge {
+        white-space: normal;
+    }
+
+    main h1, main h2, main h3, main h4, main h5, main h6 {
+        overflow-wrap: anywhere;
+    }
+
+    /* Carrito: cada producto pasa de una fila apretada a una tarjeta
+       (imagen a la izquierda, nombre arriba, cantidad y subtotal abajo) */
+    .carrito-item {
+        display: grid !important;
+        grid-template-columns: 64px minmax(0, 1fr) auto;
+        grid-template-areas:
+            "img info info"
+            "img cant sub";
+        column-gap: .75rem;
+        row-gap: .5rem;
+        align-items: center;
+    }
+
+        .carrito-item > img {
+            grid-area: img;
+            width: 64px !important;
+            height: 64px !important;
+            align-self: start;
+        }
+
+        .carrito-item .carrito-info {
+            grid-area: info;
+            min-width: 0;
+        }
+
+        .carrito-item .carrito-cant {
+            grid-area: cant;
+        }
+
+        .carrito-item .carrito-sub {
+            grid-area: sub;
+            min-width: 0 !important;
+        }
+
+    /* menos aire interno en tarjetas y contenedores */
+    main .card.p-4,
+    main .card.p-5,
+    main .card-body.p-4,
+    main .card-body.p-5 {
+        padding: 1rem !important;
+    }
+
+    main .container-fluid.px-4,
+    main .container.px-4,
+    main .container.py-5 {
+        padding-left: .5rem !important;
+        padding-right: .5rem !important;
+    }
+
+    main .container.py-4,
+    main .container.py-5,
+    main .container-fluid.py-4 {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+
+    /* Tablas: más compactas, con scroll horizontal dentro de su caja */
+    .table-responsive {
+        padding: 6px;
+        border-radius: 16px;
+    }
+
+    .table thead th {
+        padding: 10px 8px;
+        font-size: .8rem;
+        white-space: nowrap;
+    }
+
+    .table td {
+        padding: 8px;
+        font-size: .85rem;
+    }
+
+    .table .btn,
+    .table .btn-sm {
+        padding: .3rem .55rem;
+    }
+
+    #gridProductos h5 {
+        font-size: 1.2rem;
+    }
+
+    #gridProductos h4 {
+        font-size: 1.5rem;
+    }
+
+    .photo-container {
+        padding: 12px;
+    }
+
+    .photo-card .title {
+        font-size: 20px;
+    }
+
+    .footer-custom .container {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    /* Chatbot: botón y ventana más pegados a la esquina */
+    #chatbotBurbuja {
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        right: 14px;
+    }
+
+    #chatbotBtn {
+        width: 52px;
+        height: 52px;
+        font-size: 1.4rem;
+    }
+
+    #chatbotVentana {
+        bottom: 62px;
+    }
+
+    #chatbotInput input {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 400px) {
+    .hero {
+        padding: 40px 16px 32px;
     }
 
     .gallery-stack {
         width: 280px;
         height: 270px;
+    }
+
+        .gallery-stack img {
+            width: 130px;
+            height: 165px;
+        }
+
+    .img-middle {
+        left: 65px;
+        width: 145px;
+        height: 185px;
+    }
+
+    .img-bottom {
+        top: 110px;
+        width: 125px;
+        height: 155px;
+    }
+
+    .horario-lista li {
+        padding: 11px 12px;
+        font-size: .9rem;
+    }
+
+    #carouselProductos .carousel-item > .d-flex {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
     }
 }
