@@ -1613,6 +1613,10 @@ h1, h2, h3, h4, h5 {
     }
 }
 
+.dropdown-menu.dropdown-en-body {
+    z-index: 1080;
+}
+
 @media (max-width: 767.98px) {
     /* Hero / Sobre nosotros en una sola columna */
     .hero {
@@ -1950,4 +1954,8 @@ h1, h2, h3, h4, h5 {
         padding-left: 1.5rem !important;
         padding-right: 1.5rem !important;
     }
+    .table-responsive .dropdown-menu {
+        z-index: 1080;
+    }
+
 }
