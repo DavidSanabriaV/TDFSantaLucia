@@ -33,7 +33,7 @@
 
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Cliente</label>
-                        <div class="input-group mb-2">
+                        <div class="input-group mb-2" id="inputBuscador">
                             <span class="input-group-text bg-white border-end-0">
                                 <i class="bi bi-search text-muted"></i>
                             </span>
@@ -60,10 +60,16 @@
 
                         <input type="hidden" asp-for="Cliente_Id" id="clienteIdHidden" />
 
-                        <div id="clienteSeleccionado" class="mt-2" style="display:none;">
-                            <span class="badge bg-success px-3 py-2 fs-6" id="clienteNombreBadge"></span>
-                            <button type="button" class="btn btn-sm btn-outline-danger ms-2 rounded-3" id="btnLimpiar">
-                                <i class="bi bi-x me-1"></i>Cambiar
+                        <div id="clienteSeleccionado"
+                             class="mt-2 d-flex align-items-center flex-wrap gap-2"
+                             style="display:none !important;">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span class="fw-semibold" id="clienteNombreBadge"></span>
+                            <button type="button"
+                                    class="btn btn-sm rounded-3 text-nowrap flex-shrink-0"
+                                    style="background-color:#fde8cc; color:#d4620a; border:none;"
+                                    id="btnLimpiar">
+                                <i class="bi bi-arrow-repeat me-1"></i>Cambiar
                             </button>
                         </div>
 
@@ -90,7 +96,7 @@
 
                 </div>
 
-              <div class="d-flex justify-content-between mt-4">
+                <div class="d-flex justify-content-between mt-4">
                     <a asp-action="Index" class="btn rounded-3"
                        style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
                         <i class="bi bi-x-circle me-1"></i> Cancelar
@@ -110,7 +116,7 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         const items = Array.from(document.querySelectorAll('.cliente-item'));
-        const $     = id => document.getElementById(id);
+        const $ = id => document.getElementById(id);
 
         $('buscadorCliente').addEventListener('input', e =>
             items.forEach(i => i.style.display =
@@ -121,17 +127,20 @@
             i.addEventListener('mouseenter', () => i.style.background = '#f0f7ff');
             i.addEventListener('mouseleave', () => i.style.background = 'white');
             i.addEventListener('click', () => {
-                $('clienteIdHidden').value      = i.dataset.id;
+                $('clienteIdHidden').value = i.dataset.id;
                 $('clienteNombreBadge').textContent = `${i.dataset.nombre} — ${i.dataset.cedula}`;
-                $('clienteSeleccionado').style.display = 'block';
-                $('listaClientes').style.display = $('buscadorCliente').style.display = 'none';
+                $('clienteSeleccionado').style.display = 'flex';
+                $('listaClientes').style.display = 'none';
+                $('inputBuscador').style.display = 'none';
             });
         });
 
         $('btnLimpiar').addEventListener('click', () => {
-            $('clienteIdHidden').value = $('buscadorCliente').value = '';
+            $('clienteIdHidden').value = '';
+            $('buscadorCliente').value = '';
             $('clienteSeleccionado').style.display = 'none';
-            $('listaClientes').style.display = $('buscadorCliente').style.display = '';
+            $('listaClientes').style.display = '';
+            $('inputBuscador').style.display = '';
             items.forEach(i => i.style.display = '');
         });
 
