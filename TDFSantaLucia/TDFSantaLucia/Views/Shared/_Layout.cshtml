@@ -174,19 +174,11 @@
                                 </a>
                             </li>
 
-                            <li class="nav-item dropdown">
-                                <a class="nav-link menu-link dropdown-toggle"
-                                   href="#" role="button" data-bs-toggle="dropdown">
+                            <li class="nav-item">
+                                <a class="nav-link menu-link"
+                                   asp-controller="Cita" asp-action="Index">
                                     <i class="bi bi-calendar2-heart-fill me-2"></i>Citas
                                 </a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item"
-                                           asp-controller="Cita" asp-action="Index">
-                                            Gestión de Citas
-                                        </a>
-                                    </li>
-                                </ul>
                             </li>
 
                             <li class="nav-item">
@@ -422,43 +414,43 @@
 
     <script>
 
-    (function () {
+            (function () {
 
-        document.addEventListener('click', function (e) {
-            const toggle = e.target.closest('.table-responsive [data-bs-toggle="dropdown"]');
-            if (toggle) {
-                bootstrap.Dropdown.getOrCreateInstance(toggle, {
-                    popperConfig: function (cfg) {
-                        return Object.assign({}, cfg, { strategy: 'fixed' });
+                document.addEventListener('click', function (e) {
+                    const toggle = e.target.closest('.table-responsive [data-bs-toggle="dropdown"]');
+                    if (toggle) {
+                        bootstrap.Dropdown.getOrCreateInstance(toggle, {
+                            popperConfig: function (cfg) {
+                                return Object.assign({}, cfg, { strategy: 'fixed' });
+                            }
+                        });
                     }
+                }, true);
+
+
+                document.addEventListener('show.bs.dropdown', function (e) {
+                    const toggle = e.target;
+                    if (!toggle.closest || !toggle.closest('.table-responsive')) return;
+                    const menu = toggle.nextElementSibling;
+                    if (!menu || !menu.classList.contains('dropdown-menu')) return;
+
+                    menu._origen = menu.parentElement;
+                    toggle._menuMovido = menu;
+                    menu.classList.add('dropdown-en-body');
+                    document.body.appendChild(menu);
                 });
-            }
-        }, true);
 
 
-        document.addEventListener('show.bs.dropdown', function (e) {
-            const toggle = e.target;
-            if (!toggle.closest || !toggle.closest('.table-responsive')) return;
-            const menu = toggle.nextElementSibling;
-            if (!menu || !menu.classList.contains('dropdown-menu')) return;
-
-            menu._origen = menu.parentElement;
-            toggle._menuMovido = menu;
-            menu.classList.add('dropdown-en-body');
-            document.body.appendChild(menu);
-        });
-
-
-        document.addEventListener('hidden.bs.dropdown', function (e) {
-            const toggle = e.target;
-            const menu = toggle._menuMovido;
-            if (!menu) return;
-            menu._origen.appendChild(menu);
-            menu.classList.remove('dropdown-en-body');
-            toggle._menuMovido = null;
-        });
-    })();
-</script>
+                document.addEventListener('hidden.bs.dropdown', function (e) {
+                    const toggle = e.target;
+                    const menu = toggle._menuMovido;
+                    if (!menu) return;
+                    menu._origen.appendChild(menu);
+                    menu.classList.remove('dropdown-en-body');
+                    toggle._menuMovido = null;
+                });
+            })();
+    </script>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
@@ -505,7 +497,7 @@
             });
 
             // B20 — Búsqueda dinámica con dropdown de sugerencias
-            (function() {
+            (function () {
                 const inputBuscar = document.querySelector('input[name="buscar"]');
                 if (!inputBuscar) return;
 
@@ -520,17 +512,17 @@
 
                 let timer = null;
 
-                inputBuscar.addEventListener('input', function() {
+                inputBuscar.addEventListener('input', function () {
                     const termino = this.value.trim();
                     clearTimeout(timer);
 
                     // Filtrar tarjetas del home si existen
                     const tarjetas = document.querySelectorAll('.producto-card');
-                    tarjetas.forEach(function(tarjeta) {
+                    tarjetas.forEach(function (tarjeta) {
                         const nombre = (tarjeta.querySelector('.producto-nombre')?.textContent || '').toLowerCase();
                         tarjeta.style.display = (!termino || nombre.includes(termino.toLowerCase())) ? '' : 'none';
                     });
-                    document.querySelectorAll('#carouselProductos .carousel-item').forEach(function(slide) {
+                    document.querySelectorAll('#carouselProductos .carousel-item').forEach(function (slide) {
                         const hayVisibles = Array.from(slide.querySelectorAll('.producto-card'))
                             .some(t => t.style.display !== 'none');
                         slide.style.display = hayVisibles || !termino ? '' : 'none';
@@ -542,22 +534,22 @@
                         return;
                     }
 
-                    timer = setTimeout(function() {
+                    timer = setTimeout(function () {
                         fetch('/Home/BuscarSugerencias?q=' + encodeURIComponent(termino))
                             .then(r => r.json())
-                            .then(function(data) {
+                            .then(function (data) {
                                 dropdown.innerHTML = '';
                                 if (!data.length) {
                                     dropdown.style.display = 'none';
                                     return;
                                 }
-                                data.forEach(function(p) {
+                                data.forEach(function (p) {
                                     const li = document.createElement('li');
                                     li.style.cssText = 'padding:8px 16px; cursor:pointer;';
                                     li.textContent = p.nombre;
                                     li.addEventListener('mouseenter', () => li.style.background = '#f0f7ff');
                                     li.addEventListener('mouseleave', () => li.style.background = 'white');
-                                    li.addEventListener('click', function() {
+                                    li.addEventListener('click', function () {
                                         window.location.href = '/producto/detalle/' + p.producto_Id;
                                     });
                                     dropdown.appendChild(li);
@@ -569,7 +561,7 @@
                 });
 
                 // Cerrar dropdown al hacer click fuera
-                document.addEventListener('click', function(e) {
+                document.addEventListener('click', function (e) {
                     if (!formBuscador.contains(e.target)) {
                         dropdown.style.display = 'none';
                     }
@@ -742,53 +734,53 @@
                 };
                 const badge = colores[p.estado] ?? 'secondary';
                 return `
-                            <div class="chatbot-tarjeta">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold" style="color:#243C8F;">${p.numero_Orden}</span>
-                                    <span class="badge bg-${badge}">${p.estado}</span>
-                                </div>
-                                <div class="d-flex justify-content-between mt-1">
-                                    <small class="text-muted">📅 ${p.fecha}</small>
-                                    <small class="fw-bold text-success">${p.total}</small>
-                                </div>
-                            </div>`;
+                                        <div class="chatbot-tarjeta">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold" style="color:#243C8F;">${p.numero_Orden}</span>
+                                                <span class="badge bg-${badge}">${p.estado}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <small class="text-muted">📅 ${p.fecha}</small>
+                                                <small class="fw-bold text-success">${p.total}</small>
+                                            </div>
+                                        </div>`;
             }
 
             function renderCita(c) {
                 return `
-                            <div class="chatbot-tarjeta">
-                                <div class="fw-semibold">
-                                    <i class="bi bi-calendar-event me-1" style="color:#243C8F;"></i>
-                                    ${c.fecha}
-                                </div>
-                                <div class="small text-muted mt-1">${c.servicio ?? 'Sin especificar'}</div>
-                                <span class="badge bg-info text-dark mt-1">${c.estado}</span>
-                            </div>`;
+                                        <div class="chatbot-tarjeta">
+                                            <div class="fw-semibold">
+                                                <i class="bi bi-calendar-event me-1" style="color:#243C8F;"></i>
+                                                ${c.fecha}
+                                            </div>
+                                            <div class="small text-muted mt-1">${c.servicio ?? 'Sin especificar'}</div>
+                                            <span class="badge bg-info text-dark mt-1">${c.estado}</span>
+                                        </div>`;
             }
 
             function renderFactura(f) {
                 return `
-                            <div class="chatbot-tarjeta">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold" style="color:#243C8F;">${f.numero_Factura}</span>
-                                    <span class="badge bg-success">${f.estado}</span>
-                                </div>
-                                <div class="d-flex justify-content-between mt-1">
-                                    <small class="text-muted">📅 ${f.fecha}</small>
-                                    <small class="fw-bold text-success">${f.total}</small>
-                                </div>
-                            </div>`;
+                                        <div class="chatbot-tarjeta">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-bold" style="color:#243C8F;">${f.numero_Factura}</span>
+                                                <span class="badge bg-success">${f.estado}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <small class="text-muted">📅 ${f.fecha}</small>
+                                                <small class="fw-bold text-success">${f.total}</small>
+                                            </div>
+                                        </div>`;
             }
 
             function renderCarritoItem(i) {
                 return `
-                            <div class="chatbot-tarjeta">
-                                <div class="fw-semibold">${i.nombre}</div>
-                                <div class="d-flex justify-content-between mt-1">
-                                    <small class="text-muted">x${i.cantidad} — ${i.precio}</small>
-                                    <small class="fw-bold text-success">${i.subtotal}</small>
-                                </div>
-                            </div>`;
+                                        <div class="chatbot-tarjeta">
+                                            <div class="fw-semibold">${i.nombre}</div>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <small class="text-muted">x${i.cantidad} — ${i.precio}</small>
+                                                <small class="fw-bold text-success">${i.subtotal}</small>
+                                            </div>
+                                        </div>`;
             }
 
             function agregarBurbuja(tipo, texto) {
