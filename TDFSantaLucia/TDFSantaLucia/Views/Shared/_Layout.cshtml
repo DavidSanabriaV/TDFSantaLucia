@@ -419,121 +419,162 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+    (function () {
+
+        document.addEventListener('click', function (e) {
+            const toggle = e.target.closest('.table-responsive [data-bs-toggle="dropdown"]');
+            if (toggle) {
+                bootstrap.Dropdown.getOrCreateInstance(toggle, {
+                    popperConfig: function (cfg) {
+                        return Object.assign({}, cfg, { strategy: 'fixed' });
+                    }
+                });
+            }
+        }, true);
+
+
+        document.addEventListener('show.bs.dropdown', function (e) {
+            const toggle = e.target;
+            if (!toggle.closest || !toggle.closest('.table-responsive')) return;
+            const menu = toggle.nextElementSibling;
+            if (!menu || !menu.classList.contains('dropdown-menu')) return;
+
+            menu._origen = menu.parentElement;
+            toggle._menuMovido = menu;
+            menu.classList.add('dropdown-en-body');
+            document.body.appendChild(menu);
+        });
+
+
+        document.addEventListener('hidden.bs.dropdown', function (e) {
+            const toggle = e.target;
+            const menu = toggle._menuMovido;
+            if (!menu) return;
+            menu._origen.appendChild(menu);
+            menu.classList.remove('dropdown-en-body');
+            toggle._menuMovido = null;
+        });
+    })();
+</script>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
-        function actualizarContadorCarrito() {
-        if (!document.getElementById('carritoCount')) return;
-        fetch('/carrito/contar')
-        .then(r => r.json())
-        .then(d => {
-        const badge = document.getElementById('carritoCount');
-        if (badge) badge.textContent = d.count;
-        })
-        .catch(() => { });
-        }
-        actualizarContadorCarrito();
+            function actualizarContadorCarrito() {
+                if (!document.getElementById('carritoCount')) return;
+                fetch('/carrito/contar')
+                    .then(r => r.json())
+                    .then(d => {
+                        const badge = document.getElementById('carritoCount');
+                        if (badge) badge.textContent = d.count;
+                    })
+                    .catch(() => { });
+            }
+            actualizarContadorCarrito();
     </script>
 
     <script>
-        const sidebarMenu    = document.getElementById('sidebarMenu');
-        const sidebarToggle  = document.getElementById('sidebarToggle');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-        function abrirSidebar() {
-        sidebarMenu.classList.add('abierto');
-        sidebarOverlay.classList.add('abierto');
-        }
+            function abrirSidebar() {
+                sidebarMenu.classList.add('abierto');
+                sidebarOverlay.classList.add('abierto');
+            }
 
-        function cerrarSidebar() {
-        sidebarMenu.classList.remove('abierto');
-        sidebarOverlay.classList.remove('abierto');
-        }
+            function cerrarSidebar() {
+                sidebarMenu.classList.remove('abierto');
+                sidebarOverlay.classList.remove('abierto');
+            }
 
-        sidebarToggle?.addEventListener('click', () => {
-        sidebarMenu.classList.contains('abierto') ? cerrarSidebar() : abrirSidebar();
-        });
+            sidebarToggle?.addEventListener('click', () => {
+                sidebarMenu.classList.contains('abierto') ? cerrarSidebar() : abrirSidebar();
+            });
 
-        sidebarOverlay?.addEventListener('click', cerrarSidebar);
+            sidebarOverlay?.addEventListener('click', cerrarSidebar);
 
-        document.querySelectorAll('.sidebar-nav a.menu-link').forEach(a => {
-        a.addEventListener('click', () => {
-        if (window.innerWidth < 992) cerrarSidebar();
-        });
-        });
+            document.querySelectorAll('.sidebar-nav a.menu-link').forEach(a => {
+                a.addEventListener('click', () => {
+                    if (window.innerWidth < 992) cerrarSidebar();
+                });
+            });
 
-        // B20 — Búsqueda dinámica con dropdown de sugerencias
-        (function () {
-        const inputBuscar = document.querySelector('input[name="buscar"]');
-        if (!inputBuscar) return;
+            // B20 — Búsqueda dinámica con dropdown de sugerencias
+            (function() {
+                const inputBuscar = document.querySelector('input[name="buscar"]');
+                if (!inputBuscar) return;
 
-        const dropdown = document.createElement('ul');
-        dropdown.id = 'sugerenciasDropdown';
-        dropdown.style.cssText =
-        'position:absolute; top:100%; left:0; z-index:9999; background:white;' +
-        'border:1px solid #dee2e6; border-radius:8px; list-style:none; padding:4px 0;' +
-        'margin-top:4px; width:100%; box-shadow:0 4px 12px rgba(0,0,0,0.1); display:none;';
-        const formBuscador = inputBuscar.closest('form');
-        formBuscador.appendChild(dropdown);
+                const dropdown = document.createElement('ul');
+                dropdown.id = 'sugerenciasDropdown';
+                dropdown.style.cssText =
+                    'position:absolute; top:100%; left:0; z-index:9999; background:white;' +
+                    'border:1px solid #dee2e6; border-radius:8px; list-style:none; padding:4px 0;' +
+                    'margin-top:4px; width:100%; box-shadow:0 4px 12px rgba(0,0,0,0.1); display:none;';
+                const formBuscador = inputBuscar.closest('form');
+                formBuscador.appendChild(dropdown);
 
-        let timer = null;
+                let timer = null;
 
-        inputBuscar.addEventListener('input', function () {
-        const termino = this.value.trim();
-        clearTimeout(timer);
+                inputBuscar.addEventListener('input', function() {
+                    const termino = this.value.trim();
+                    clearTimeout(timer);
 
-        // Filtrar tarjetas del home si existen
-        const tarjetas = document.querySelectorAll('.producto-card');
-        tarjetas.forEach(function (tarjeta) {
-        const nombre = (tarjeta.querySelector('.producto-nombre')?.textContent || '').toLowerCase();
-        tarjeta.style.display = (!termino || nombre.includes(termino.toLowerCase())) ? '' : 'none';
-        });
-        document.querySelectorAll('#carouselProductos .carousel-item').forEach(function (slide) {
-        const hayVisibles = Array.from(slide.querySelectorAll('.producto-card'))
-        .some(t => t.style.display !== 'none');
-        slide.style.display = hayVisibles || !termino ? '' : 'none';
-        });
+                    // Filtrar tarjetas del home si existen
+                    const tarjetas = document.querySelectorAll('.producto-card');
+                    tarjetas.forEach(function(tarjeta) {
+                        const nombre = (tarjeta.querySelector('.producto-nombre')?.textContent || '').toLowerCase();
+                        tarjeta.style.display = (!termino || nombre.includes(termino.toLowerCase())) ? '' : 'none';
+                    });
+                    document.querySelectorAll('#carouselProductos .carousel-item').forEach(function(slide) {
+                        const hayVisibles = Array.from(slide.querySelectorAll('.producto-card'))
+                            .some(t => t.style.display !== 'none');
+                        slide.style.display = hayVisibles || !termino ? '' : 'none';
+                    });
 
-        // Dropdown de sugerencias
-        if (termino.length < 2) {
-        dropdown.style.display = 'none';
-        return;
-        }
+                    // Dropdown de sugerencias
+                    if (termino.length < 2) {
+                        dropdown.style.display = 'none';
+                        return;
+                    }
 
-        timer = setTimeout(function () {
-        fetch('/Home/BuscarSugerencias?q=' + encodeURIComponent(termino))
-        .then(r => r.json())
-        .then(function (data) {
-        dropdown.innerHTML = '';
-        if (!data.length) {
-        dropdown.style.display = 'none';
-        return;
-        }
-        data.forEach(function (p) {
-        const li = document.createElement('li');
-        li.style.cssText = 'padding:8px 16px; cursor:pointer;';
-        li.textContent   = p.nombre;
-        li.addEventListener('mouseenter', () => li.style.background = '#f0f7ff');
-        li.addEventListener('mouseleave', () => li.style.background = 'white');
-        li.addEventListener('click', function () {
-        window.location.href = '/producto/detalle/' + p.producto_Id;
-        });
-        dropdown.appendChild(li);
-        });
-        dropdown.style.display = 'block';
-        })
-        .catch(() => { dropdown.style.display = 'none'; });
-        }, 250);
-        });
+                    timer = setTimeout(function() {
+                        fetch('/Home/BuscarSugerencias?q=' + encodeURIComponent(termino))
+                            .then(r => r.json())
+                            .then(function(data) {
+                                dropdown.innerHTML = '';
+                                if (!data.length) {
+                                    dropdown.style.display = 'none';
+                                    return;
+                                }
+                                data.forEach(function(p) {
+                                    const li = document.createElement('li');
+                                    li.style.cssText = 'padding:8px 16px; cursor:pointer;';
+                                    li.textContent = p.nombre;
+                                    li.addEventListener('mouseenter', () => li.style.background = '#f0f7ff');
+                                    li.addEventListener('mouseleave', () => li.style.background = 'white');
+                                    li.addEventListener('click', function() {
+                                        window.location.href = '/producto/detalle/' + p.producto_Id;
+                                    });
+                                    dropdown.appendChild(li);
+                                });
+                                dropdown.style.display = 'block';
+                            })
+                            .catch(() => { dropdown.style.display = 'none'; });
+                    }, 250);
+                });
 
-        // Cerrar dropdown al hacer click fuera
-        document.addEventListener('click', function (e) {
-        if (!formBuscador.contains(e.target)) {
-        dropdown.style.display = 'none';
-        }
-        });
-        })();
+                // Cerrar dropdown al hacer click fuera
+                document.addEventListener('click', function(e) {
+                    if (!formBuscador.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+            })();
     </script>
 
     <div id="chatbotBurbuja">
@@ -564,245 +605,245 @@
     </div>
 
     <script>
-        let chatAbierto  = false;
-        let opcionesCache = [];
-        const estaAuth   = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
+            let chatAbierto = false;
+            let opcionesCache = [];
+            const estaAuth = @(User.Identity?.IsAuthenticated == true ? "true" : "false");
 
-        async function toggleChat() {
-        chatAbierto = !chatAbierto;
-        const ventana = document.getElementById('chatbotVentana');
-        ventana.classList.toggle('abierto', chatAbierto);
+            async function toggleChat() {
+                chatAbierto = !chatAbierto;
+                const ventana = document.getElementById('chatbotVentana');
+                ventana.classList.toggle('abierto', chatAbierto);
 
-        if (chatAbierto &&
-        document.getElementById('chatbotMensajes').children.length === 0) {
-        await iniciarChat();
-        }
-        }
+                if (chatAbierto &&
+                    document.getElementById('chatbotMensajes').children.length === 0) {
+                    await iniciarChat();
+                }
+            }
 
-        function cerrarChat() {
-        chatAbierto = false;
-        document.getElementById('chatbotVentana').classList.remove('abierto');
-        }
+            function cerrarChat() {
+                chatAbierto = false;
+                document.getElementById('chatbotVentana').classList.remove('abierto');
+            }
 
-        async function iniciarChat() {
-        agregarBurbuja('bot',
-        '¡Hola! 👋 Soy el asistente de Farmacia Santa Lucía. ' +
-        '¿En qué puedo ayudarte?');
-        await cargarOpciones();
-        }
+            async function iniciarChat() {
+                agregarBurbuja('bot',
+                    '¡Hola! 👋 Soy el asistente de Farmacia Santa Lucía. ' +
+                    '¿En qué puedo ayudarte?');
+                await cargarOpciones();
+            }
 
-        async function cargarOpciones() {
-        const resp    = await fetch('/chatbot/opciones');
-        opcionesCache = await resp.json();
-        mostrarOpciones();
-        }
+            async function cargarOpciones() {
+                const resp = await fetch('/chatbot/opciones');
+                opcionesCache = await resp.json();
+                mostrarOpciones();
+            }
 
-        function mostrarOpciones() {
-        const cont = document.getElementById('chatbotOpciones');
-        cont.innerHTML = '';
-        opcionesCache.forEach(o => {
-        const btn     = document.createElement('button');
-        btn.innerHTML = `<i class="bi ${o.icono || 'bi-chat'} me-1"></i>${o.texto}`;
-        btn.onclick   = () => seleccionarOpcion(o);
-        cont.appendChild(btn);
-        });
-        }
+            function mostrarOpciones() {
+                const cont = document.getElementById('chatbotOpciones');
+                cont.innerHTML = '';
+                opcionesCache.forEach(o => {
+                    const btn = document.createElement('button');
+                    btn.innerHTML = `<i class="bi ${o.icono || 'bi-chat'} me-1"></i>${o.texto}`;
+                    btn.onclick = () => seleccionarOpcion(o);
+                    cont.appendChild(btn);
+                });
+            }
 
-        function ocultarOpciones() {
-        document.getElementById('chatbotOpciones').innerHTML = '';
-        }
+            function ocultarOpciones() {
+                document.getElementById('chatbotOpciones').innerHTML = '';
+            }
 
-        async function seleccionarOpcion(opcion) {
-        agregarBurbuja('usuario', opcion.texto);
-        ocultarOpciones();
-        mostrarTyping();
+            async function seleccionarOpcion(opcion) {
+                agregarBurbuja('usuario', opcion.texto);
+                ocultarOpciones();
+                mostrarTyping();
 
-        const resp = await fetch('/chatbot/responder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        opcionId: opcion.opcion_Id,
-        texto: null
-        })
-        });
+                const resp = await fetch('/chatbot/responder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        opcionId: opcion.opcion_Id,
+                        texto: null
+                    })
+                });
 
-        const data = await resp.json();
-        quitarTyping();
-        procesarRespuesta(data);
-        }
+                const data = await resp.json();
+                quitarTyping();
+                procesarRespuesta(data);
+            }
 
-        async function enviarTexto() {
-        const input = document.getElementById('chatbotTexto');
-        const texto = input.value.trim();
-        if (!texto) return;
+            async function enviarTexto() {
+                const input = document.getElementById('chatbotTexto');
+                const texto = input.value.trim();
+                if (!texto) return;
 
-        input.value = '';
-        agregarBurbuja('usuario', texto);
-        ocultarOpciones();
-        mostrarTyping();
+                input.value = '';
+                agregarBurbuja('usuario', texto);
+                ocultarOpciones();
+                mostrarTyping();
 
-        const resp = await fetch('/chatbot/responder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ opcionId: null, texto })
-        });
+                const resp = await fetch('/chatbot/responder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ opcionId: null, texto })
+                });
 
-        const data = await resp.json();
-        quitarTyping();
-        procesarRespuesta(data);
-        }
+                const data = await resp.json();
+                quitarTyping();
+                procesarRespuesta(data);
+            }
 
-        function procesarRespuesta(data) {
-        if (data.mensaje)
-        agregarBurbuja('bot', data.mensaje);
+            function procesarRespuesta(data) {
+                if (data.mensaje)
+                    agregarBurbuja('bot', data.mensaje);
 
-        switch (data.tipo) {
-        case 'redireccion':
-        if (data.datos)
-        agregarLinkBot('Ir ahora →', String(data.datos));
-        break;
-        case 'pedidos':
-        if (data.datos?.length)
-        agregarTarjetas(data.datos, renderPedido);
-        agregarLinkBot('📦 Ver todos mis pedidos', '/pedido/mis-pedidos');
-        break;
-        case 'citas':
-        if (data.datos?.length)
-        agregarTarjetas(data.datos, renderCita);
-        agregarLinkBot('📅 Ver todas mis citas', '/cita/miscitas');
-        break;
-        case 'facturas':
-        if (data.datos?.length)
-        agregarTarjetas(data.datos, renderFactura);
-        agregarLinkBot('🧾 Ver todas mis facturas', '/factura/mis-facturas');
-        break;
-        case 'carrito':
-        if (data.datos?.length)
-        agregarTarjetas(data.datos, renderCarritoItem);
-        agregarLinkBot('🛒 Ir al carrito', '/carrito');
-        break;
-        }
+                switch (data.tipo) {
+                    case 'redireccion':
+                        if (data.datos)
+                            agregarLinkBot('Ir ahora →', String(data.datos));
+                        break;
+                    case 'pedidos':
+                        if (data.datos?.length)
+                            agregarTarjetas(data.datos, renderPedido);
+                        agregarLinkBot('📦 Ver todos mis pedidos', '/pedido/mis-pedidos');
+                        break;
+                    case 'citas':
+                        if (data.datos?.length)
+                            agregarTarjetas(data.datos, renderCita);
+                        agregarLinkBot('📅 Ver todas mis citas', '/cita/miscitas');
+                        break;
+                    case 'facturas':
+                        if (data.datos?.length)
+                            agregarTarjetas(data.datos, renderFactura);
+                        agregarLinkBot('🧾 Ver todas mis facturas', '/factura/mis-facturas');
+                        break;
+                    case 'carrito':
+                        if (data.datos?.length)
+                            agregarTarjetas(data.datos, renderCarritoItem);
+                        agregarLinkBot('🛒 Ir al carrito', '/carrito');
+                        break;
+                }
 
-        const delay = 500;
-        const id    = window.setTimeout(mostrarOpciones, delay);
-        scrollChat();
-        }
+                const delay = 500;
+                const id = window.setTimeout(mostrarOpciones, delay);
+                scrollChat();
+            }
 
-        function renderPedido(p) {
-        const colores = {
-        'Pendiente': 'warning text-dark',
-        'Aceptado':  'info text-dark',
-        'EnProceso': 'primary',
-        'Listo':     'success',
-        'EnCamino':  'primary',
-        'Entregado': 'success',
-        'Rechazado': 'danger',
-        'Cancelado': 'secondary'
-        };
-        const badge = colores[p.estado] ?? 'secondary';
-        return `
-        <div class="chatbot-tarjeta">
-        <div class="d-flex justify-content-between align-items-center">
-        <span class="fw-bold" style="color:#243C8F;">${p.numero_Orden}</span>
-        <span class="badge bg-${badge}">${p.estado}</span>
-        </div>
-        <div class="d-flex justify-content-between mt-1">
-        <small class="text-muted">📅 ${p.fecha}</small>
-        <small class="fw-bold text-success">${p.total}</small>
-        </div>
-        </div>`;
-        }
+            function renderPedido(p) {
+                const colores = {
+                    'Pendiente': 'warning text-dark',
+                    'Aceptado': 'info text-dark',
+                    'EnProceso': 'primary',
+                    'Listo': 'success',
+                    'EnCamino': 'primary',
+                    'Entregado': 'success',
+                    'Rechazado': 'danger',
+                    'Cancelado': 'secondary'
+                };
+                const badge = colores[p.estado] ?? 'secondary';
+                return `
+                            <div class="chatbot-tarjeta">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold" style="color:#243C8F;">${p.numero_Orden}</span>
+                                    <span class="badge bg-${badge}">${p.estado}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted">📅 ${p.fecha}</small>
+                                    <small class="fw-bold text-success">${p.total}</small>
+                                </div>
+                            </div>`;
+            }
 
-        function renderCita(c) {
-        return `
-        <div class="chatbot-tarjeta">
-        <div class="fw-semibold">
-        <i class="bi bi-calendar-event me-1" style="color:#243C8F;"></i>
-        ${c.fecha}
-        </div>
-        <div class="small text-muted mt-1">${c.servicio ?? 'Sin especificar'}</div>
-        <span class="badge bg-info text-dark mt-1">${c.estado}</span>
-        </div>`;
-        }
+            function renderCita(c) {
+                return `
+                            <div class="chatbot-tarjeta">
+                                <div class="fw-semibold">
+                                    <i class="bi bi-calendar-event me-1" style="color:#243C8F;"></i>
+                                    ${c.fecha}
+                                </div>
+                                <div class="small text-muted mt-1">${c.servicio ?? 'Sin especificar'}</div>
+                                <span class="badge bg-info text-dark mt-1">${c.estado}</span>
+                            </div>`;
+            }
 
-        function renderFactura(f) {
-        return `
-        <div class="chatbot-tarjeta">
-        <div class="d-flex justify-content-between align-items-center">
-        <span class="fw-bold" style="color:#243C8F;">${f.numero_Factura}</span>
-        <span class="badge bg-success">${f.estado}</span>
-        </div>
-        <div class="d-flex justify-content-between mt-1">
-        <small class="text-muted">📅 ${f.fecha}</small>
-        <small class="fw-bold text-success">${f.total}</small>
-        </div>
-        </div>`;
-        }
+            function renderFactura(f) {
+                return `
+                            <div class="chatbot-tarjeta">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold" style="color:#243C8F;">${f.numero_Factura}</span>
+                                    <span class="badge bg-success">${f.estado}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted">📅 ${f.fecha}</small>
+                                    <small class="fw-bold text-success">${f.total}</small>
+                                </div>
+                            </div>`;
+            }
 
-        function renderCarritoItem(i) {
-        return `
-        <div class="chatbot-tarjeta">
-        <div class="fw-semibold">${i.nombre}</div>
-        <div class="d-flex justify-content-between mt-1">
-        <small class="text-muted">x${i.cantidad} — ${i.precio}</small>
-        <small class="fw-bold text-success">${i.subtotal}</small>
-        </div>
-        </div>`;
-        }
+            function renderCarritoItem(i) {
+                return `
+                            <div class="chatbot-tarjeta">
+                                <div class="fw-semibold">${i.nombre}</div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted">x${i.cantidad} — ${i.precio}</small>
+                                    <small class="fw-bold text-success">${i.subtotal}</small>
+                                </div>
+                            </div>`;
+            }
 
-        function agregarBurbuja(tipo, texto) {
-        const cont = document.getElementById('chatbotMensajes');
-        const div  = document.createElement('div');
-        div.className        = `chat-burbuja ${tipo}`;
-        div.style.whiteSpace = 'pre-line';
-        div.textContent      = texto;
-        cont.appendChild(div);
-        scrollChat();
-        }
+            function agregarBurbuja(tipo, texto) {
+                const cont = document.getElementById('chatbotMensajes');
+                const div = document.createElement('div');
+                div.className = `chat-burbuja ${tipo}`;
+                div.style.whiteSpace = 'pre-line';
+                div.textContent = texto;
+                cont.appendChild(div);
+                scrollChat();
+            }
 
-        function agregarTarjetas(datos, renderFn) {
-        const cont = document.getElementById('chatbotMensajes');
-        const wrap = document.createElement('div');
-        wrap.className = 'chatbot-tarjetas';
-        wrap.innerHTML = datos.map(renderFn).join('');
-        cont.appendChild(wrap);
-        scrollChat();
-        }
+            function agregarTarjetas(datos, renderFn) {
+                const cont = document.getElementById('chatbotMensajes');
+                const wrap = document.createElement('div');
+                wrap.className = 'chatbot-tarjetas';
+                wrap.innerHTML = datos.map(renderFn).join('');
+                cont.appendChild(wrap);
+                scrollChat();
+            }
 
-        function agregarLinkBot(texto, url) {
-        const cont = document.getElementById('chatbotMensajes');
-        const div  = document.createElement('div');
-        div.className      = 'chat-burbuja bot';
-        const a            = document.createElement('a');
-        a.href             = url;
-        a.style.color      = '#243C8F';
-        a.style.fontWeight = '600';
-        a.textContent      = texto + ' →';
-        div.appendChild(a);
-        cont.appendChild(div);
-        scrollChat();
-        }
+            function agregarLinkBot(texto, url) {
+                const cont = document.getElementById('chatbotMensajes');
+                const div = document.createElement('div');
+                div.className = 'chat-burbuja bot';
+                const a = document.createElement('a');
+                a.href = url;
+                a.style.color = '#243C8F';
+                a.style.fontWeight = '600';
+                a.textContent = texto + ' →';
+                div.appendChild(a);
+                cont.appendChild(div);
+                scrollChat();
+            }
 
-        function mostrarTyping() {
-        const cont = document.getElementById('chatbotMensajes');
-        const div  = document.createElement('div');
-        div.className = 'chat-burbuja bot chat-typing';
-        div.id        = 'chatTyping';
-        div.appendChild(document.createElement('span'));
-        div.appendChild(document.createElement('span'));
-        div.appendChild(document.createElement('span'));
-        cont.appendChild(div);
-        scrollChat();
-        }
+            function mostrarTyping() {
+                const cont = document.getElementById('chatbotMensajes');
+                const div = document.createElement('div');
+                div.className = 'chat-burbuja bot chat-typing';
+                div.id = 'chatTyping';
+                div.appendChild(document.createElement('span'));
+                div.appendChild(document.createElement('span'));
+                div.appendChild(document.createElement('span'));
+                cont.appendChild(div);
+                scrollChat();
+            }
 
-        function quitarTyping() {
-        document.getElementById('chatTyping')?.remove();
-        }
+            function quitarTyping() {
+                document.getElementById('chatTyping')?.remove();
+            }
 
-        function scrollChat() {
-        const msgs     = document.getElementById('chatbotMensajes');
-        msgs.scrollTop = msgs.scrollHeight;
-        }
+            function scrollChat() {
+                const msgs = document.getElementById('chatbotMensajes');
+                msgs.scrollTop = msgs.scrollHeight;
+            }
     </script>
 
 </body>
