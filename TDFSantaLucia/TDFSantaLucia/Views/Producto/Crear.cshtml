@@ -15,9 +15,9 @@
 
             @if (!ViewData.ModelState.IsValid && ViewContext.HttpContext.Request.Method == "POST")
             {
-                <div class="alert alert-danger rounded-3">
+                <div class="alert alert-danger rounded-3 mb-4">
                     <h6 class="fw-bold mb-2">
-                        <i class="bi bi-exclamation-triangle me-1"></i> Por favor corrija los siguientes errores:
+                        <i class="bi bi-exclamation-triangle me-1"></i>Por favor corrija los siguientes errores:
                     </h6>
                     <ul class="mb-0">
                         @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
@@ -28,7 +28,7 @@
                 </div>
             }
 
-            <form asp-action="Crear" method="post" enctype="multipart/form-data">
+            <form asp-action="Crear" method="post" enctype="multipart/form-data" novalidate>
                 @Html.AntiForgeryToken()
 
                 <div class="row g-4">
@@ -38,7 +38,7 @@
                         <input asp-for="Nombre"
                                class="form-control rounded-3 @(ViewData.ModelState["Nombre"]?.Errors.Any() == true ? "is-invalid" : "")"
                                placeholder="Ej: Ibuprofeno 400mg..." />
-                        <span asp-validation-for="Nombre" class="invalid-feedback"></span>
+                        <span asp-validation-for="Nombre" class="text-danger small"></span>
                     </div>
 
                     <div class="col-md-6">
@@ -69,7 +69,7 @@
                             </button>
                         </div>
                         <input type="hidden" asp-for="Categoria_Id" id="categoriaIdHidden" />
-                        <span asp-validation-for="Categoria_Id" class="invalid-feedback d-block"></span>
+                        <span asp-validation-for="Categoria_Id" class="text-danger small d-block"></span>
                     </div>
 
                     <div class="col-md-6">
@@ -77,7 +77,7 @@
                         <input asp-for="Marca"
                                class="form-control rounded-3 @(ViewData.ModelState["Marca"]?.Errors.Any() == true ? "is-invalid" : "")"
                                placeholder="Ej: Bayer, Pfizer..." />
-                        <span asp-validation-for="Marca" class="invalid-feedback d-block"></span>
+                        <span asp-validation-for="Marca" class="text-danger small d-block"></span>
                     </div>
 
                     <div class="col-md-6">
@@ -91,8 +91,8 @@
                                    max="9999999.99"
                                    class="form-control rounded-end-3 @(ViewData.ModelState["Precio"]?.Errors.Any() == true ? "is-invalid" : "")"
                                    placeholder="500.00" />
-                            <span asp-validation-for="Precio" class="invalid-feedback"></span>
                         </div>
+                        <span asp-validation-for="Precio" class="text-danger small d-block"></span>
                     </div>
 
                     <div class="col-md-6">
@@ -113,7 +113,7 @@
                                   rows="4"
                                   class="form-control rounded-3 @(ViewData.ModelState["Descripcion"]?.Errors.Any() == true ? "is-invalid" : "")"
                                   placeholder="Descripción del producto..."></textarea>
-                        <span asp-validation-for="Descripcion" class="invalid-feedback"></span>
+                        <span asp-validation-for="Descripcion" class="text-danger small d-block"></span>
                         <small class="text-muted"><span id="contadorDesc">0</span> / 1000 caracteres</small>
                     </div>
 
@@ -146,29 +146,25 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
     <script>
-
-        if (window.jQuery && $.validator) {
-            $.validator.setDefaults({ ignore: [] });
-        }
-
         const byId = id => document.getElementById(id);
         const descripcion = byId('Descripcion');
         const contador = byId('contadorDesc');
 
-        byId('ImagenArchivo').addEventListener('change', function() {
+        byId('ImagenArchivo').addEventListener('change', function () {
             const preview = byId('previewImagen');
             const imgPreview = byId('imgPreview');
             const file = this.files[0];
 
             if (file) {
                 imgPreview.src = URL.createObjectURL(file);
+                preview.classList.remove('d-none');
+            } else {
+                preview.classList.add('d-none');
             }
-            preview.classList.remove('d-none');
         });
 
-        descripcion.addEventListener('input', function() {
+        descripcion.addEventListener('input', function () {
             contador.textContent = this.value.length;
         });
         contador.textContent = descripcion.value.length;
@@ -182,23 +178,18 @@
             btnGuardar.innerHTML = htmlOriginal;
         }
 
-        form.addEventListener('submit', function(e) {
-            if (window.jQuery && !$(form).valid()) {
-                e.preventDefault();
-                restaurarBoton();
-                return;
-            }
+        form.addEventListener('submit', function () {
             btnGuardar.disabled = true;
             btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
         });
 
-        window.addEventListener('pageshow', function(e) {
+        window.addEventListener('pageshow', function (e) {
             if (e.persisted) restaurarBoton();
         });
 
         const itemsCategoria = Array.from(document.querySelectorAll('.categoria-item'));
 
-        byId('buscadorCategoria').addEventListener('input', function() {
+        byId('buscadorCategoria').addEventListener('input', function () {
             const texto = this.value.toLowerCase();
             itemsCategoria.forEach(i => {
                 i.style.display = i.dataset.nombre.toLowerCase().includes(texto) ? '' : 'none';
