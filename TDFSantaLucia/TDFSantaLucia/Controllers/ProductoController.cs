@@ -70,6 +70,10 @@ namespace TDFSantaLucia.Controllers
 
             if (producto == null) return NotFound();
 
+            // un producto inactivo solo lo puede ver Admin o Empleado
+            if (!producto.Estado && !User.IsInRole("Admin") && !User.IsInRole("Empleado"))
+                return NotFound();
+
             ViewData["Title"] = "Detalle de Producto";
             ViewBag.Stock = _carritoService.ObtenerStockDisponible(producto.Producto_Id);
             return View(producto);

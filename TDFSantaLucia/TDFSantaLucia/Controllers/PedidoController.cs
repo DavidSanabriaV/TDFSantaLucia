@@ -317,10 +317,17 @@ namespace TDFSantaLucia.Controllers
         }
 
         [HttpGet("confirmacion/{id:int}")]
-        public IActionResult Confirmacion(int id)
+        public async Task<IActionResult> Confirmacion(int id)
         {
             var pedido = _pedidoService.ObtenerPorId(id);
             if (pedido == null) return NotFound();
+
+            if (!User.IsInRole("Admin") && !User.IsInRole("Empleado"))
+            {
+                var cliente = await ObtenerClienteAsync();
+                if (cliente?.Cliente_Id != pedido.Cliente_Id)
+                    return Forbid();
+            }
 
             var factura = _facturaService.ObtenerPorPedido(id);
             ViewBag.Factura = factura;

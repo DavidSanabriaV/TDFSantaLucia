@@ -75,6 +75,14 @@ namespace TDFSantaLucia.Controllers
         {
             var cita = _citaService.ObtenerPorId(id);
             if (cita == null) return NotFound();
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var cliente = _citaService.ObtenerClientePorUsuarioId(userId!);
+
+            // el cliente solo puede ver sus propias citas
+            if (cliente == null || cita.Cliente_Id != cliente.Cliente_Id)
+                return Forbid();
+
             return View(cita);
         }
 

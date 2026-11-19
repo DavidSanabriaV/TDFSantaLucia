@@ -1,25 +1,52 @@
 ﻿@model ErrorViewModel
 @{
     ViewData["Title"] = "Error";
+    int codigo = ViewBag.Codigo ?? 500;
+
+    var titulo = codigo switch
+    {
+        404 => "Página no encontrada",
+        403 => "Acceso denegado",
+        401 => "Debes iniciar sesión",
+        _ => "Ocurrió un problema"
+    };
+
+    var mensaje = codigo switch
+    {
+        404 => "El registro o la página que buscas no existe o fue eliminado.",
+        403 => "No tienes permisos para ver esta página.",
+        401 => "Inicia sesión para continuar.",
+        _ => "Ocurrió un error al procesar tu solicitud. Intenta de nuevo en unos minutos."
+    };
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="container py-5 text-center" style="max-width:600px;">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-5">
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+            <i class="bi bi-exclamation-triangle-fill display-3" style="color:#F7A400;"></i>
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+            <h1 class="fw-bold mt-3 mb-1" style="color:#243C8F; font-size:4rem;">@codigo</h1>
+            <h4 class="fw-bold mb-3" style="color:#1a3c5e;">@titulo</h4>
+            <p class="text-muted mb-4">@mensaje</p>
+
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a href="javascript:history.back()" class="btn rounded-3"
+                   style="background-color:#d0e8f5; color:#2a7ab5; border:none;">
+                    <i class="bi bi-arrow-left me-1"></i>Volver
+                </a>
+                <a asp-controller="Home" asp-action="Index" class="btn rounded-3"
+                   style="background-color:#d4edda; color:#2d7a4f; border:none;">
+                    <i class="bi bi-house me-1"></i>Ir al inicio
+                </a>
+            </div>
+
+            @if (codigo >= 500 && Model.ShowRequestId)
+            {
+                <p class="text-muted small mt-4 mb-0">
+                    Código de referencia: <code>@Model.RequestId</code>
+                </p>
+            }
+        </div>
+    </div>
+</div>

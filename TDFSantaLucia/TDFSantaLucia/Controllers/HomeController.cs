@@ -52,9 +52,12 @@ namespace TDFSantaLucia.Controllers
             return View();
         }
 
+        // "id" trae el código de estado (404, 403, etc.) desde UseStatusCodePagesWithReExecute
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error(int? id)
         {
+            ViewBag.Codigo = id ?? 500;
+
             return View(new ErrorViewModel
             {
                 RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier

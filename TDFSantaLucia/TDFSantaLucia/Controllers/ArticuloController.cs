@@ -28,24 +28,30 @@ namespace TDFSantaLucia.Controllers
             _env = env;
         }
 
-
         [HttpGet("")]
         public IActionResult Index(string? categoria)
         {
-            var articulos = string.IsNullOrEmpty(categoria)
-                ? _articuloService.ObtenerTodos(soloPublicados: true)
-                : _articuloService.ObtenerPorCategoria(categoria);
+            var publicados = _articuloService.ObtenerTodos(soloPublicados: true);
 
-            var userId = _userManager.GetUserId(User);
-            ViewBag.UserId = userId;
-            ViewBag.Categoria = categoria;
-            ViewBag.Categorias = _articuloService
-                .ObtenerTodos(soloPublicados: true)
+            var categorias = publicados
                 .Where(a => a.Categoria != null)
                 .Select(a => a.Categoria!)
                 .Distinct()
                 .OrderBy(c => c)
                 .ToList();
+
+            // una categoría sin artículos publicados no existe para el visitante
+            if (!string.IsNullOrEmpty(categoria) && !categorias.Contains(categoria))
+                return NotFound();
+
+            var articulos = string.IsNullOrEmpty(categoria)
+                ? publicados
+                : _articuloService.ObtenerPorCategoria(categoria);
+
+            var userId = _userManager.GetUserId(User);
+            ViewBag.UserId = userId;
+            ViewBag.Categoria = categoria;
+            ViewBag.Categorias = categorias;
 
             return View(articulos);
         }
